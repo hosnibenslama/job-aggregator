@@ -23,7 +23,7 @@ public final class ContractBuilder {
             throw new ContractFormatException(ctr.lineNumber(), null, "A contract must begin with CTR");
         }
 
-        contractId = requireContractId(ctr);
+        contractId = readContractId(ctr);
         lines.add(ctr);
         previous = LineType.CTR;
     }
@@ -96,12 +96,9 @@ public final class ContractBuilder {
         };
     }
 
-    private String requireContractId(BusinessLine ctr) {
+    private String readContractId(BusinessLine ctr) {
         String id = ctr.field(1);
-        if (id == null || id.isBlank()) {
-            throw error(ctr, "CTR must have its contract identifier in field 1");
-        }
-        return id;
+        return (id != null && !id.isBlank()) ? id : null;
     }
 
     private ContractFormatException error(BusinessLine line, String reason) {

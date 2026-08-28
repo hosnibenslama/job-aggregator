@@ -20,7 +20,7 @@ class ContractBuilderTest {
         builder.accept(line(4, LineType.OFF, "OFF"));
         builder.accept(line(5, LineType.OM, "OM"));
         builder.accept(line(6, LineType.OID, "OID"));
-        builder.accept(line(7, LineType.ART_N, "ART", "N"));
+        builder.accept(line(7, LineType.ART_N, "ART", "1"));
         builder.accept(line(8, LineType.IKAC, "IKAC"));
         builder.accept(line(9, LineType.COND, "COND"));
         builder.accept(line(10, LineType.ACC, "ACC"));
@@ -47,10 +47,15 @@ class ContractBuilderTest {
     }
 
     @Test
-    void rejectsMissingContractId() {
-        assertThatThrownBy(() -> new ContractBuilder(line(1, LineType.CTR, "CTR")))
-                .isInstanceOf(ContractFormatException.class)
-                .hasMessageContaining("contract identifier");
+    void acceptsMissingContractId() {
+        ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR"));
+        builder.accept(line(2, LineType.ACC, "ACC"));
+        builder.accept(line(3, LineType.OM, "OM"));
+        builder.accept(line(4, LineType.ART_N, "ART", "1"));
+
+        Contract contract = builder.build();
+
+        assertThat(contract.contractId()).isNull();
     }
 
     private BusinessLine line(long number, LineType type, String... fields) {

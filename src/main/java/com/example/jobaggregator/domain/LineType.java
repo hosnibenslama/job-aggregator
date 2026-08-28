@@ -26,7 +26,7 @@ public enum LineType {
         String first = fields[0].strip().toUpperCase(Locale.ROOT);
         if ("ART".equals(first)
                 && fields.length > 1
-                && "N".equalsIgnoreCase(fields[1].strip())) {
+                && !fields[1].strip().isEmpty()) {
             return ART_N;
         }
 
