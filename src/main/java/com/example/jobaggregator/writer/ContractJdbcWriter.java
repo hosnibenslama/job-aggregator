@@ -14,7 +14,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class ContractJdbcWriter implements ItemWriter<Contract> {
+public class ContractJdbcWriter implements ItemWriter<Contract> {
 
     private final JdbcTemplate jdbcTemplate;
 

@@ -18,7 +18,7 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 
-public final class ContractPartitionSplitterTasklet implements Tasklet {
+public class ContractPartitionSplitterTasklet implements Tasklet {
 
     public static final String PARTITION_FILES_KEY = "contract.partition.files";
 

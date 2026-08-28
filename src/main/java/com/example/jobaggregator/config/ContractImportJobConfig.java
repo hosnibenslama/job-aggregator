@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.partition.Partitioner;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -68,7 +69,7 @@ public class ContractImportJobConfig {
     public Step managerStep(
             JobRepository jobRepository,
             Step workerStep,
-            GeneratedFilePartitioner contractPartitioner,
+            Partitioner contractPartitioner,
             TaskExecutor taskExecutor) {
         return new StepBuilder("managerStep", jobRepository)
                 .partitioner("workerStep", contractPartitioner)
@@ -102,7 +103,7 @@ public class ContractImportJobConfig {
 
     @Bean
     @StepScope
-    public GeneratedFilePartitioner contractPartitioner(
+    public Partitioner contractPartitioner(
             @Value("#{jobExecutionContext['" + ContractPartitionSplitterTasklet.PARTITION_FILES_KEY + "']}") String partitionFiles) {
         return new GeneratedFilePartitioner(partitionFiles);
     }

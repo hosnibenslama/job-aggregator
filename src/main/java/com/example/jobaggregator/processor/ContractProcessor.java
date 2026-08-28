@@ -5,7 +5,7 @@ import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class ContractProcessor implements ItemProcessor<Contract, Contract> {
+public class ContractProcessor implements ItemProcessor<Contract, Contract> {
 
     @Override
     public Contract process(Contract item) throws Exception {

@@ -13,7 +13,7 @@ import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.batch.infrastructure.item.ItemStreamException;
 import org.springframework.batch.infrastructure.item.ItemStreamReader;
 
-public final class ContractFileReader implements ItemStreamReader<Contract> {
+public class ContractFileReader implements ItemStreamReader<Contract> {
 
     private static final String READ_LINE_COUNT_KEY = "contract.file.reader.read.line.count";
 

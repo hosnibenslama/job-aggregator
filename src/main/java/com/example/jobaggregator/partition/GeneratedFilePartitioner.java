@@ -5,7 +5,7 @@ import java.util.Map;
 import org.springframework.batch.core.partition.Partitioner;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 
-public final class GeneratedFilePartitioner implements Partitioner {
+public class GeneratedFilePartitioner implements Partitioner {
 
     private final String partitionFiles;
 

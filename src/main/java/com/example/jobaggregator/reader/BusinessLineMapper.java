@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.springframework.batch.infrastructure.item.file.LineMapper;
 
-public final class BusinessLineMapper implements LineMapper<BusinessLine> {
+public class BusinessLineMapper implements LineMapper<BusinessLine> {
 
     @Override
     public BusinessLine mapLine(String line, int lineNumber) {
