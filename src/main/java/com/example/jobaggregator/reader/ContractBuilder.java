@@ -11,7 +11,6 @@ import java.util.Set;
 
 public final class ContractBuilder {
 
-    private final String contractId;
     private final List<BusinessLine> lines = new ArrayList<>();
     private LineType previous;
     private boolean hasAccount;
@@ -23,7 +22,6 @@ public final class ContractBuilder {
             throw new ContractFormatException(ctr.lineNumber(), null, "A contract must begin with CTR");
         }
 
-        contractId = readContractId(ctr);
         lines.add(ctr);
         previous = LineType.CTR;
     }
@@ -60,7 +58,6 @@ public final class ContractBuilder {
         }
 
         return new Contract(
-                contractId,
                 lines.getFirst().lineNumber(),
                 lines.getLast().lineNumber(),
                 List.copyOf(lines));
@@ -97,12 +94,7 @@ public final class ContractBuilder {
         };
     }
 
-    private String readContractId(BusinessLine ctr) {
-        // Contract ID has been removed from the CTR line format.
-        return null;
-    }
-
     private ContractFormatException error(BusinessLine line, String reason) {
-        return new ContractFormatException(line.lineNumber(), contractId, reason);
+        return new ContractFormatException(line.lineNumber(), null, reason);
     }
 }

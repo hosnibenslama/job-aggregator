@@ -29,7 +29,6 @@ class ContractBuilderTest {
 
         Contract contract = builder.build();
 
-        assertThat(contract.contractId()).isNull();
         assertThat(contract.lines()).hasSize(12);
         assertThat(contract.firstPhysicalLine()).isEqualTo(1);
         assertThat(contract.lastPhysicalLine()).isEqualTo(12);
@@ -47,7 +46,7 @@ class ContractBuilderTest {
     }
 
     @Test
-    void acceptsMissingContractId() {
+    void buildsContractWithoutOptionalFields() {
         ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR"));
         builder.accept(line(2, LineType.ACC, "ACC"));
         builder.accept(line(3, LineType.OM, "OM"));
@@ -55,7 +54,7 @@ class ContractBuilderTest {
 
         Contract contract = builder.build();
 
-        assertThat(contract.contractId()).isNull();
+        assertThat(contract.lines()).hasSize(4);
     }
 
     private BusinessLine line(long number, LineType type, String... fields) {
