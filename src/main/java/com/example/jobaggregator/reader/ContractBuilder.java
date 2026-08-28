@@ -78,20 +78,21 @@ public final class ContractBuilder {
 
     private Set<LineType> allowedAfter(LineType type) {
         return switch (type) {
-            case CTR, ROL, OFF -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM);
+            case CTR, OFF -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM);
+            case ROL -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM, LineType.OID, LineType.ART_N);
             case ACC -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM,
-                    LineType.ART_N, LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT);
+                    LineType.ART_N, LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT, LineType.OID);
             case OM -> EnumSet.of(LineType.OID, LineType.ROL, LineType.ART_N);
-            case OID -> EnumSet.of(LineType.ROL, LineType.ART_N);
+            case OID -> EnumSet.of(LineType.ROL, LineType.ART_N, LineType.IKAC, LineType.COND, LineType.ACC, LineType.TAR, LineType.AVT, LineType.OID);
             case ART_N -> EnumSet.of(
                     LineType.OID, LineType.IKAC, LineType.COND, LineType.ACC,
                     LineType.TAR, LineType.AVT, LineType.ART_N, LineType.ROL);
             case IKAC -> EnumSet.of(LineType.COND, LineType.ACC, LineType.TAR,
-                    LineType.AVT, LineType.ART_N, LineType.ROL);
+                    LineType.AVT, LineType.ART_N, LineType.ROL, LineType.OID);
             case COND -> EnumSet.of(LineType.ACC, LineType.TAR, LineType.AVT,
-                    LineType.ART_N, LineType.ROL);
-            case TAR -> EnumSet.of(LineType.AVT, LineType.ART_N, LineType.ROL);
-            case AVT -> EnumSet.of(LineType.ART_N, LineType.ROL);
+                    LineType.ART_N, LineType.ROL, LineType.OID, LineType.COND);
+            case TAR -> EnumSet.of(LineType.AVT, LineType.ART_N, LineType.ROL, LineType.ACC, LineType.OID);
+            case AVT -> EnumSet.of(LineType.ART_N, LineType.ROL, LineType.ACC, LineType.OID);
             default -> EnumSet.noneOf(LineType.class);
         };
     }
