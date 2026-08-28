@@ -1,6 +1,24 @@
 spring:
-  application:
-    name: job-aggregator
+  datasource:
+    url: jdbc:postgresql://localhost:5432/job_aggregator
+    username: job_aggregator
+    password: changeme
+    driver-class-name: org.postgresql.Driver
+
   batch:
+    jdbc:
+      initialize-schema: never
     job:
-      enabled: false
+      enabled: true
+
+contract:
+  import:
+    input-file: /data/input/contracts.dat
+    partition-directory: /data/partitions
+    requested-partitions: 8
+    charset: UTF-8
+
+logging:
+  level:
+    org.springframework.batch: INFO
+    com.example.jobaggregator: DEBUG
