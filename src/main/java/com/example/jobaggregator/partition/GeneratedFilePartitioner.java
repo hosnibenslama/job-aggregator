@@ -2,8 +2,8 @@ package com.example.jobaggregator.partition;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.springframework.batch.core.partition.support.Partitioner;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.core.partition.Partitioner;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 public final class GeneratedFilePartitioner implements Partitioner {
 

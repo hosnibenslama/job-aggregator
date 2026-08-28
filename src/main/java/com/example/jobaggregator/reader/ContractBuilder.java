@@ -78,7 +78,9 @@ public final class ContractBuilder {
 
     private Set<LineType> allowedAfter(LineType type) {
         return switch (type) {
-            case CTR, ACC, ROL, OFF -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM);
+            case CTR, ROL, OFF -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM);
+            case ACC -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM,
+                    LineType.ART_N, LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT);
             case OM -> EnumSet.of(LineType.OID, LineType.ROL, LineType.ART_N);
             case OID -> EnumSet.of(LineType.ROL, LineType.ART_N);
             case ART_N -> EnumSet.of(

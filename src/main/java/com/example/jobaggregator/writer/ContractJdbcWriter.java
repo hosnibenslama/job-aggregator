@@ -6,12 +6,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import javax.sql.DataSource;
-import org.springframework.batch.item.database.BatchItemWriter;
+import org.springframework.batch.infrastructure.item.Chunk;
+import org.springframework.batch.infrastructure.item.ItemWriter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class ContractJdbcWriter extends BatchItemWriter<Contract> {
+public final class ContractJdbcWriter implements ItemWriter<Contract> {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -20,7 +21,7 @@ public final class ContractJdbcWriter extends BatchItemWriter<Contract> {
     }
 
     @Override
-    public void write(List<? extends Contract> items) throws Exception {
+    public void write(Chunk<? extends Contract> items) throws Exception {
         for (Contract contract : items) {
             long contractId = insertContract(contract);
             insertLines(contractId, contract.lines());
