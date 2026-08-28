@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS contracts (
     id BIGSERIAL PRIMARY KEY,
-    contract_id VARCHAR(255) NOT NULL UNIQUE,
+    contract_id VARCHAR(255),
     first_line BIGINT NOT NULL,
     last_line BIGINT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()

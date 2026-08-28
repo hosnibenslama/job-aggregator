@@ -3,12 +3,14 @@ package com.example.jobaggregator.writer;
 import com.example.jobaggregator.domain.BusinessLine;
 import com.example.jobaggregator.domain.Contract;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import javax.sql.DataSource;
 import org.springframework.batch.infrastructure.item.Chunk;
 import org.springframework.batch.infrastructure.item.ItemWriter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,19 +31,25 @@ public final class ContractJdbcWriter implements ItemWriter<Contract> {
     }
 
     private long insertContract(Contract contract) {
-        jdbcTemplate.update(
-                """
-                INSERT INTO contracts (contract_id, first_line, last_line)
-                VALUES (?, ?, ?)
-                """,
-                contract.contractId(),
-                contract.firstPhysicalLine(),
-                contract.lastPhysicalLine());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(
+                    """
+                    INSERT INTO contracts (contract_id, first_line, last_line)
+                    VALUES (?, ?, ?)
+                    """,
+                    new String[] {"id"});
+            ps.setString(1, contract.contractId());
+            ps.setLong(2, contract.firstPhysicalLine());
+            ps.setLong(3, contract.lastPhysicalLine());
+            return ps;
+        }, keyHolder);
 
-        return jdbcTemplate.queryForObject(
-                "SELECT id FROM contracts WHERE contract_id = ?",
-                Long.class,
-                contract.contractId());
+        Number key = keyHolder.getKey();
+        if (key == null) {
+            throw new IllegalStateException("Failed to retrieve generated id for contract");
+        }
+        return key.longValue();
     }
 
     private void insertLines(long contractId, List<BusinessLine> lines) {
