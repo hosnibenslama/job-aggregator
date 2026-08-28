@@ -13,9 +13,9 @@ spring:
 
 contract:
   import:
-    input-file: /data/input/contracts.dat
-    partition-directory: /data/partitions
-    requested-partitions: 8
+    input-file: src/main/resources/visa-premier.txt
+    partition-directory: target/partitions
+    requested-partitions: 4
     charset: UTF-8
 
 logging:

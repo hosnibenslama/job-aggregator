@@ -97,8 +97,8 @@ public final class ContractBuilder {
     }
 
     private String readContractId(BusinessLine ctr) {
-        String id = ctr.field(1);
-        return (id != null && !id.isBlank()) ? id : null;
+        // Contract ID has been removed from the CTR line format.
+        return null;
     }
 
     private ContractFormatException error(BusinessLine line, String reason) {

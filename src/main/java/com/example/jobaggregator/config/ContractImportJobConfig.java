@@ -20,11 +20,13 @@ import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.batch.infrastructure.item.ItemStreamException;
 import org.springframework.batch.infrastructure.item.ItemStreamReader;
 import org.springframework.batch.infrastructure.item.ItemWriter;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
+@EnableConfigurationProperties(ContractImportProperties.class)
 public class ContractImportJobConfig {
 
     private final Path inputContractFile;
@@ -32,15 +34,11 @@ public class ContractImportJobConfig {
     private final int requestedPartitions;
     private final Charset charset;
 
-    public ContractImportJobConfig(
-            Path inputContractFile,
-            Path partitionDirectory,
-            int requestedPartitions,
-            Charset charset) {
-        this.inputContractFile = inputContractFile;
-        this.partitionDirectory = partitionDirectory;
-        this.requestedPartitions = requestedPartitions;
-        this.charset = charset;
+    public ContractImportJobConfig(ContractImportProperties props) {
+        this.inputContractFile = props.inputFile();
+        this.partitionDirectory = props.partitionDirectory();
+        this.requestedPartitions = props.requestedPartitions();
+        this.charset = props.charset();
     }
 
     @Bean
