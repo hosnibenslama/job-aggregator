@@ -11,6 +11,7 @@ import java.util.Set;
 
 public final class ContractBuilder {
 
+    private final String contractId;
     private final List<BusinessLine> lines = new ArrayList<>();
     private LineType previous;
     private boolean hasAccount;
@@ -22,6 +23,7 @@ public final class ContractBuilder {
             throw new ContractFormatException(ctr.lineNumber(), null, "A contract must begin with CTR");
         }
 
+        contractId = requireContractId(ctr);
         lines.add(ctr);
         previous = LineType.CTR;
     }
@@ -34,6 +36,7 @@ public final class ContractBuilder {
         }
 
         validatePrerequisites(line);
+        validateLineFields(line);
         lines.add(line);
         previous = line.type();
 
@@ -41,8 +44,7 @@ public final class ContractBuilder {
             case ACC -> hasAccount = true;
             case OM -> hasOperation = true;
             case ART_N -> hasArticle = true;
-            default -> {
-            }
+            default -> {}
         }
     }
 
@@ -58,6 +60,7 @@ public final class ContractBuilder {
         }
 
         return new Contract(
+                contractId,
                 lines.getFirst().lineNumber(),
                 lines.getLast().lineNumber(),
                 List.copyOf(lines));
@@ -73,28 +76,57 @@ public final class ContractBuilder {
         }
     }
 
+    private void validateLineFields(BusinessLine line) {
+        switch (line.type()) {
+            case ACC -> {
+                String account = line.field(1);
+                if (account == null || account.isBlank()) {
+                    throw error(line, "ACC field 1 (account) is required");
+                }
+            }
+            case OM -> {
+                String operation = line.field(1);
+                if (operation == null || operation.isBlank()) {
+                    throw error(line, "OM field 1 (operation) is required");
+                }
+            }
+            case ART_N -> {
+                String articleCode = line.field(1);
+                if (articleCode == null || articleCode.isBlank()) {
+                    throw error(line, "ART;N field 1 (articleCode) is required");
+                }
+            }
+            default -> {}
+        }
+    }
+
     private Set<LineType> allowedAfter(LineType type) {
         return switch (type) {
-            case CTR, OFF -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM);
-            case ROL -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM, LineType.OID, LineType.ART_N);
-            case ACC -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM,
-                    LineType.ART_N, LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT, LineType.OID);
+            case CTR, ACC, ROL, OFF -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM);
             case OM -> EnumSet.of(LineType.OID, LineType.ROL, LineType.ART_N);
-            case OID -> EnumSet.of(LineType.ROL, LineType.ART_N, LineType.IKAC, LineType.COND, LineType.ACC, LineType.TAR, LineType.AVT, LineType.OID);
+            case OID -> EnumSet.of(LineType.ROL, LineType.ART_N);
             case ART_N -> EnumSet.of(
                     LineType.OID, LineType.IKAC, LineType.COND, LineType.ACC,
                     LineType.TAR, LineType.AVT, LineType.ART_N, LineType.ROL);
             case IKAC -> EnumSet.of(LineType.COND, LineType.ACC, LineType.TAR,
-                    LineType.AVT, LineType.ART_N, LineType.ROL, LineType.OID);
+                    LineType.AVT, LineType.ART_N, LineType.ROL);
             case COND -> EnumSet.of(LineType.ACC, LineType.TAR, LineType.AVT,
-                    LineType.ART_N, LineType.ROL, LineType.OID, LineType.COND);
-            case TAR -> EnumSet.of(LineType.AVT, LineType.ART_N, LineType.ROL, LineType.ACC, LineType.OID);
-            case AVT -> EnumSet.of(LineType.ART_N, LineType.ROL, LineType.ACC, LineType.OID);
+                    LineType.ART_N, LineType.ROL);
+            case TAR -> EnumSet.of(LineType.AVT, LineType.ART_N, LineType.ROL);
+            case AVT -> EnumSet.of(LineType.ART_N, LineType.ROL);
             default -> EnumSet.noneOf(LineType.class);
         };
     }
 
+    private String requireContractId(BusinessLine ctr) {
+        String id = ctr.field(1);
+        if (id == null || id.isBlank()) {
+            throw error(ctr, "CTR must have its contract identifier in field 1");
+        }
+        return id;
+    }
+
     private ContractFormatException error(BusinessLine line, String reason) {
-        return new ContractFormatException(line.lineNumber(), null, reason);
+        return new ContractFormatException(line.lineNumber(), contractId, reason);
     }
 }
