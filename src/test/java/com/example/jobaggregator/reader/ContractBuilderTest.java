@@ -20,7 +20,7 @@ class ContractBuilderTest {
         builder.accept(line(4, LineType.OFF, "OFF"));
         builder.accept(line(5, LineType.OM, "OM", "OM-001"));
         builder.accept(line(6, LineType.OID, "OID"));
-        builder.accept(line(7, LineType.ART_N, "ART", "1"));
+        builder.accept(line(7, LineType.ART, "ART", "1"));
         builder.accept(line(8, LineType.IKAC, "IKAC"));
         builder.accept(line(9, LineType.COND, "COND"));
         builder.accept(line(10, LineType.ACC, "ACC", "BILL-2"));
@@ -42,7 +42,7 @@ class ContractBuilderTest {
 
         assertThatThrownBy(() -> builder.accept(line(4, LineType.IKAC, "IKAC")))
                 .isInstanceOf(ContractFormatException.class)
-                .hasMessageContaining("ART_N");
+                .hasMessageContaining("ART");
     }
 
     @Test
@@ -50,7 +50,7 @@ class ContractBuilderTest {
         ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR"));
         builder.accept(line(2, LineType.ACC, "ACC", "BILL"));
         builder.accept(line(3, LineType.OM, "OM", "OM-001"));
-        builder.accept(line(4, LineType.ART_N, "ART", "1"));
+        builder.accept(line(4, LineType.ART, "ART", "1"));
 
         Contract contract = builder.build();
 

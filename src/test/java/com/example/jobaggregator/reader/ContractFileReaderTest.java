@@ -21,7 +21,7 @@ class ContractFileReaderTest {
                 new BusinessLine(2, LineType.CTR, "CTR", List.of("CTR")),
                 new BusinessLine(3, LineType.ACC, "ACC;BILL", List.of("ACC", "BILL")),
                 new BusinessLine(4, LineType.OM, "OM;001", List.of("OM", "001")),
-                new BusinessLine(5, LineType.ART_N, "ART;1", List.of("ART", "1")),
+                new BusinessLine(5, LineType.ART, "ART;1", List.of("ART", "1")),
                 new BusinessLine(6, LineType.TRL, "TRL;1;5", List.of("TRL", "1", "5"))
         );
 
@@ -46,11 +46,11 @@ class ContractFileReaderTest {
                 new BusinessLine(2, LineType.CTR, "CTR", List.of("CTR")),
                 new BusinessLine(3, LineType.ACC, "ACC;1", List.of("ACC", "1")),
                 new BusinessLine(4, LineType.OM, "OM;1", List.of("OM", "1")),
-                new BusinessLine(5, LineType.ART_N, "ART;1", List.of("ART", "1")),
+                new BusinessLine(5, LineType.ART, "ART;1", List.of("ART", "1")),
                 new BusinessLine(6, LineType.CTR, "CTR", List.of("CTR")),
                 new BusinessLine(7, LineType.ACC, "ACC;2", List.of("ACC", "2")),
                 new BusinessLine(8, LineType.OM, "OM;2", List.of("OM", "2")),
-                new BusinessLine(9, LineType.ART_N, "ART;2", List.of("ART", "2")),
+                new BusinessLine(9, LineType.ART, "ART;2", List.of("ART", "2")),
                 new BusinessLine(10, LineType.TRL, "TRL", List.of("TRL"))
         );
 

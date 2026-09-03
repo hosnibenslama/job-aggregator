@@ -41,7 +41,7 @@ public final class ContractBuilder {
         switch (line.type()) {
             case ACC -> hasAccount = true;
             case OM -> hasOperation = true;
-            case ART_N -> hasArticle = true;
+            case ART -> hasArticle = true;
             default -> {}
         }
     }
@@ -54,7 +54,7 @@ public final class ContractBuilder {
             throw error(lines.getFirst(), "A contract must contain at least one OM");
         }
         if (!hasArticle) {
-            throw error(lines.getFirst(), "A contract must contain at least one ART;N");
+            throw error(lines.getFirst(), "A contract must contain at least one ART");
         }
 
         return new Contract(
@@ -69,7 +69,7 @@ public final class ContractBuilder {
         }
         if (Set.of(LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT).contains(line.type())
                 && !hasArticle) {
-            throw error(line, line.type() + " requires a preceding ART;N");
+            throw error(line, line.type() + " requires a preceding ART");
         }
     }
 
@@ -87,10 +87,10 @@ public final class ContractBuilder {
                     throw error(line, "OM field 1 (operation) is required");
                 }
             }
-            case ART_N -> {
+            case ART -> {
                 String articleCode = line.field(1);
                 if (articleCode == null || articleCode.isBlank()) {
-                    throw error(line, "ART;N field 1 (articleCode) is required");
+                    throw error(line, "ART field 1 (articleCode) is required");
                 }
             }
             default -> {}
@@ -100,20 +100,20 @@ public final class ContractBuilder {
     private Set<LineType> allowedAfter(LineType type) {
         return switch (type) {
             case CTR, OFF -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM);
-            case ROL -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM, LineType.OID, LineType.ART_N);
+            case ROL -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM, LineType.OID, LineType.ART);
             case ACC -> EnumSet.of(LineType.ACC, LineType.ROL, LineType.OFF, LineType.OM,
-                    LineType.ART_N, LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT, LineType.OID);
-            case OM -> EnumSet.of(LineType.OID, LineType.ROL, LineType.ART_N);
-            case OID -> EnumSet.of(LineType.ROL, LineType.ART_N, LineType.IKAC, LineType.COND, LineType.ACC, LineType.TAR, LineType.AVT, LineType.OID);
-            case ART_N -> EnumSet.of(
+                    LineType.ART, LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT, LineType.OID);
+            case OM -> EnumSet.of(LineType.OID, LineType.ROL, LineType.ART);
+            case OID -> EnumSet.of(LineType.ROL, LineType.ART, LineType.IKAC, LineType.COND, LineType.ACC, LineType.TAR, LineType.AVT, LineType.OID);
+            case ART -> EnumSet.of(
                     LineType.OID, LineType.IKAC, LineType.COND, LineType.ACC,
-                    LineType.TAR, LineType.AVT, LineType.ART_N, LineType.ROL);
+                    LineType.TAR, LineType.AVT, LineType.ART, LineType.ROL);
             case IKAC -> EnumSet.of(LineType.COND, LineType.ACC, LineType.TAR,
-                    LineType.AVT, LineType.ART_N, LineType.ROL, LineType.OID);
+                    LineType.AVT, LineType.ART, LineType.ROL, LineType.OID);
             case COND -> EnumSet.of(LineType.ACC, LineType.TAR, LineType.AVT,
-                    LineType.ART_N, LineType.ROL, LineType.OID, LineType.COND);
-            case TAR -> EnumSet.of(LineType.AVT, LineType.ART_N, LineType.ROL, LineType.ACC, LineType.OID);
-            case AVT -> EnumSet.of(LineType.ART_N, LineType.ROL, LineType.ACC, LineType.OID);
+                    LineType.ART, LineType.ROL, LineType.OID, LineType.COND);
+            case TAR -> EnumSet.of(LineType.AVT, LineType.ART, LineType.ROL, LineType.ACC, LineType.OID);
+            case AVT -> EnumSet.of(LineType.ART, LineType.ROL, LineType.ACC, LineType.OID);
             default -> EnumSet.noneOf(LineType.class);
         };
     }

@@ -18,7 +18,7 @@ public final class BusinessLineMapper implements LineMapper<BusinessLine> {
         List<String> fields = Arrays.stream(line.split(";", -1))
                 .map(String::strip)
                 .toList();
-        LineType type = LineType.from(fields.toArray(String[]::new));
+        LineType type = LineType.determineFromFields(fields.toArray(String[]::new));
 
         if (type == LineType.UNKNOWN) {
             throw new ContractFormatException(
@@ -37,7 +37,7 @@ public final class BusinessLineMapper implements LineMapper<BusinessLine> {
             case CTR -> validateCtrFields(fields, lineNumber);
             case ACC -> validateAccFields(fields, lineNumber);
             case OM -> validateOmFields(fields, lineNumber);
-            case ART_N -> validateArtNFields(fields, lineNumber);
+            case ART -> validateArtFields(fields, lineNumber);
             default -> {} // no special validation for other line types yet
         }
     }
@@ -62,10 +62,10 @@ public final class BusinessLineMapper implements LineMapper<BusinessLine> {
         }
     }
 
-    private void validateArtNFields(List<String> fields, int lineNumber) {
+    private void validateArtFields(List<String> fields, int lineNumber) {
         String articleCode = field(fields, 1);
         if (articleCode == null || articleCode.isBlank()) {
-            throw new ContractFormatException(lineNumber, null, "ART;N field 1 (articleCode) is required");
+            throw new ContractFormatException(lineNumber, null, "ART field 1 (articleCode) is required");
         }
     }
 

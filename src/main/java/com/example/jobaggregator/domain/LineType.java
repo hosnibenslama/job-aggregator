@@ -10,7 +10,7 @@ public enum LineType {
     OFF,
     OM,
     OID,
-    ART_N,
+    ART,
     IKAC,
     COND,
     TAR,
@@ -18,18 +18,12 @@ public enum LineType {
     TRL,
     UNKNOWN;
 
-    public static LineType from(String[] fields) {
-        if (fields.length == 0 || fields[0].isBlank()) {
+    public static LineType determineFromFields(String[] fields) {
+        if (fields == null || fields.length == 0 || fields[0].isBlank()) {
             return UNKNOWN;
         }
 
         String first = fields[0].strip().toUpperCase(Locale.ROOT);
-        if ("ART".equals(first)
-                && fields.length > 1
-                && !fields[1].strip().isEmpty()) {
-            return ART_N;
-        }
-
         try {
             return LineType.valueOf(first);
         } catch (IllegalArgumentException ignored) {

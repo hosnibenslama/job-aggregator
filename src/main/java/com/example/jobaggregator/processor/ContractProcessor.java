@@ -41,7 +41,7 @@ public final class ContractProcessor implements ItemProcessor<Contract, Contract
         }
 
         long artCount = contract.lines().stream()
-                .filter(line -> line.type().name().equals("ART_N"))
+                .filter(line -> line.type().name().equals("ART"))
                 .count();
 
         if (artCount < 1) {
