@@ -1,12 +1,10 @@
 package com.example.jobaggregator.reader;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.jobaggregator.domain.BusinessLine;
 import com.example.jobaggregator.domain.Contract;
 import com.example.jobaggregator.domain.LineType;
-import com.example.jobaggregator.error.ContractFormatException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.infrastructure.item.support.ListItemReader;
@@ -31,8 +29,6 @@ class ContractFileReaderTest {
 
         Contract contract = reader.read();
         assertThat(contract).isNotNull();
-        assertThat(contract.firstPhysicalLine()).isEqualTo(2);
-        assertThat(contract.lastPhysicalLine()).isEqualTo(5);
         assertThat(contract.lines()).hasSize(4);
 
         // Next read encounters TRL and returns null (EOF)
@@ -60,11 +56,12 @@ class ContractFileReaderTest {
 
         Contract first = reader.read();
         assertThat(first).isNotNull();
-        assertThat(first.firstPhysicalLine()).isEqualTo(2);
+        assertThat(first.lines().getFirst().type()).isEqualTo(LineType.CTR);
 
         Contract second = reader.read();
         assertThat(second).isNotNull();
-        assertThat(second.firstPhysicalLine()).isEqualTo(6);
+        assertThat(second.lines().getFirst().type()).isEqualTo(LineType.CTR);
+        assertThat(second.lines().getFirst().lineNumber()).isEqualTo(6);
 
         assertThat(reader.read()).isNull();
     }

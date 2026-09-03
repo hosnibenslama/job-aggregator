@@ -57,10 +57,7 @@ public final class ContractBuilder {
             throw error(lines.getFirst(), "A contract must contain at least one ART");
         }
 
-        return new Contract(
-                lines.getFirst().lineNumber(),
-                lines.getLast().lineNumber(),
-                List.copyOf(lines));
+        return new Contract(List.copyOf(lines));
     }
 
     private void validatePrerequisites(BusinessLine line) {

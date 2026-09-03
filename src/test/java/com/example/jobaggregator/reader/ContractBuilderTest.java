@@ -30,8 +30,6 @@ class ContractBuilderTest {
         Contract contract = builder.build();
 
         assertThat(contract.lines()).hasSize(12);
-        assertThat(contract.firstPhysicalLine()).isEqualTo(1);
-        assertThat(contract.lastPhysicalLine()).isEqualTo(12);
     }
 
     @Test
