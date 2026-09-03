@@ -5,7 +5,7 @@ import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.error.ContractFormatException;
 import java.util.Arrays;
 import java.util.List;
-import org.springframework.batch.item.file.LineMapper;
+import org.springframework.batch.infrastructure.item.file.LineMapper;
 
 public final class BusinessLineMapper implements LineMapper<BusinessLine> {
 
