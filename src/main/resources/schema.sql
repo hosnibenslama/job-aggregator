@@ -1,12 +1,9 @@
 CREATE TABLE IF NOT EXISTS contracts (
     id BIGSERIAL PRIMARY KEY,
-    contract_id VARCHAR(255),
     first_line BIGINT NOT NULL,
     last_line BIGINT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
-
-CREATE INDEX IF NOT EXISTS idx_contracts_contract_id ON contracts (contract_id);
 
 CREATE TABLE IF NOT EXISTS contract_lines (
     id BIGSERIAL PRIMARY KEY,

@@ -43,12 +43,8 @@ public final class BusinessLineMapper implements LineMapper<BusinessLine> {
     }
 
     private void validateCtrFields(List<String> fields, int lineNumber) {
-        String contractId = field(fields, 1);
-        if (contractId == null || contractId.isBlank()) {
-            throw new ContractFormatException(lineNumber, null, "CTR field 1 (contractId) is required");
-        }
-        if (contractId.length() > 50) {
-            throw new ContractFormatException(lineNumber, null, "CTR field 1 (contractId) must be at most 50 characters");
+        if (fields.size() < 2) {
+            throw new ContractFormatException(lineNumber, null, "CTR requires at least 2 fields");
         }
     }
 

@@ -35,13 +35,12 @@ public class ContractJdbcWriter implements ItemWriter<Contract> {
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(
                     """
-                    INSERT INTO contracts (contract_id, first_line, last_line)
-                    VALUES (?, ?, ?)
+                    INSERT INTO contracts (first_line, last_line)
+                    VALUES (?, ?)
                     """,
                     new String[] {"id"});
-            ps.setString(1, contract.contractId());
-            ps.setLong(2, contract.firstPhysicalLine());
-            ps.setLong(3, contract.lastPhysicalLine());
+            ps.setLong(1, contract.firstPhysicalLine());
+            ps.setLong(2, contract.lastPhysicalLine());
             return ps;
         }, keyHolder);
 

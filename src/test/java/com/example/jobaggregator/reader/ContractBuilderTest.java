@@ -14,7 +14,7 @@ class ContractBuilderTest {
 
     @Test
     void buildsAValidContract() {
-        ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR", "C-001"));
+        ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR"));
         builder.accept(line(2, LineType.ACC, "ACC", "BILL"));
         builder.accept(line(3, LineType.ROL, "ROL"));
         builder.accept(line(4, LineType.OFF, "OFF"));
@@ -29,7 +29,6 @@ class ContractBuilderTest {
 
         Contract contract = builder.build();
 
-        assertThat(contract.contractId()).isEqualTo("C-001");
         assertThat(contract.lines()).hasSize(12);
         assertThat(contract.firstPhysicalLine()).isEqualTo(1);
         assertThat(contract.lastPhysicalLine()).isEqualTo(12);
@@ -37,9 +36,9 @@ class ContractBuilderTest {
 
     @Test
     void rejectsAnArticleChildBeforeArticle() {
-        ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR", "C-001"));
-        builder.accept(line(2, LineType.ACC, "ACC", "ACC-01"));
-        builder.accept(line(3, LineType.OM, "OM", "OM-01"));
+        ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR"));
+        builder.accept(line(2, LineType.ACC, "ACC", "BILL"));
+        builder.accept(line(3, LineType.OM, "OM", "OM-001"));
 
         assertThatThrownBy(() -> builder.accept(line(4, LineType.IKAC, "IKAC")))
                 .isInstanceOf(ContractFormatException.class)
@@ -48,14 +47,13 @@ class ContractBuilderTest {
 
     @Test
     void buildsContractWithoutOptionalFields() {
-        ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR", "C-002"));
-        builder.accept(line(2, LineType.ACC, "ACC", "ACC-02"));
-        builder.accept(line(3, LineType.OM, "OM", "OM-02"));
+        ContractBuilder builder = new ContractBuilder(line(1, LineType.CTR, "CTR"));
+        builder.accept(line(2, LineType.ACC, "ACC", "BILL"));
+        builder.accept(line(3, LineType.OM, "OM", "OM-001"));
         builder.accept(line(4, LineType.ART_N, "ART", "1"));
 
         Contract contract = builder.build();
 
-        assertThat(contract.contractId()).isEqualTo("C-002");
         assertThat(contract.lines()).hasSize(4);
     }
 

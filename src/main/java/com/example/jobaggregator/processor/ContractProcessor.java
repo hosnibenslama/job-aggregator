@@ -24,10 +24,6 @@ public final class ContractProcessor implements ItemProcessor<Contract, Contract
     }
 
     private boolean isValid(Contract contract) {
-        if (contract.contractId() == null || contract.contractId().isBlank()) {
-            return false;
-        }
-
         long accCount = contract.lines().stream()
                 .filter(line -> line.type().name().equals("ACC"))
                 .count();
