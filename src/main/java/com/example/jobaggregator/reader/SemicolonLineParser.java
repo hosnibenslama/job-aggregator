@@ -5,15 +5,20 @@ import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.error.ContractFormatException;
 import com.example.jobaggregator.reader.validator.AccLineValidator;
 import com.example.jobaggregator.reader.validator.ArtLineValidator;
+import com.example.jobaggregator.reader.validator.AvtLineValidator;
+import com.example.jobaggregator.reader.validator.CondLineValidator;
 import com.example.jobaggregator.reader.validator.CtrLineValidator;
+import com.example.jobaggregator.reader.validator.IkacLineValidator;
 import com.example.jobaggregator.reader.validator.LineFieldValidator;
 import com.example.jobaggregator.reader.validator.OffLineValidator;
+import com.example.jobaggregator.reader.validator.OidLineValidator;
 import com.example.jobaggregator.reader.validator.OmLineValidator;
 import com.example.jobaggregator.reader.validator.RolLineValidator;
 import com.example.jobaggregator.reader.validator.TarLineValidator;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.batch.infrastructure.item.file.LineMapper;
 
 /**
@@ -30,19 +35,19 @@ import org.springframework.batch.infrastructure.item.file.LineMapper;
  */
 public final class SemicolonLineParser implements LineMapper<ParsedLine> {
 
-    /**
-     * Registry of per-type field validators.
-     * Line types not listed here (COND, OID, IKAC, AVT, HDR, TRL) pass through without
-     * field-level validation until their specification is finalized.
-     */
-    private static final Map<LineType, LineFieldValidator> VALIDATORS = Map.of(
-            LineType.CTR, CtrLineValidator::validate,
-            LineType.ACC, AccLineValidator::validate,
-            LineType.OM,  OmLineValidator::validate,
-            LineType.OFF, OffLineValidator::validate,
-            LineType.ART, ArtLineValidator::validate,
-            LineType.ROL, RolLineValidator::validate,
-            LineType.TAR, TarLineValidator::validate
+    /** Registry of per-type field validators. Line types not listed (HDR, TRL) pass through. */
+    private static final Map<LineType, LineFieldValidator> VALIDATORS = Map.ofEntries(
+            Map.entry(LineType.CTR,  CtrLineValidator::validate),
+            Map.entry(LineType.ACC,  AccLineValidator::validate),
+            Map.entry(LineType.OM,   OmLineValidator::validate),
+            Map.entry(LineType.OFF,  OffLineValidator::validate),
+            Map.entry(LineType.ART,  ArtLineValidator::validate),
+            Map.entry(LineType.ROL,  RolLineValidator::validate),
+            Map.entry(LineType.TAR,  TarLineValidator::validate),
+            Map.entry(LineType.OID,  OidLineValidator::validate),
+            Map.entry(LineType.IKAC, IkacLineValidator::validate),
+            Map.entry(LineType.COND, CondLineValidator::validate),
+            Map.entry(LineType.AVT,  AvtLineValidator::validate)
     );
 
     @Override

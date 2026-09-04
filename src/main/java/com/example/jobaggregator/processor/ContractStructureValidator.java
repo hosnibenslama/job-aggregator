@@ -1,19 +1,24 @@
 package com.example.jobaggregator.processor;
 
 import com.example.jobaggregator.domain.Contract;
-import com.example.jobaggregator.domain.LineType;
+import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.error.ContractFormatException;
+import com.example.jobaggregator.reader.ContractBlockAssembler;
 import com.example.jobaggregator.writer.ContractRejectWriter;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 /**
- * Validates a {@link Contract} against structural business rules and routes invalid contracts
- * to the reject writer instead of propagating them downstream.
+ * Validates a {@link Contract} block against sequencing grammar and structural
+ * business rules, and routes invalid contracts to the reject writer.
  *
- * <p>A contract is considered valid when it contains at least one of each mandatory
- * line type: {@code ACC}, {@code OM}, and {@code ART}.
+ * <p>Validation is delegated to {@link ContractBlockAssembler}, which enforces:
+ * <ul>
+ *   <li>Line sequencing grammar (which line types may follow a given type)</li>
+ *   <li>Structural prerequisites (e.g. OID requires OM, TAR requires ART)</li>
+ *   <li>Mandatory block content (at least one ACC, OM, ART per contract)</li>
+ * </ul>
  *
  * <p>Returning {@code null} causes Spring Batch to silently skip the item for writing.
  */
@@ -28,30 +33,29 @@ public final class ContractStructureValidator implements ItemProcessor<Contract,
 
     @Override
     public Contract process(Contract item) throws Exception {
-        List<String> violations = collectViolations(item);
-        if (!violations.isEmpty()) {
-            String reason = "Missing required line type(s): " + String.join(", ", violations);
-            rejectWriter.reject(item, reason);
-            return null; // filtered out — not forwarded to the writer
+        try {
+            validateContract(item);
+            return item;
+        } catch (ContractFormatException e) {
+            rejectWriter.reject(item, e.getMessage());
+            return null;
         }
-        return item;
     }
 
     // -----------------------------------------------------------------------
     // Validation
     // -----------------------------------------------------------------------
 
-    private List<String> collectViolations(Contract contract) {
-        List<String> missing = new ArrayList<>();
-
-        boolean hasAcc = contract.lines().stream().anyMatch(l -> l.type() == LineType.ACC);
-        boolean hasOm  = contract.lines().stream().anyMatch(l -> l.type() == LineType.OM);
-        boolean hasArt = contract.lines().stream().anyMatch(l -> l.type() == LineType.ART);
-
-        if (!hasAcc) missing.add("ACC");
-        if (!hasOm)  missing.add("OM");
-        if (!hasArt) missing.add("ART");
-
-        return missing;
+    /**
+     * Replays the block's lines through the assembler to enforce sequencing,
+     * prerequisites, and mandatory-type rules.
+     */
+    private void validateContract(Contract contract) {
+        List<ParsedLine> lines = contract.lines();
+        ContractBlockAssembler assembler = new ContractBlockAssembler(lines.getFirst());
+        for (int i = 1; i < lines.size(); i++) {
+            assembler.accept(lines.get(i));
+        }
+        assembler.build(); // validates mandatory ACC, OM, ART
     }
 }

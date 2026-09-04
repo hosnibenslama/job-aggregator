@@ -6,7 +6,6 @@ import com.example.jobaggregator.processor.ContractStructureValidator;
 import com.example.jobaggregator.reader.ContractBlockReader;
 import com.example.jobaggregator.reader.SemicolonLineParser;
 import com.example.jobaggregator.writer.ContractPersistenceWriter;
-import com.example.jobaggregator.writer.ContractRejectWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -72,8 +71,7 @@ public class ContractImportJobConfig {
     @Bean
     @StepScope
     public ContractBlockReader contractItemReader(
-            SingleItemPeekableItemReader<ParsedLine> peekableLineReader,
-            ContractRejectWriter rejectWriter) {
-        return new ContractBlockReader(peekableLineReader, rejectWriter);
+            SingleItemPeekableItemReader<ParsedLine> peekableLineReader) {
+        return new ContractBlockReader(peekableLineReader);
     }
 }

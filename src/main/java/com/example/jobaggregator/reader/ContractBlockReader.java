@@ -3,41 +3,36 @@ package com.example.jobaggregator.reader;
 import com.example.jobaggregator.domain.Contract;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.domain.ParsedLine;
-import com.example.jobaggregator.error.ContractFormatException;
-import com.example.jobaggregator.writer.ContractRejectWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ItemReader;
 import org.springframework.batch.infrastructure.item.ItemStreamException;
 import org.springframework.batch.infrastructure.item.ItemStreamReader;
 import org.springframework.batch.infrastructure.item.support.SingleItemPeekableItemReader;
 
 /**
- * Spring Batch {@link ItemStreamReader} that aggregates individual parsed lines into
+ * Spring Batch {@link ItemStreamReader} that groups individual parsed lines into
  * {@link Contract} blocks.
  *
- * <h3>Error handling strategy</h3>
- * <p>All exceptions (spec validation failures from the parser, or structural errors from
- * this assembler) are caught internally. The job <em>never stops</em> due to a bad contract:
- * <ol>
- *   <li>The raw lines collected for the failing block are written to the reject writer,
- *       together with the exception message.</li>
- *   <li>The reader drains all remaining lines of that block up to the next
- *       {@code CTR} / {@code TRL} boundary (tolerating further malformed lines).</li>
- *   <li>Processing resumes with the next contract — Spring Batch sees a clean
- *       stream of valid {@link Contract} items.</li>
- * </ol>
+ * <p>Grouping rule: a new block starts on every {@code CTR} line. Every following
+ * line belongs to the current block until the next {@code CTR}, {@code TRL}, or EOF
+ * is peeked. Header ({@code HDR}) and trailer ({@code TRL}) lines are skipped.</p>
+ *
+ * <p>This reader is responsible <em>only</em> for grouping. Structural validation
+ * (line sequencing, mandatory types, business rules) and rejection of invalid
+ * blocks are handled downstream by the processor.</p>
  */
 public class ContractBlockReader implements ItemStreamReader<Contract> {
 
-    private final SingleItemPeekableItemReader<ParsedLine> lineReader;
-    private final ContractRejectWriter rejectWriter;
+    private final SingleItemPeekableItemReader<ParsedLine> delegate;
 
-    public ContractBlockReader(
-            SingleItemPeekableItemReader<ParsedLine> lineReader,
-            ContractRejectWriter rejectWriter) {
-        this.lineReader = lineReader;
-        this.rejectWriter = rejectWriter;
+    public ContractBlockReader(ItemReader<ParsedLine> lineReader) {
+        this.delegate = new SingleItemPeekableItemReader<>(lineReader);
+    }
+
+    public ContractBlockReader(SingleItemPeekableItemReader<ParsedLine> peekableLineReader) {
+        this.delegate = peekableLineReader;
     }
 
     // -----------------------------------------------------------------------
@@ -46,41 +41,30 @@ public class ContractBlockReader implements ItemStreamReader<Contract> {
 
     @Override
     public Contract read() throws Exception {
-        while (true) {
-            ParsedLine ctrLine = findNextCtrOrEnd();
-            if (ctrLine == null) {
-                return null; // TRL reached or EOF
-            }
-
-            List<String> rawLines = new ArrayList<>();
-            rawLines.add(ctrLine.raw());
-
-            try {
-                ContractBlockAssembler assembler = new ContractBlockAssembler(ctrLine);
-                aggregateRestOfBlock(assembler, rawLines);
-                return assembler.build();
-            } catch (Exception e) {
-                String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-                rejectWriter.reject(rawLines, reason);
-                drainToNextBoundary();
-                // loop: attempt to read the next contract
-            }
+        ParsedLine ctrLine = skipToCtr();
+        if (ctrLine == null) {
+            return null;
         }
+
+        List<ParsedLine> lines = new ArrayList<>();
+        lines.add(ctrLine);
+        collectUntilNextBoundary(lines);
+        return new Contract(lines);
     }
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
-        lineReader.open(executionContext);
+        delegate.open(executionContext);
     }
 
     @Override
     public void update(ExecutionContext executionContext) throws ItemStreamException {
-        lineReader.update(executionContext);
+        delegate.update(executionContext);
     }
 
     @Override
     public void close() throws ItemStreamException {
-        lineReader.close();
+        delegate.close();
     }
 
     // -----------------------------------------------------------------------
@@ -88,71 +72,33 @@ public class ContractBlockReader implements ItemStreamReader<Contract> {
     // -----------------------------------------------------------------------
 
     /**
-     * Scans forward until a {@code CTR} line (start of a contract block), a {@code TRL}
-     * line (end of file marker), or physical EOF ({@code null} from the reader).
+     * Reads lines until a {@code CTR} is found, skipping {@code HDR} lines.
+     * Returns {@code null} on {@code TRL} or EOF.
      */
-    private ParsedLine findNextCtrOrEnd() throws Exception {
-        while (true) {
-            ParsedLine line;
-            try {
-                line = lineReader.read();
-            } catch (ContractFormatException e) {
-                // Malformed line at the top level — write as single-line reject and keep scanning
-                rejectWriter.reject(List.of("# [malformed line]"), e.getMessage());
-                continue;
+    private ParsedLine skipToCtr() throws Exception {
+        ParsedLine line = delegate.read();
+        while (line != null && line.type() != LineType.CTR) {
+            if (line.type() == LineType.TRL) {
+                return null;
             }
-
-            if (line == null) return null;
-
-            switch (line.type()) {
-                case HDR  -> { /* silently skip header */ }
-                case TRL  -> { return null; }
-                case CTR  -> { return line; }
-                default   -> {
-                    // Unexpected line type at the contract boundary
-                    rejectWriter.reject(List.of(line.raw()), "Unexpected line type at contract boundary: " + line.type());
-                }
-            }
+            line = delegate.read();
         }
+        return line;
     }
 
     /**
-     * Peeks at successive lines and appends them to the assembler and the raw-line list
-     * until the next contract boundary ({@code CTR} / {@code TRL}) or EOF.
+     * Peeks successive lines and appends them to the target list until
+     * the next block boundary ({@code CTR} / {@code TRL}) or EOF.
      */
-    private void aggregateRestOfBlock(ContractBlockAssembler assembler, List<String> rawLines)
-            throws Exception {
-        while (true) {
-            ParsedLine peeked = lineReader.peek();
-            if (peeked == null) break;
-
-            LineType nextType = peeked.type();
-            if (nextType == LineType.CTR || nextType == LineType.TRL) break;
-            if (nextType == LineType.HDR) {
-                throw new ContractFormatException(peeked.lineNumber(), null,
-                        "HDR is not allowed inside a contract block");
-            }
-
-            ParsedLine line = lineReader.read();
-            rawLines.add(line.raw());
-            assembler.accept(line);
+    private void collectUntilNextBoundary(List<ParsedLine> target) throws Exception {
+        ParsedLine next = delegate.peek();
+        while (next != null && !isBoundary(next)) {
+            target.add(delegate.read());
+            next = delegate.peek();
         }
     }
 
-    /**
-     * Consumes lines until the reader is positioned at the next contract boundary.
-     */
-    private void drainToNextBoundary() {
-        while (true) {
-            try {
-                ParsedLine peeked = lineReader.peek();
-                if (peeked == null) return;
-                LineType t = peeked.type();
-                if (t == LineType.CTR || t == LineType.TRL) return;
-                lineReader.read(); // consume the non-boundary line
-            } catch (Exception e) {
-                // Mapping failure: underlying reader already advanced; try next line
-            }
-        }
+    private static boolean isBoundary(ParsedLine line) {
+        return line.type() == LineType.CTR || line.type() == LineType.TRL;
     }
 }
