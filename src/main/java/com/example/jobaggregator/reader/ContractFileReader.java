@@ -4,56 +4,68 @@ import com.example.jobaggregator.domain.BusinessLine;
 import com.example.jobaggregator.domain.Contract;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.error.ContractFormatException;
+import com.example.jobaggregator.writer.InvalidContractFileWriter;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.batch.infrastructure.item.ItemStreamException;
 import org.springframework.batch.infrastructure.item.ItemStreamReader;
 import org.springframework.batch.infrastructure.item.support.SingleItemPeekableItemReader;
 
+/**
+ * Spring Batch {@link ItemStreamReader} that aggregates individual business lines into
+ * {@link Contract} blocks.
+ *
+ * <h3>Error handling strategy</h3>
+ * <p>All exceptions (spec validation failures from the mapper, or structural errors from
+ * this reader) are caught internally. The job <em>never stops</em> due to a bad contract:
+ * <ol>
+ *   <li>The raw lines collected for the failing block are written to the reject file,
+ *       together with the exception message.</li>
+ *   <li>The reader drains all remaining lines of that block up to the next
+ *       {@code CTR} / {@code TRL} boundary (tolerating further malformed lines).</li>
+ *   <li>Processing resumes with the next contract — Spring Batch sees a clean
+ *       stream of valid {@link Contract} items and is never notified of the skip.</li>
+ * </ol>
+ */
 public class ContractFileReader implements ItemStreamReader<Contract> {
 
     private final SingleItemPeekableItemReader<BusinessLine> lineReader;
+    private final InvalidContractFileWriter rejectWriter;
 
-    public ContractFileReader(SingleItemPeekableItemReader<BusinessLine> lineReader) {
+    public ContractFileReader(
+            SingleItemPeekableItemReader<BusinessLine> lineReader,
+            InvalidContractFileWriter rejectWriter) {
         this.lineReader = lineReader;
+        this.rejectWriter = rejectWriter;
     }
+
+    // -----------------------------------------------------------------------
+    // ItemStreamReader
+    // -----------------------------------------------------------------------
 
     @Override
     public Contract read() throws Exception {
-        BusinessLine line;
+        while (true) {
+            BusinessLine ctrLine = findNextCtrOrEnd();
+            if (ctrLine == null) {
+                return null; // TRL reached or EOF
+            }
 
-        while ((line = lineReader.read()) != null) {
-            if (line.type() == LineType.HDR) {
-                continue;
+            List<String> rawLines = new ArrayList<>();
+            rawLines.add(ctrLine.raw());
+
+            try {
+                ContractBuilder builder = new ContractBuilder(ctrLine);
+                aggregateRestOfBlock(builder, rawLines);
+                return builder.build();
+            } catch (Exception e) {
+                String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+                rejectWriter.reject(rawLines, reason);
+                drainToNextBoundary();
+                // loop: attempt to read the next contract
             }
-            if (line.type() == LineType.TRL) {
-                return null;
-            }
-            if (line.type() == LineType.CTR) {
-                break;
-            }
-            throw new ContractFormatException(line.lineNumber(), null,
-                    "Expected CTR at a contract boundary but found " + line.type());
         }
-
-        if (line == null) {
-            return null;
-        }
-
-        ContractBuilder builder = new ContractBuilder(line);
-
-        while (lineReader.peek() != null) {
-            LineType nextType = lineReader.peek().type();
-            if (nextType == LineType.CTR || nextType == LineType.TRL) {
-                break;
-            }
-            if (nextType == LineType.HDR) {
-                throw new ContractFormatException(lineReader.peek().lineNumber(), null,
-                        "HDR is not allowed inside a contract");
-            }
-            builder.accept(lineReader.read());
-        }
-
-        return builder.build();
     }
 
     @Override
@@ -69,5 +81,94 @@ public class ContractFileReader implements ItemStreamReader<Contract> {
     @Override
     public void close() throws ItemStreamException {
         lineReader.close();
+    }
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * Scans forward until a {@code CTR} line (start of a contract block), a {@code TRL}
+     * line (end of file marker), or physical EOF ({@code null} from the reader).
+     *
+     * <p>Stray lines at the top level (neither HDR nor TRL nor CTR) are individually
+     * rejected and scanning continues.
+     *
+     * @return the first {@code CTR} {@link BusinessLine}, or {@code null} if the input is exhausted
+     */
+    private BusinessLine findNextCtrOrEnd() throws Exception {
+        while (true) {
+            BusinessLine line;
+            try {
+                line = lineReader.read();
+            } catch (ContractFormatException e) {
+                // Malformed line at the top level — write as single-line reject and keep scanning
+                rejectWriter.reject(List.of("# [malformed line]"), e.getMessage());
+                continue;
+            }
+
+            if (line == null) return null;
+
+            switch (line.type()) {
+                case HDR  -> { /* silently skip header */ }
+                case TRL  -> { return null; }
+                case CTR  -> { return line; }
+                default   -> {
+                    // Unexpected line type at the contract boundary
+                    rejectWriter.reject(
+                            List.of(line.raw()),
+                            "Unexpected line type at contract boundary: " + line.type());
+                }
+            }
+        }
+    }
+
+    /**
+     * Peeks at successive lines and appends them to the builder and the raw-line list
+     * until the next contract boundary ({@code CTR} / {@code TRL}) or EOF.
+     *
+     * <p>If {@code peek()} throws (a line fails mapping), the exception propagates to the
+     * caller's try-catch in {@link #read()}, which then rejects the whole block.
+     */
+    private void aggregateRestOfBlock(ContractBuilder builder, List<String> rawLines)
+            throws Exception {
+        while (true) {
+            BusinessLine peeked = lineReader.peek(); // may throw ContractFormatException
+            if (peeked == null) break;
+
+            LineType nextType = peeked.type();
+            if (nextType == LineType.CTR || nextType == LineType.TRL) break;
+            if (nextType == LineType.HDR) {
+                throw new ContractFormatException(peeked.lineNumber(), null,
+                        "HDR is not allowed inside a contract block");
+            }
+
+            BusinessLine line = lineReader.read();
+            rawLines.add(line.raw());
+            builder.accept(line);
+        }
+    }
+
+    /**
+     * Consumes lines until the reader is positioned at the next contract boundary
+     * ({@code CTR} / {@code TRL} in the peek buffer, or EOF).
+     *
+     * <p>Tolerates mapping failures on individual lines — when {@code peek()} throws, the
+     * underlying {@link org.springframework.batch.infrastructure.item.file.FlatFileItemReader}
+     * has already advanced past that physical line, so the next {@code peek()} attempts
+     * the following line. This loop always terminates at a boundary or EOF.
+     */
+    private void drainToNextBoundary() {
+        while (true) {
+            try {
+                BusinessLine peeked = lineReader.peek();
+                if (peeked == null) return;
+                LineType t = peeked.type();
+                if (t == LineType.CTR || t == LineType.TRL) return;
+                lineReader.read(); // consume the non-boundary line
+            } catch (Exception e) {
+                // Mapping failure: underlying reader already advanced; try next line
+            }
+        }
     }
 }

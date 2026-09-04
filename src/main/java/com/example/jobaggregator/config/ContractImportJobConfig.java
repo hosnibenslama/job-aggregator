@@ -6,6 +6,7 @@ import com.example.jobaggregator.processor.ContractProcessor;
 import com.example.jobaggregator.reader.BusinessLineMapper;
 import com.example.jobaggregator.reader.ContractFileReader;
 import com.example.jobaggregator.writer.ContractJdbcWriter;
+import com.example.jobaggregator.writer.InvalidContractFileWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -70,7 +71,9 @@ public class ContractImportJobConfig {
 
     @Bean
     @StepScope
-    public ContractFileReader contractItemReader(SingleItemPeekableItemReader<BusinessLine> peekableLineReader) {
-        return new ContractFileReader(peekableLineReader);
+    public ContractFileReader contractItemReader(
+            SingleItemPeekableItemReader<BusinessLine> peekableLineReader,
+            InvalidContractFileWriter rejectWriter) {
+        return new ContractFileReader(peekableLineReader, rejectWriter);
     }
 }

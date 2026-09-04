@@ -1,53 +1,57 @@
 package com.example.jobaggregator.processor;
 
 import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.writer.InvalidContractFileWriter;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Validates a {@link Contract} against business rules and routes invalid contracts
+ * to the reject file instead of propagating them downstream.
+ *
+ * <p>A contract is considered valid when it contains at least one of each mandatory
+ * line type: {@code ACC}, {@code OM}, and {@code ART}.
+ *
+ * <p>Returning {@code null} causes Spring Batch to silently skip the item for writing.
+ */
 @Component
 public final class ContractProcessor implements ItemProcessor<Contract, Contract> {
 
-    private final InvalidContractFileWriter invalidWriter;
+    private final InvalidContractFileWriter rejectWriter;
 
-    public ContractProcessor(InvalidContractFileWriter invalidWriter) {
-        this.invalidWriter = invalidWriter;
+    public ContractProcessor(InvalidContractFileWriter rejectWriter) {
+        this.rejectWriter = rejectWriter;
     }
 
     @Override
     public Contract process(Contract item) throws Exception {
-        if (!isValid(item)) {
-            invalidWriter.write(item);
-            return null;
+        List<String> violations = collectViolations(item);
+        if (!violations.isEmpty()) {
+            String reason = "Missing required line type(s): " + String.join(", ", violations);
+            rejectWriter.reject(item, reason);
+            return null; // filtered out — not forwarded to the writer
         }
         return item;
     }
 
-    private boolean isValid(Contract contract) {
-        long accCount = contract.lines().stream()
-                .filter(line -> line.type().name().equals("ACC"))
-                .count();
+    // -----------------------------------------------------------------------
+    // Validation
+    // -----------------------------------------------------------------------
 
-        if (accCount < 1) {
-            return false;
-        }
+    private List<String> collectViolations(Contract contract) {
+        List<String> missing = new ArrayList<>();
 
-        long omCount = contract.lines().stream()
-                .filter(line -> line.type().name().equals("OM"))
-                .count();
+        boolean hasAcc = contract.lines().stream().anyMatch(l -> l.type() == LineType.ACC);
+        boolean hasOm  = contract.lines().stream().anyMatch(l -> l.type() == LineType.OM);
+        boolean hasArt = contract.lines().stream().anyMatch(l -> l.type() == LineType.ART);
 
-        if (omCount < 1) {
-            return false;
-        }
+        if (!hasAcc) missing.add("ACC");
+        if (!hasOm)  missing.add("OM");
+        if (!hasArt) missing.add("ART");
 
-        long artCount = contract.lines().stream()
-                .filter(line -> line.type().name().equals("ART"))
-                .count();
-
-        if (artCount < 1) {
-            return false;
-        }
-
-        return true;
+        return missing;
     }
 }
