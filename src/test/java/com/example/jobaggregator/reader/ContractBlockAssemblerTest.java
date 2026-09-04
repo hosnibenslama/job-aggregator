@@ -55,6 +55,35 @@ class ContractBlockAssemblerTest {
         assertThat(contract.lines()).hasSize(4);
     }
 
+    @Test
+    void rejectsOidBeforeAnyOm() {
+        ContractBlockAssembler assembler = new ContractBlockAssembler(line(1, LineType.CTR, "CTR"));
+        assembler.accept(line(2, LineType.ACC, "ACC", "BILL"));
+
+        assertThatThrownBy(() -> assembler.accept(line(3, LineType.OID, "OID")))
+                .isInstanceOf(ContractFormatException.class)
+                .hasMessageContaining("OID");
+    }
+
+    @Test
+    void rejectsMissingAccInBuild() {
+        ContractBlockAssembler assembler = new ContractBlockAssembler(line(1, LineType.CTR, "CTR"));
+
+        assertThatThrownBy(assembler::build)
+                .isInstanceOf(ContractFormatException.class)
+                .hasMessageContaining("ACC");
+    }
+
+    @Test
+    void rejectsMissingOmInBuild() {
+        ContractBlockAssembler assembler = new ContractBlockAssembler(line(1, LineType.CTR, "CTR"));
+        assembler.accept(line(2, LineType.ACC, "ACC", "BILL"));
+
+        assertThatThrownBy(assembler::build)
+                .isInstanceOf(ContractFormatException.class)
+                .hasMessageContaining("OM");
+    }
+
     private ParsedLine line(long number, LineType type, String... fields) {
         return new ParsedLine(number, type, String.join(";", fields), List.of(fields));
     }

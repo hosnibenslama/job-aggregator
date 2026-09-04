@@ -29,10 +29,12 @@ class SemicolonLineParserTest {
     }
 
     @Test
-    void rejectsUnknownLineType() {
-        assertThatThrownBy(() -> mapper.mapLine("XYZ;data", 1))
-                .isInstanceOf(ContractFormatException.class)
-                .hasMessageContaining("Unknown line type");
+    void unknownLineTypeReturnsPoisonLine() {
+        ParsedLine line = mapper.mapLine("XYZ;data", 1);
+
+        assertThat(line.type()).isEqualTo(LineType.UNKNOWN);
+        assertThat(line.lineNumber()).isEqualTo(1);
+        assertThat(line.raw()).isEqualTo("XYZ;data");
     }
 
     // =========================================================================
@@ -443,6 +445,88 @@ class SemicolonLineParserTest {
         void ignoresBlankOptionalFields() {
             ParsedLine line = mapper.mapLine("TAR;;;;;;;;;;;;;;;;;;;;;", 1);
             assertThat(line.type()).isEqualTo(LineType.TAR);
+        }
+    }
+
+    // =========================================================================
+    // AVT — section 6
+    // =========================================================================
+
+    @Nested
+    class AvtValidation {
+
+        @Test
+        void parsesCode1WithIdOpra() {
+            ParsedLine line = mapper.mapLine("AVT;OPRA-000000000001;2026-01-01T00:00:00.000000Z;;1;;", 1);
+            assertThat(line.type()).isEqualTo(LineType.AVT);
+            assertThat(line.field(1)).isEqualTo("OPRA-000000000001");
+            assertThat(line.field(4)).isEqualTo("1");
+        }
+
+        @Test
+        void parsesCode2WithValeurAndDevise() {
+            ParsedLine line = mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;EUR", 1);
+            assertThat(line.type()).isEqualTo(LineType.AVT);
+            assertThat(line.field(4)).isEqualTo("2");
+            assertThat(line.field(5)).isEqualTo("50.00");
+            assertThat(line.field(6)).isEqualTo("EUR");
+        }
+
+        @Test
+        void rejectsTooFewFields() {
+            assertThatThrownBy(() -> mapper.mapLine("AVT;OPRA;2026-01-01T00:00:00.000000Z;", 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("5 fields");
+        }
+
+        @Test
+        void rejectsBlankDateDebut() {
+            assertThatThrownBy(() -> mapper.mapLine("AVT;OPRA;;2026-12-31T00:00:00.000000Z;1;;", 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("dateDebut");
+        }
+
+        @Test
+        void rejectsInvalidCodeAvantage() {
+            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;5;;", 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("codeAvantage");
+        }
+
+        @Test
+        void rejectsCode1WithoutIdOpra() {
+            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;1;;", 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("idOpraAvantage");
+        }
+
+        @Test
+        void rejectsCode2WithoutValeurAvantage() {
+            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;2;;", 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("valeurAvantage");
+        }
+
+        @Test
+        void rejectsValeurAvantageWithoutDevise() {
+            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;", 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("deviseAvantage");
+        }
+
+        @Test
+        void rejectsDeviseLongerThanThreeChars() {
+            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;EURO", 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("deviseAvantage");
+        }
+
+        @Test
+        void acceptsCode3And4WithValeurAndDevise() {
+            for (String code : List.of("3", "4")) {
+                ParsedLine line = mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;" + code + ";10.00;USD", 1);
+                assertThat(line.field(4)).isEqualTo(code);
+            }
         }
     }
 

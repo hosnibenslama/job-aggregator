@@ -64,8 +64,9 @@ public final class SemicolonLineParser implements LineMapper<ParsedLine> {
 
         LineType type = LineType.determineFromFields(fields.toArray(String[]::new));
         if (type == LineType.UNKNOWN) {
-            throw new ContractFormatException(lineNumber, null,
-                    "Unknown line type: " + fields.getFirst());
+            // Return a poison line instead of throwing — allows the contract block
+            // to be assembled and rejected as a whole by the processor
+            return new ParsedLine(lineNumber, LineType.UNKNOWN, line, fields);
         }
 
         LineFieldValidator validator = VALIDATORS.get(type);

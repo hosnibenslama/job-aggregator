@@ -34,6 +34,7 @@ public final class ContractStructureValidator implements ItemProcessor<Contract,
     @Override
     public Contract process(Contract item) throws Exception {
         try {
+            checkForUnknownLines(item);
             validateContract(item);
             return item;
         } catch (ContractFormatException e) {
@@ -45,6 +46,20 @@ public final class ContractStructureValidator implements ItemProcessor<Contract,
     // -----------------------------------------------------------------------
     // Validation
     // -----------------------------------------------------------------------
+
+    /**
+     * Rejects contracts containing lines that failed to parse (marked as UNKNOWN).
+     * This ensures that contracts with typos like "CTTR" instead of "CTR" are
+     * rejected to the file rather than silently skipped.
+     */
+    private void checkForUnknownLines(Contract contract) {
+        for (ParsedLine line : contract.lines()) {
+            if (line.type() == com.example.jobaggregator.domain.LineType.UNKNOWN) {
+                throw new ContractFormatException(line.lineNumber(), null,
+                        "Unparseable line: " + line.raw());
+            }
+        }
+    }
 
     /**
      * Replays the block's lines through the assembler to enforce sequencing,

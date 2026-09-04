@@ -178,7 +178,7 @@ public final class ContractBlockAssembler {
                     LineType.ACC,
                     LineType.OID);
 
-            default -> EnumSet.noneOf(LineType.class);
+            default -> throw new IllegalStateException("No grammar rule for LineType: " + type);
         };
     }
 
