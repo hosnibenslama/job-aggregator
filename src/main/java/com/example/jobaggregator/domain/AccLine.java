@@ -13,7 +13,7 @@ package com.example.jobaggregator.domain;
  */
 public record AccLine(String subType, String bic, String iban, String rib) {
 
-    public static AccLine from(BusinessLine line) {
+    public static AccLine from(ParsedLine line) {
         if (line.type() != LineType.ACC) {
             throw new IllegalArgumentException("Expected ACC line but got: " + line.type());
         }

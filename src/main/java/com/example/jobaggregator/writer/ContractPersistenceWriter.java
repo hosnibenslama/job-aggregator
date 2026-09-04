@@ -1,8 +1,8 @@
 package com.example.jobaggregator.writer;
 
-import com.example.jobaggregator.domain.BusinessLine;
 import com.example.jobaggregator.domain.Contract;
 import com.example.jobaggregator.domain.CtrLine;
+import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.persistence.ContractEntity;
 import com.example.jobaggregator.persistence.ContractEntityRepository;
 import com.example.jobaggregator.persistence.ContractLineEntity;
@@ -17,14 +17,14 @@ import org.springframework.stereotype.Component;
  *
  * <p>Each {@code save()} call on {@link ContractEntityRepository} inserts one row
  * into {@code contracts} and batch-inserts all child rows into {@code contract_lines}
- * in a single transaction — no manual key propagation required.
+ * in a single transaction.
  */
 @Component
-public class ContractJdbcWriter implements ItemWriter<Contract> {
+public class ContractPersistenceWriter implements ItemWriter<Contract> {
 
     private final ContractEntityRepository repository;
 
-    public ContractJdbcWriter(ContractEntityRepository repository) {
+    public ContractPersistenceWriter(ContractEntityRepository repository) {
         this.repository = repository;
     }
 
@@ -64,7 +64,7 @@ public class ContractJdbcWriter implements ItemWriter<Contract> {
                 lineEntities);
     }
 
-    private ContractLineEntity toLineEntity(BusinessLine line) {
+    private ContractLineEntity toLineEntity(ParsedLine line) {
         return new ContractLineEntity(
                 line.lineNumber(),
                 line.type().name(),

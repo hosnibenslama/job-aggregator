@@ -1,7 +1,7 @@
 package com.example.jobaggregator.writer;
 
-import com.example.jobaggregator.domain.BusinessLine;
 import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ParsedLine;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.io.BufferedWriter;
@@ -22,26 +22,16 @@ import org.springframework.stereotype.Component;
  * # REJECTED: &lt;reason&gt;
  * CTR;EUR;16;...
  *   ACC;BILL;...
- *
  * </pre>
- *
- * <p>Rejections come from two sources:
- * <ul>
- *   <li><b>Read phase</b>: a line fails spec validation (malformed field), caught in
- *       {@link com.example.jobaggregator.reader.ContractFileReader}</li>
- *   <li><b>Process phase</b>: a structurally valid block fails business rules (e.g. missing
- *       ACC / OM / ART line), caught in
- *       {@link com.example.jobaggregator.processor.ContractProcessor}</li>
- * </ul>
  */
 @Component
-public final class InvalidContractFileWriter {
+public class RejectedContractFileWriter implements ContractRejectWriter {
 
     private final Path rejectFile;
     private final Charset charset;
     private BufferedWriter writer;
 
-    public InvalidContractFileWriter(
+    public RejectedContractFileWriter(
             @Value("${contract.import.invalid-file:/data/output/invalid-contracts.dat}")
             String rejectFile,
             @Value("${contract.import.charset:UTF-8}")
@@ -65,24 +55,18 @@ public final class InvalidContractFileWriter {
     }
 
     // -----------------------------------------------------------------------
-    // Public API
+    // ContractRejectWriter implementation
     // -----------------------------------------------------------------------
 
-    /**
-     * Rejects a fully-built {@link Contract} with the given reason.
-     * Used by the processor for business-rule violations.
-     */
+    @Override
     public synchronized void reject(Contract contract, String reason) throws IOException {
         List<String> rawLines = contract.lines().stream()
-                .map(BusinessLine::raw)
+                .map(ParsedLine::raw)
                 .toList();
         reject(rawLines, reason);
     }
 
-    /**
-     * Rejects a list of raw text lines (partial or complete contract block) with the given reason.
-     * Used by the reader when a {@code ContractFormatException} is thrown during mapping.
-     */
+    @Override
     public synchronized void reject(List<String> rawLines, String reason) throws IOException {
         writer.write("# REJECTED: " + reason);
         writer.newLine();

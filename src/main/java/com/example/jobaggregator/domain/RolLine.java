@@ -16,7 +16,7 @@ package com.example.jobaggregator.domain;
  */
 public record RolLine(String role, String brand, String scope, String holderId, String ikpi) {
 
-    public static RolLine from(BusinessLine line) {
+    public static RolLine from(ParsedLine line) {
         if (line.type() != LineType.ROL) {
             throw new IllegalArgumentException("Expected ROL line but got: " + line.type());
         }

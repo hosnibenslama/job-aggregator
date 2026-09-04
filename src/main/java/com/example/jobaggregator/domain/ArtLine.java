@@ -10,7 +10,7 @@ package com.example.jobaggregator.domain;
  */
 public record ArtLine(int sequentialIndex) {
 
-    public static ArtLine from(BusinessLine line) {
+    public static ArtLine from(ParsedLine line) {
         if (line.type() != LineType.ART) {
             throw new IllegalArgumentException("Expected ART line but got: " + line.type());
         }

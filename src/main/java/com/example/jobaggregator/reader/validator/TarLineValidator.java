@@ -1,6 +1,6 @@
 package com.example.jobaggregator.reader.validator;
 
-import static com.example.jobaggregator.reader.validator.LineValidationSupport.*;
+import static com.example.jobaggregator.reader.validator.FieldConstraints.*;
 
 import java.util.List;
 import java.util.Set;

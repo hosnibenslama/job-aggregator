@@ -41,10 +41,10 @@ public record CtrLine(
         String media) {
 
     /**
-     * Extracts a typed {@code CtrLine} from a raw {@link BusinessLine} of type CTR.
-     * Assumes the line has already been validated by {@code BusinessLineMapper}.
+     * Extracts a typed {@code CtrLine} from a raw {@link ParsedLine} of type CTR.
+     * Assumes the line has already been validated by {@code SemicolonLineParser}.
      */
-    public static CtrLine from(BusinessLine line) {
+    public static CtrLine from(ParsedLine line) {
         if (line.type() != LineType.CTR) {
             throw new IllegalArgumentException("Expected CTR line but got: " + line.type());
         }

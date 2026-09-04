@@ -1,12 +1,12 @@
 package com.example.jobaggregator.config;
 
-import com.example.jobaggregator.domain.BusinessLine;
 import com.example.jobaggregator.domain.Contract;
-import com.example.jobaggregator.processor.ContractProcessor;
-import com.example.jobaggregator.reader.BusinessLineMapper;
-import com.example.jobaggregator.reader.ContractFileReader;
-import com.example.jobaggregator.writer.ContractJdbcWriter;
-import com.example.jobaggregator.writer.InvalidContractFileWriter;
+import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.processor.ContractStructureValidator;
+import com.example.jobaggregator.reader.ContractBlockReader;
+import com.example.jobaggregator.reader.SemicolonLineParser;
+import com.example.jobaggregator.writer.ContractPersistenceWriter;
+import com.example.jobaggregator.writer.ContractRejectWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -46,9 +46,9 @@ public class ContractImportJobConfig {
     public Step contractImportStep(
             JobRepository jobRepository,
             PlatformTransactionManager transactionManager,
-            ContractFileReader contractItemReader,
-            ContractProcessor processor,
-            ContractJdbcWriter writer) {
+            ContractBlockReader contractItemReader,
+            ContractStructureValidator processor,
+            ContractPersistenceWriter writer) {
         return new StepBuilder("contractImportStep", jobRepository)
                 .<Contract, Contract>chunk(100, transactionManager)
                 .reader(contractItemReader)
@@ -59,8 +59,8 @@ public class ContractImportJobConfig {
 
     @Bean
     @StepScope
-    public SingleItemPeekableItemReader<BusinessLine> peekableLineReader() {
-        FlatFileItemReader<BusinessLine> flatFileReader = new FlatFileItemReader<>(new BusinessLineMapper());
+    public SingleItemPeekableItemReader<ParsedLine> peekableLineReader() {
+        FlatFileItemReader<ParsedLine> flatFileReader = new FlatFileItemReader<>(new SemicolonLineParser());
         flatFileReader.setResource(new FileSystemResource(inputContractFile));
         flatFileReader.setEncoding(charset.name());
         flatFileReader.setStrict(true);
@@ -71,9 +71,9 @@ public class ContractImportJobConfig {
 
     @Bean
     @StepScope
-    public ContractFileReader contractItemReader(
-            SingleItemPeekableItemReader<BusinessLine> peekableLineReader,
-            InvalidContractFileWriter rejectWriter) {
-        return new ContractFileReader(peekableLineReader, rejectWriter);
+    public ContractBlockReader contractItemReader(
+            SingleItemPeekableItemReader<ParsedLine> peekableLineReader,
+            ContractRejectWriter rejectWriter) {
+        return new ContractBlockReader(peekableLineReader, rejectWriter);
     }
 }

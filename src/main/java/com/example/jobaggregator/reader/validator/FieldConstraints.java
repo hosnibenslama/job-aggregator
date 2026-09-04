@@ -6,14 +6,14 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Static utility methods shared by all per-type {@link LineValidator} implementations.
+ * Static validation constraints shared by all per-type {@link LineFieldValidator} implementations.
  * Not meant to be instantiated.
  */
-public final class LineValidationSupport {
+public final class FieldConstraints {
 
     private static final Pattern HEX_16 = Pattern.compile("[0-9a-fA-F]{16}");
 
-    private LineValidationSupport() {}
+    private FieldConstraints() {}
 
     // -----------------------------------------------------------------------
     // Presence helpers

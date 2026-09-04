@@ -55,7 +55,7 @@ public record TarLine(
         String indicLimiteBasse,
         String limiteBasseMontant) {
 
-    public static TarLine from(BusinessLine line) {
+    public static TarLine from(ParsedLine line) {
         if (line.type() != LineType.TAR) {
             throw new IllegalArgumentException("Expected TAR line but got: " + line.type());
         }

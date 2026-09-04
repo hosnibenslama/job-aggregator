@@ -2,7 +2,10 @@ package com.example.jobaggregator.domain;
 
 import java.util.List;
 
-public record BusinessLine(
+/**
+ * Represents an immutable semicolon-delimited input line parsed from the raw feed.
+ */
+public record ParsedLine(
         long lineNumber,
         LineType type,
         String raw,

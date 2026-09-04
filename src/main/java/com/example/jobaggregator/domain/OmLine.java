@@ -11,7 +11,7 @@ package com.example.jobaggregator.domain;
  */
 public record OmLine(String omId, String businessRelationship) {
 
-    public static OmLine from(BusinessLine line) {
+    public static OmLine from(ParsedLine line) {
         if (line.type() != LineType.OM) {
             throw new IllegalArgumentException("Expected OM line but got: " + line.type());
         }

@@ -2,7 +2,7 @@ package com.example.jobaggregator.partition;
 
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.error.ContractFormatException;
-import com.example.jobaggregator.reader.BusinessLineMapper;
+import com.example.jobaggregator.reader.SemicolonLineParser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class ContractPartitionSplitterTasklet implements Tasklet {
     private final Path outputDirectory;
     private final int requestedPartitions;
     private final Charset charset;
-    private final BusinessLineMapper mapper = new BusinessLineMapper();
+    private final SemicolonLineParser mapper = new SemicolonLineParser();
 
     public ContractPartitionSplitterTasklet(
             Path inputFile,

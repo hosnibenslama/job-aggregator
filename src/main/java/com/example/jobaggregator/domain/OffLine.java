@@ -12,7 +12,7 @@ package com.example.jobaggregator.domain;
  */
 public record OffLine(String offerId, String provider, String personalizedLabel) {
 
-    public static OffLine from(BusinessLine line) {
+    public static OffLine from(ParsedLine line) {
         if (line.type() != LineType.OFF) {
             throw new IllegalArgumentException("Expected OFF line but got: " + line.type());
         }

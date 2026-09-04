@@ -3,7 +3,7 @@ package com.example.jobaggregator.reader;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.example.jobaggregator.domain.BusinessLine;
+import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.error.ContractFormatException;
 import java.util.List;
@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link BusinessLineMapper} covering all spec-defined line type validators.
+ * Unit tests for {@link SemicolonLineParser} covering all spec-defined line type validators.
  */
-class BusinessLineMapperTest {
+class SemicolonLineParserTest {
 
-    private final BusinessLineMapper mapper = new BusinessLineMapper();
+    private final SemicolonLineParser mapper = new SemicolonLineParser();
 
     // =========================================================================
     // General parsing
@@ -48,7 +48,7 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesValidCtrLine() {
-            BusinessLine line = mapper.mapLine(VALID_CTR, 1);
+            ParsedLine line = mapper.mapLine(VALID_CTR, 1);
             assertThat(line.type()).isEqualTo(LineType.CTR);
             assertThat(line.field(1)).isEqualTo("EUR");
             assertThat(line.field(5)).isEqualTo("031030000");
@@ -160,7 +160,7 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesValidAccLine() {
-            BusinessLine line = mapper.mapLine(VALID_ACC, 1);
+            ParsedLine line = mapper.mapLine(VALID_ACC, 1);
             assertThat(line.type()).isEqualTo(LineType.ACC);
             assertThat(line.field(1)).isEqualTo("BILL");
             assertThat(line.field(2)).isEqualTo("BNPAFRPP");
@@ -210,7 +210,7 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesValidOmLine() {
-            BusinessLine line = mapper.mapLine("OM;00058680432692016;000058680432692016", 1);
+            ParsedLine line = mapper.mapLine("OM;00058680432692016;000058680432692016", 1);
             assertThat(line.type()).isEqualTo(LineType.OM);
             assertThat(line.field(1)).isEqualTo("00058680432692016");
             assertThat(line.field(2)).isEqualTo("000058680432692016");
@@ -240,7 +240,7 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesValidOffLine() {
-            BusinessLine line = mapper.mapLine("OFF;OFF-0000000001090;AP00111;Carte VISA PREMIER DI", 1);
+            ParsedLine line = mapper.mapLine("OFF;OFF-0000000001090;AP00111;Carte VISA PREMIER DI", 1);
             assertThat(line.type()).isEqualTo(LineType.OFF);
             assertThat(line.field(1)).isEqualTo("OFF-0000000001090");
             assertThat(line.field(3)).isEqualTo("Carte VISA PREMIER DI");
@@ -248,7 +248,7 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesOffWithoutOptionalLabel() {
-            BusinessLine line = mapper.mapLine("OFF;OFF-0000000001090;AP00111", 1);
+            ParsedLine line = mapper.mapLine("OFF;OFF-0000000001090;AP00111", 1);
             assertThat(line.type()).isEqualTo(LineType.OFF);
         }
 
@@ -276,7 +276,7 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesValidArtLine() {
-            BusinessLine line = mapper.mapLine("ART;5", 1);
+            ParsedLine line = mapper.mapLine("ART;5", 1);
             assertThat(line.type()).isEqualTo(LineType.ART);
             assertThat(line.field(1)).isEqualTo("5");
         }
@@ -314,7 +314,7 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesValidRolLine() {
-            BusinessLine line = mapper.mapLine(VALID_ROL, 1);
+            ParsedLine line = mapper.mapLine(VALID_ROL, 1);
             assertThat(line.type()).isEqualTo(LineType.ROL);
             assertThat(line.field(3)).isEqualTo("PRI");
             assertThat(line.field(4)).isEqualTo("01970013368500000");
@@ -357,7 +357,7 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesMinimalTarLine() {
-            BusinessLine line = mapper.mapLine("TAR", 1);
+            ParsedLine line = mapper.mapLine("TAR", 1);
             assertThat(line.type()).isEqualTo(LineType.TAR);
         }
 
@@ -366,7 +366,7 @@ class BusinessLineMapperTest {
             // formatTarif=001 → tauxTarif + montantBase required
             String tar = "TAR;TARIF_001;001;2026-01-01T00:00:00.000000Z;2026-01-01T00:00:00.000000Z;" +
                          "EUR;1;001;007;001;;10.50;50.00;1.0;;;0;1000.00;1;";
-            BusinessLine line = mapper.mapLine(tar, 1);
+            ParsedLine line = mapper.mapLine(tar, 1);
             assertThat(line.type()).isEqualTo(LineType.TAR);
         }
 
@@ -441,9 +441,10 @@ class BusinessLineMapperTest {
 
         @Test
         void ignoresBlankOptionalFields() {
-            BusinessLine line = mapper.mapLine("TAR;;;;;;;;;;;;;;;;;;;;;", 1);
+            ParsedLine line = mapper.mapLine("TAR;;;;;;;;;;;;;;;;;;;;;", 1);
             assertThat(line.type()).isEqualTo(LineType.TAR);
         }
     }
 
 }
+

@@ -2,15 +2,15 @@ package com.example.jobaggregator.processor;
 
 import com.example.jobaggregator.domain.Contract;
 import com.example.jobaggregator.domain.LineType;
-import com.example.jobaggregator.writer.InvalidContractFileWriter;
+import com.example.jobaggregator.writer.ContractRejectWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 /**
- * Validates a {@link Contract} against business rules and routes invalid contracts
- * to the reject file instead of propagating them downstream.
+ * Validates a {@link Contract} against structural business rules and routes invalid contracts
+ * to the reject writer instead of propagating them downstream.
  *
  * <p>A contract is considered valid when it contains at least one of each mandatory
  * line type: {@code ACC}, {@code OM}, and {@code ART}.
@@ -18,11 +18,11 @@ import org.springframework.stereotype.Component;
  * <p>Returning {@code null} causes Spring Batch to silently skip the item for writing.
  */
 @Component
-public final class ContractProcessor implements ItemProcessor<Contract, Contract> {
+public final class ContractStructureValidator implements ItemProcessor<Contract, Contract> {
 
-    private final InvalidContractFileWriter rejectWriter;
+    private final ContractRejectWriter rejectWriter;
 
-    public ContractProcessor(InvalidContractFileWriter rejectWriter) {
+    public ContractStructureValidator(ContractRejectWriter rejectWriter) {
         this.rejectWriter = rejectWriter;
     }
 
