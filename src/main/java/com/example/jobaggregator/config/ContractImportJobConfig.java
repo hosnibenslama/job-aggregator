@@ -51,7 +51,8 @@ public class ContractImportJobConfig {
             ContractPersistenceWriter writer,
             ContractFileIntegrityListener integrityListener) {
         return new StepBuilder("contractImportStep", jobRepository)
-                .<Contract, Contract>chunk(100, transactionManager)
+                .<Contract, Contract>chunk(100)
+                .transactionManager(transactionManager)
                 .reader(contractItemReader)
                 .processor(processor)
                 .writer(writer)

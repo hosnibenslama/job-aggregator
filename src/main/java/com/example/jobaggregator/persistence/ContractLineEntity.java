@@ -9,23 +9,10 @@ import org.springframework.data.relational.core.mapping.Table;
  * parent {@link ContractEntity} aggregate.
  */
 @Table("contract_lines")
-public class ContractLineEntity {
+public record ContractLineEntity(@Id Long id, long lineNumber, String lineType, String rawLine) {
 
-    @Id
-    private Long id;
-
-    private long lineNumber;
-    private String lineType;
-    private String rawLine;
-
+    /** Convenience constructor for creating new (unpersisted) line entities. */
     public ContractLineEntity(long lineNumber, String lineType, String rawLine) {
-        this.lineNumber = lineNumber;
-        this.lineType = lineType;
-        this.rawLine = rawLine;
+        this(null, lineNumber, lineType, rawLine);
     }
-
-    public Long getId() { return id; }
-    public long getLineNumber() { return lineNumber; }
-    public String getLineType() { return lineType; }
-    public String getRawLine() { return rawLine; }
 }

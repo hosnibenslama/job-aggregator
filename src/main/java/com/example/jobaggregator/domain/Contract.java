@@ -6,13 +6,10 @@ public record Contract(List<ParsedLine> lines) {
 
     /**
      * Returns the typed representation of the CTR (contract root) line.
-     * Assumes the contract was built correctly and always contains exactly one CTR line at index 0.
+     * CTR is always the first line by construction — accessing it directly
+     * avoids an unnecessary linear scan.
      */
     public CtrLine ctrLine() {
-        return lines.stream()
-                .filter(l -> l.type() == LineType.CTR)
-                .findFirst()
-                .map(CtrLine::from)
-                .orElseThrow(() -> new IllegalStateException("Contract has no CTR line"));
+        return CtrLine.from(lines.getFirst());
     }
 }

@@ -41,48 +41,56 @@ public class ContractEntity {
     @MappedCollection(idColumn = "contract_id")
     private Set<ContractLineEntity> lines;
 
-    // -----------------------------------------------------------------------
-    // Constructor used by ContractWriter
-    // -----------------------------------------------------------------------
-    public ContractEntity(
-            String devise, String state, String motif, String ouDistribution,
-            String ouManagement, String addressId, String businessRelationship,
-            String effectiveDate, String periodeFacturation, String datesFacturation,
-            String xB3TraceId, String xB3SpanId, String userId, String channel, String media,
-            Set<ContractLineEntity> lines) {
-        this.devise = devise;
-        this.state = state;
-        this.motif = motif;
-        this.ouDistribution = ouDistribution;
-        this.ouManagement = ouManagement;
-        this.addressId = addressId;
-        this.businessRelationship = businessRelationship;
-        this.effectiveDate = effectiveDate;
-        this.periodeFacturation = periodeFacturation;
-        this.datesFacturation = datesFacturation;
-        this.xB3TraceId = xB3TraceId;
-        this.xB3SpanId = xB3SpanId;
-        this.userId = userId;
-        this.channel = channel;
-        this.media = media;
-        this.lines = lines;
-    }
+    /** Required by Spring Data JDBC for instantiation. */
+    public ContractEntity() {}
 
     public Long getId() { return id; }
+
+    public void setDevise(String devise) { this.devise = devise; }
     public String getDevise() { return devise; }
+
+    public void setState(String state) { this.state = state; }
     public String getState() { return state; }
+
+    public void setMotif(String motif) { this.motif = motif; }
     public String getMotif() { return motif; }
+
+    public void setOuDistribution(String ouDistribution) { this.ouDistribution = ouDistribution; }
     public String getOuDistribution() { return ouDistribution; }
+
+    public void setOuManagement(String ouManagement) { this.ouManagement = ouManagement; }
     public String getOuManagement() { return ouManagement; }
+
+    public void setAddressId(String addressId) { this.addressId = addressId; }
     public String getAddressId() { return addressId; }
+
+    public void setBusinessRelationship(String businessRelationship) { this.businessRelationship = businessRelationship; }
     public String getBusinessRelationship() { return businessRelationship; }
+
+    public void setEffectiveDate(String effectiveDate) { this.effectiveDate = effectiveDate; }
     public String getEffectiveDate() { return effectiveDate; }
+
+    public void setPeriodeFacturation(String periodeFacturation) { this.periodeFacturation = periodeFacturation; }
     public String getPeriodeFacturation() { return periodeFacturation; }
+
+    public void setDatesFacturation(String datesFacturation) { this.datesFacturation = datesFacturation; }
     public String getDatesFacturation() { return datesFacturation; }
+
+    public void setXB3TraceId(String xB3TraceId) { this.xB3TraceId = xB3TraceId; }
     public String getXB3TraceId() { return xB3TraceId; }
+
+    public void setXB3SpanId(String xB3SpanId) { this.xB3SpanId = xB3SpanId; }
     public String getXB3SpanId() { return xB3SpanId; }
+
+    public void setUserId(String userId) { this.userId = userId; }
     public String getUserId() { return userId; }
+
+    public void setChannel(String channel) { this.channel = channel; }
     public String getChannel() { return channel; }
+
+    public void setMedia(String media) { this.media = media; }
     public String getMedia() { return media; }
+
+    public void setLines(Set<ContractLineEntity> lines) { this.lines = lines; }
     public Set<ContractLineEntity> getLines() { return lines; }
 }

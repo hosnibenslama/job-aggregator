@@ -41,10 +41,9 @@ public final class FieldConstraints {
 
     public static void requireNonBlank(List<String> fields, int index,
                                         String fieldName, String lineType, int lineNumber) {
-        String val = field(fields, index);
-        if (val == null || val.isBlank()) {
+        if (!isPresent(fields, index)) {
             throw new ContractFormatException(lineNumber, null,
-                    lineType + " field " + (index + 1) + " (" + fieldName + ") is required and must not be blank");
+                    fieldLabel(lineType, index, fieldName) + " is required and must not be blank");
         }
     }
 
@@ -53,8 +52,8 @@ public final class FieldConstraints {
         String val = field(fields, index);
         if (val == null || !HEX_16.matcher(val).matches()) {
             throw new ContractFormatException(lineNumber, null,
-                    lineType + " field " + (index + 1) + " (" + fieldName
-                            + ") must be exactly 16 hexadecimal characters, got: " + val);
+                    fieldLabel(lineType, index, fieldName)
+                            + " must be exactly 16 hexadecimal characters, got: " + val);
         }
     }
 
@@ -64,26 +63,23 @@ public final class FieldConstraints {
         String val = field(fields, index);
         if (val == null || !validValues.contains(val)) {
             throw new ContractFormatException(lineNumber, null,
-                    lineType + " field " + (index + 1) + " (" + fieldName
-                            + ") must be one of " + validValues + ", got: " + val);
+                    fieldLabel(lineType, index, fieldName)
+                            + " must be one of " + validValues + ", got: " + val);
         }
     }
 
     public static void requirePositiveInt(List<String> fields, int index,
                                            String fieldName, String lineType, int lineNumber) {
+        requireNonBlank(fields, index, fieldName, lineType, lineNumber);
         String val = field(fields, index);
-        if (val == null || val.isBlank()) {
-            throw new ContractFormatException(lineNumber, null,
-                    lineType + " field " + (index + 1) + " (" + fieldName + ") is required");
-        }
         try {
             if (Integer.parseInt(val) <= 0) {
                 throw new ContractFormatException(lineNumber, null,
-                        lineType + " field " + (index + 1) + " (" + fieldName + ") must be positive, got: " + val);
+                        fieldLabel(lineType, index, fieldName) + " must be positive, got: " + val);
             }
         } catch (NumberFormatException e) {
             throw new ContractFormatException(lineNumber, null,
-                    lineType + " field " + (index + 1) + " (" + fieldName + ") must be an integer, got: " + val);
+                    fieldLabel(lineType, index, fieldName) + " must be an integer, got: " + val, e);
         }
     }
 
@@ -94,13 +90,20 @@ public final class FieldConstraints {
     public static void requireOneOfIfPresent(List<String> fields, int index,
                                               String fieldName, Set<String> validValues,
                                               String lineType, int lineNumber) {
-        if (isPresent(fields, index)) {
-            String val = field(fields, index);
-            if (!validValues.contains(val)) {
-                throw new ContractFormatException(lineNumber, null,
-                        lineType + " field " + (index + 1) + " (" + fieldName
-                                + ") must be one of " + validValues + " when present, got: " + val);
-            }
+        String val = field(fields, index);
+        if (val != null && !val.isBlank() && !validValues.contains(val)) {
+            throw new ContractFormatException(lineNumber, null,
+                    fieldLabel(lineType, index, fieldName)
+                            + " must be one of " + validValues + " when present, got: " + val);
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Internal helpers
+    // -----------------------------------------------------------------------
+
+    /** Builds a consistent field label: {@code "CTR field 2 (idContrat)"}. */
+    private static String fieldLabel(String lineType, int index, String fieldName) {
+        return lineType + " field " + (index + 1) + " (" + fieldName + ")";
     }
 }
