@@ -1,6 +1,7 @@
 package com.example.jobaggregator.processor;
 
 import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.error.ContractFormatException;
 import com.example.jobaggregator.reader.ContractBlockAssembler;
@@ -54,7 +55,7 @@ public final class ContractStructureValidator implements ItemProcessor<Contract,
      */
     private void checkForUnknownLines(Contract contract) {
         for (ParsedLine line : contract.lines()) {
-            if (line.type() == com.example.jobaggregator.domain.LineType.UNKNOWN) {
+            if (line.type() == LineType.UNKNOWN) {
                 throw new ContractFormatException(line.lineNumber(), null,
                         "Unparseable line: " + line.raw());
             }
