@@ -15,6 +15,7 @@ import com.example.jobaggregator.reader.validator.OidLineValidator;
 import com.example.jobaggregator.reader.validator.OmLineValidator;
 import com.example.jobaggregator.reader.validator.RolLineValidator;
 import com.example.jobaggregator.reader.validator.TarLineValidator;
+import com.example.jobaggregator.reader.validator.TrlLineValidator;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,8 @@ public final class SemicolonLineParser implements LineMapper<ParsedLine> {
             Map.entry(LineType.OID,  OidLineValidator::validate),
             Map.entry(LineType.IKAC, IkacLineValidator::validate),
             Map.entry(LineType.COND, CondLineValidator::validate),
-            Map.entry(LineType.AVT,  AvtLineValidator::validate)
+            Map.entry(LineType.AVT,  AvtLineValidator::validate),
+            Map.entry(LineType.TRL,  TrlLineValidator::validate)
     );
 
     @Override

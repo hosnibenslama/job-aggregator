@@ -2,6 +2,7 @@ package com.example.jobaggregator.config;
 
 import com.example.jobaggregator.domain.Contract;
 import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.listener.ContractFileIntegrityListener;
 import com.example.jobaggregator.processor.ContractStructureValidator;
 import com.example.jobaggregator.reader.ContractBlockReader;
 import com.example.jobaggregator.reader.SemicolonLineParser;
@@ -47,12 +48,14 @@ public class ContractImportJobConfig {
             PlatformTransactionManager transactionManager,
             ContractBlockReader contractItemReader,
             ContractStructureValidator processor,
-            ContractPersistenceWriter writer) {
+            ContractPersistenceWriter writer,
+            ContractFileIntegrityListener integrityListener) {
         return new StepBuilder("contractImportStep", jobRepository)
                 .<Contract, Contract>chunk(100, transactionManager)
                 .reader(contractItemReader)
                 .processor(processor)
                 .writer(writer)
+                .listener(integrityListener)
                 .build();
     }
 
