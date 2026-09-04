@@ -363,7 +363,9 @@ class BusinessLineMapperTest {
 
         @Test
         void parsesFullSpecCompliantTarLine() {
-            String tar = "TAR;TARIF_001;001;2026-01-01T00:00:00.000000Z;2026-01-01T00:00:00.000000Z;EUR;1;001;007;001";
+            // formatTarif=001 → tauxTarif + montantBase required
+            String tar = "TAR;TARIF_001;001;2026-01-01T00:00:00.000000Z;2026-01-01T00:00:00.000000Z;" +
+                         "EUR;1;001;007;001;;10.50;50.00;1.0;;;0;1000.00;1;";
             BusinessLine line = mapper.mapLine(tar, 1);
             assertThat(line.type()).isEqualTo(LineType.TAR);
         }
@@ -377,17 +379,71 @@ class BusinessLineMapperTest {
 
         @Test
         void rejectsInvalidFormatTarifWhenPresent() {
-            // fields: TAR, idOpra, typeFrais, dateCreation, dateEffet, devise, indicPaliers, formatTarif
             assertThatThrownBy(() -> mapper.mapLine("TAR;id;001;;;EUR;1;999", 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("formatTarif");
         }
 
         @Test
+        void rejectsInvalidTypeTauxTarifWhenPresent() {
+            // position 11 (index 10)
+            assertThatThrownBy(() -> mapper.mapLine("TAR;id;001;;;;;;007;001;INVALID", 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("typeTauxTarif");
+        }
+
+        @Test
+        void rejectsInvalidTypeUniteWhenPresent() {
+            // No formatTarif (index 7 blank) so no conditional rules fire.
+            // INVALID is placed at index 15 = typeUnite.
+            // TAR(0);id(1);(2);(3);(4);(5);(6);(7-empty);007(8);001(9);(10);(11);(12);(13);(14);INVALID(15)
+            String tar = "TAR;id;;;;;;;007;001;;;;;;INVALID";
+            assertThatThrownBy(() -> mapper.mapLine(tar, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("typeUnite");
+        }
+
+        @Test
+        void rejectsInvalidIndicLimiteHauteWhenPresent() {
+            // position 17 (index 16) = indicLimiteHaute
+            String tar = "TAR;id;001;;;;1;001;007;001;;10.50;50.00;;;;2;1000.00;1;";
+            assertThatThrownBy(() -> mapper.mapLine(tar, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("indicLimiteHaute");
+        }
+
+        @Test
+        void conditionalFormatTarif003RequiresTypeTauxTarif() {
+            // formatTarif=003 (taux) but typeTauxTarif (index 10) is blank
+            String tar = "TAR;id;001;;;;1;003;007;001;";
+            assertThatThrownBy(() -> mapper.mapLine(tar, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("typeTauxTarif");
+        }
+
+        @Test
+        void conditionalFormatTarif001RequiresTauxTarifAndMontantBase() {
+            // formatTarif=001 (forfaitaire) but tauxTarif (index 11) is blank
+            String tar = "TAR;id;001;;;;1;001;007;001;;";
+            assertThatThrownBy(() -> mapper.mapLine(tar, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("tauxTarif");
+        }
+
+        @Test
+        void conditionalFormatTarif002RequiresMontantUniteAndTypeUnite() {
+            // formatTarif=002 (par unité) but montantUnite (index 14) is blank
+            String tar = "TAR;id;001;;;;1;002;007;001;;;;;";
+            assertThatThrownBy(() -> mapper.mapLine(tar, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("montantUnite");
+        }
+
+        @Test
         void ignoresBlankOptionalFields() {
-            // All optional fields blank — must pass without error
-            BusinessLine line = mapper.mapLine("TAR;;;;;;;;;;", 1);
+            BusinessLine line = mapper.mapLine("TAR;;;;;;;;;;;;;;;;;;;;;", 1);
             assertThat(line.type()).isEqualTo(LineType.TAR);
         }
     }
+
 }
