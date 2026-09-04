@@ -1,6 +1,10 @@
 # Build outputs
 /target/
 
+# Compiled class files
+*.class
+/org/
+
 # IDE files
 .idea/
 *.iml
