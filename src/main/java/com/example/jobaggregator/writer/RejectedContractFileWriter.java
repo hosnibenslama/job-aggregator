@@ -1,7 +1,6 @@
 package com.example.jobaggregator.writer;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.ParsedLine;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.io.BufferedWriter;
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Each rejected block is prefixed with a comment line that contains the rejection reason:
  * <pre>
- * # ERROR: Mandatory ACC line missing
+ * # ERROR: &lt;reason&gt;
  * CTR;EUR;16;...
  * </pre>
  *
@@ -61,10 +60,7 @@ public class RejectedContractFileWriter implements ContractRejectWriter {
 
     @Override
     public synchronized void reject(ContractBlock contract, String reason) throws IOException {
-        List<String> rawLines = contract.lines().stream()
-                .map(ParsedLine::raw)
-                .toList();
-        reject(rawLines, reason);
+        reject(contract.rawLines(), reason);
     }
 
     @Override

@@ -1,22 +1,28 @@
 package com.example.jobaggregator.persistence;
 
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
  * Spring Data JDBC aggregate root for a contract.
  *
- * <p>A single {@code save()} call on {@link ContractEntityRepository} will insert
- * into {@code contracts} and batch-insert all child rows into {@code contract_lines}
- * — no manual key management required.
+ * <p>Uses a code-generated {@link UUID} primary key. Implementing {@link Persistable}
+ * with {@code isNew() == true} ensures Spring Data JDBC issues direct INSERT statements
+ * without checking for prior existence, which is critical for high-throughput batch ingestion.
  */
 @Table("contracts")
-public class ContractEntity {
+public class ContractEntity implements Persistable<UUID> {
 
     @Id
-    private Long id;
+    private UUID id;
+
+    @Transient
+    private boolean isNew = true;
 
     // -----------------------------------------------------------------------
     // CTR fields — section 4.2 of the input file specification
@@ -37,14 +43,48 @@ public class ContractEntity {
     private String channel;
     private String media;
 
-    /** All raw business lines belonging to this contract (CTR + children). */
+    // -----------------------------------------------------------------------
+    // Dedicated child entities mapped via contract_id foreign key
+    // -----------------------------------------------------------------------
     @MappedCollection(idColumn = "contract_id")
-    private Set<ContractLineEntity> lines;
+    private Set<ContractAccountEntity> accounts;
 
-    /** Required by Spring Data JDBC for instantiation. */
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractRoleEntity> roles;
+
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractOfferEntity> offers;
+
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractOperationEntity> operations;
+
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractExternalIdEntity> externalIds;
+
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractArticleEntity> articles;
+
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractIkacEntity> ikacLines;
+
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractConditionEntity> conditions;
+
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractTariffEntity> tariffs;
+
+    @MappedCollection(idColumn = "contract_id")
+    private Set<ContractAdvantageEntity> advantages;
+
     public ContractEntity() {}
 
-    public Long getId() { return id; }
+    @Override
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+
+    @Override
+    public boolean isNew() { return isNew; }
+    public void setNew(boolean isNew) { this.isNew = isNew; }
 
     public void setDevise(String devise) { this.devise = devise; }
     public String getDevise() { return devise; }
@@ -91,6 +131,33 @@ public class ContractEntity {
     public void setMedia(String media) { this.media = media; }
     public String getMedia() { return media; }
 
-    public void setLines(Set<ContractLineEntity> lines) { this.lines = lines; }
-    public Set<ContractLineEntity> getLines() { return lines; }
+    public Set<ContractAccountEntity> getAccounts() { return accounts; }
+    public void setAccounts(Set<ContractAccountEntity> accounts) { this.accounts = accounts; }
+
+    public Set<ContractRoleEntity> getRoles() { return roles; }
+    public void setRoles(Set<ContractRoleEntity> roles) { this.roles = roles; }
+
+    public Set<ContractOfferEntity> getOffers() { return offers; }
+    public void setOffers(Set<ContractOfferEntity> offers) { this.offers = offers; }
+
+    public Set<ContractOperationEntity> getOperations() { return operations; }
+    public void setOperations(Set<ContractOperationEntity> operations) { this.operations = operations; }
+
+    public Set<ContractExternalIdEntity> getExternalIds() { return externalIds; }
+    public void setExternalIds(Set<ContractExternalIdEntity> externalIds) { this.externalIds = externalIds; }
+
+    public Set<ContractArticleEntity> getArticles() { return articles; }
+    public void setArticles(Set<ContractArticleEntity> articles) { this.articles = articles; }
+
+    public Set<ContractIkacEntity> getIkacLines() { return ikacLines; }
+    public void setIkacLines(Set<ContractIkacEntity> ikacLines) { this.ikacLines = ikacLines; }
+
+    public Set<ContractConditionEntity> getConditions() { return conditions; }
+    public void setConditions(Set<ContractConditionEntity> conditions) { this.conditions = conditions; }
+
+    public Set<ContractTariffEntity> getTariffs() { return tariffs; }
+    public void setTariffs(Set<ContractTariffEntity> tariffs) { this.tariffs = tariffs; }
+
+    public Set<ContractAdvantageEntity> getAdvantages() { return advantages; }
+    public void setAdvantages(Set<ContractAdvantageEntity> advantages) { this.advantages = advantages; }
 }

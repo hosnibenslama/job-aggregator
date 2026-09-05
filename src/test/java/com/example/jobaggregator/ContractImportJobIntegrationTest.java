@@ -21,6 +21,8 @@ import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.step.StepExecution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import com.example.jobaggregator.persistence.ContractEntity;
+import com.example.jobaggregator.persistence.ContractEntityRepository;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -69,6 +71,7 @@ class ContractImportJobIntegrationTest {
 
     private final JobOperator jobOperator;
     private final Job contractImportJob;
+    private final ContractEntityRepository contractRepository;
 
     @TempDir
     static Path tempDir;
@@ -76,9 +79,11 @@ class ContractImportJobIntegrationTest {
     private Path inputFile;
 
     @Autowired
-    ContractImportJobIntegrationTest(JobOperator jobOperator, Job contractImportJob) {
+    ContractImportJobIntegrationTest(JobOperator jobOperator, Job contractImportJob,
+                                     ContractEntityRepository contractRepository) {
         this.jobOperator = jobOperator;
         this.contractImportJob = contractImportJob;
+        this.contractRepository = contractRepository;
     }
 
     @DynamicPropertySource
@@ -138,6 +143,15 @@ class ContractImportJobIntegrationTest {
             assertThat(step.getReadCount()).isEqualTo(2);
             assertThat(step.getWriteCount()).isEqualTo(2);
             assertThat(step.getFilterCount()).isEqualTo(0);
+
+            // And: Contracts and normalized child entities are persisted in relational tables
+            assertThat(contractRepository.count()).isEqualTo(2);
+            for (ContractEntity entity : contractRepository.findAll()) {
+                assertThat(entity.getId()).isNotNull();
+                assertThat(entity.getAccounts()).hasSize(1);
+                assertThat(entity.getOperations()).hasSize(1);
+                assertThat(entity.getArticles()).hasSize(1);
+            }
         }
 
         @Test
