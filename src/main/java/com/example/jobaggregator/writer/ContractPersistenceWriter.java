@@ -1,6 +1,6 @@
 package com.example.jobaggregator.writer;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.CtrLine;
 import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.persistence.ContractEntity;
@@ -14,13 +14,13 @@ import org.springframework.batch.infrastructure.item.ItemWriter;
 import org.springframework.stereotype.Component;
 
 /**
- * Spring Batch writer that persists {@link Contract} domain objects via Spring Data JDBC.
+ * Spring Batch writer that persists {@link ContractBlock} domain objects via Spring Data JDBC.
  *
  * <p>Each chunk is saved in a single {@code saveAll()} call, allowing Spring Data JDBC
  * to batch the underlying INSERT statements within the chunk's transaction.
  */
 @Component
-public class ContractPersistenceWriter implements ItemWriter<Contract> {
+public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
 
     private final ContractEntityRepository repository;
 
@@ -29,7 +29,7 @@ public class ContractPersistenceWriter implements ItemWriter<Contract> {
     }
 
     @Override
-    public void write(Chunk<? extends Contract> items) {
+    public void write(Chunk<? extends ContractBlock> items) {
         List<ContractEntity> entities = items.getItems().stream()
                 .map(this::toEntity)
                 .toList();
@@ -40,7 +40,7 @@ public class ContractPersistenceWriter implements ItemWriter<Contract> {
     // Mapping: domain model → persistence model
     // -----------------------------------------------------------------------
 
-    private ContractEntity toEntity(Contract contract) {
+    private ContractEntity toEntity(ContractBlock contract) {
         CtrLine ctr = contract.ctrLine();
         Set<ContractLineEntity> lineEntities = contract.lines().stream()
                 .map(this::toLineEntity)

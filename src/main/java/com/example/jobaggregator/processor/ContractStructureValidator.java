@@ -1,6 +1,6 @@
 package com.example.jobaggregator.processor;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.error.ContractFormatException;
@@ -11,7 +11,7 @@ import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 /**
- * Validates a {@link Contract} block against sequencing grammar and structural
+ * Validates a {@link ContractBlock} against sequencing grammar and structural
  * business rules, and routes invalid contracts to the reject writer.
  *
  * <p>Validation is delegated to {@link ContractBlockAssembler}, which enforces:
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  * <p>Returning {@code null} causes Spring Batch to silently skip the item for writing.
  */
 @Component
-public final class ContractStructureValidator implements ItemProcessor<Contract, Contract> {
+public final class ContractStructureValidator implements ItemProcessor<ContractBlock, ContractBlock> {
 
     private final ContractRejectWriter rejectWriter;
 
@@ -33,7 +33,7 @@ public final class ContractStructureValidator implements ItemProcessor<Contract,
     }
 
     @Override
-    public Contract process(Contract item) throws Exception {
+    public ContractBlock process(ContractBlock item) throws Exception {
         try {
             checkForUnknownLines(item);
             validateContract(item);
@@ -53,7 +53,7 @@ public final class ContractStructureValidator implements ItemProcessor<Contract,
      * This ensures that contracts with typos like "CTTR" instead of "CTR" are
      * rejected to the file rather than silently skipped.
      */
-    private void checkForUnknownLines(Contract contract) {
+    private void checkForUnknownLines(ContractBlock contract) {
         for (ParsedLine line : contract.lines()) {
             if (line.type() == LineType.UNKNOWN) {
                 throw new ContractFormatException(line.lineNumber(), null,
@@ -66,7 +66,7 @@ public final class ContractStructureValidator implements ItemProcessor<Contract,
      * Replays the block's lines through the assembler to enforce sequencing,
      * prerequisites, and mandatory-type rules.
      */
-    private void validateContract(Contract contract) {
+    private void validateContract(ContractBlock contract) {
         List<ParsedLine> lines = contract.lines();
         ContractBlockAssembler assembler = new ContractBlockAssembler(lines.getFirst());
         for (int i = 1; i < lines.size(); i++) {

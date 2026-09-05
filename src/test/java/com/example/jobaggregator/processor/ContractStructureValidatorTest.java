@@ -8,7 +8,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.writer.ContractRejectWriter;
@@ -32,7 +32,7 @@ class ContractStructureValidatorTest {
     @Test
     void shouldReturnContractUnchangedWhenStructureIsValid() throws Exception {
         // Given: A valid, complete contract containing CTR, ACC, OM, and ART
-        Contract contract = new Contract(List.of(
+        ContractBlock contract = new ContractBlock(List.of(
                 createParsedLine(1, LineType.CTR, "CTR"),
                 createParsedLine(2, LineType.ACC, "ACC", "BILL"),
                 createParsedLine(3, LineType.OM, "OM", "OM-001"),
@@ -40,7 +40,7 @@ class ContractStructureValidatorTest {
         ));
 
         // Act: Process the contract through structure validator
-        Contract result = validator.process(contract);
+        ContractBlock result = validator.process(contract);
 
         // Assert: The original contract is returned unaltered and reject writer is not invoked
         assertThat(result).isSameAs(contract);
@@ -50,13 +50,13 @@ class ContractStructureValidatorTest {
     @Test
     void shouldFilterContractAndCallRejectWriterWhenStructureIsInvalid() throws Exception {
         // Given: An invalid contract missing mandatory OM and ART lines
-        Contract contract = new Contract(List.of(
+        ContractBlock contract = new ContractBlock(List.of(
                 createParsedLine(1, LineType.CTR, "CTR"),
                 createParsedLine(2, LineType.ACC, "ACC", "BILL")
         ));
 
         // Act: Process the contract through structure validator
-        Contract result = validator.process(contract);
+        ContractBlock result = validator.process(contract);
 
         // Assert: Result is null (filtered from writer) and reject writer is called
         assertThat(result).isNull();
@@ -66,7 +66,7 @@ class ContractStructureValidatorTest {
     @Test
     void shouldCallRejectWriterWithDescriptiveReasonWhenContractIsMissingRequiredLine() throws Exception {
         // Given: An invalid contract missing the required ART line
-        Contract contract = new Contract(List.of(
+        ContractBlock contract = new ContractBlock(List.of(
                 createParsedLine(1, LineType.CTR, "CTR"),
                 createParsedLine(2, LineType.ACC, "ACC", "BILL"),
                 createParsedLine(3, LineType.OM, "OM", "OM-001")
@@ -82,11 +82,11 @@ class ContractStructureValidatorTest {
     @Test
     void shouldPropagateIoExceptionWhenRejectWriterFails() throws Exception {
         // Given: An invalid contract and a reject writer that fails with IOException
-        Contract contract = new Contract(List.of(
+        ContractBlock contract = new ContractBlock(List.of(
                 createParsedLine(1, LineType.CTR, "CTR"),
                 createParsedLine(2, LineType.ACC, "ACC", "BILL")
         ));
-        doThrow(new IOException("Disk full")).when(rejectWriter).reject(any(Contract.class), any(String.class));
+        doThrow(new IOException("Disk full")).when(rejectWriter).reject(any(ContractBlock.class), any(String.class));
 
         // Act & Assert: IOException is propagated directly when validator attempts to reject
         assertThatThrownBy(() -> validator.process(contract))
@@ -97,7 +97,7 @@ class ContractStructureValidatorTest {
     @Test
     void shouldFilterContractAndCallRejectWriterWhenLineSequenceIsInvalid() throws Exception {
         // Given: A contract with an invalid hierarchy (IKAC appearing before ART)
-        Contract contract = new Contract(List.of(
+        ContractBlock contract = new ContractBlock(List.of(
                 createParsedLine(1, LineType.CTR, "CTR"),
                 createParsedLine(2, LineType.ACC, "ACC", "BILL"),
                 createParsedLine(3, LineType.OM, "OM", "OM-001"),
@@ -105,7 +105,7 @@ class ContractStructureValidatorTest {
         ));
 
         // Act: Process the contract through structure validator
-        Contract result = validator.process(contract);
+        ContractBlock result = validator.process(contract);
 
         // Assert: Result is null and reject writer is called
         assertThat(result).isNull();
@@ -115,7 +115,7 @@ class ContractStructureValidatorTest {
     @Test
     void shouldFilterContractAndCallRejectWriterWhenContractContainsUnknownLineType() throws Exception {
         // Given: A contract containing an UNKNOWN poison line
-        Contract contract = new Contract(List.of(
+        ContractBlock contract = new ContractBlock(List.of(
                 createParsedLine(1, LineType.UNKNOWN, "CTTR"),
                 createParsedLine(2, LineType.ACC, "ACC", "BILL"),
                 createParsedLine(3, LineType.OM, "OM", "OM-001"),
@@ -123,7 +123,7 @@ class ContractStructureValidatorTest {
         ));
 
         // Act: Process the contract through structure validator
-        Contract result = validator.process(contract);
+        ContractBlock result = validator.process(contract);
 
         // Assert: Result is null and reject writer is called
         assertThat(result).isNull();

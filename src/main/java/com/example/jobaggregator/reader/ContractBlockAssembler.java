@@ -1,6 +1,6 @@
 package com.example.jobaggregator.reader;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.error.ContractFormatException;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Assembles and validates the structural sequencing of a single {@link Contract} block from ordered lines.
+ * Assembles and validates the structural sequencing of a single {@link ContractBlock} from ordered lines.
  *
  * <p>Responsibilities (Single Responsibility Principle):
  * <ul>
@@ -57,7 +57,7 @@ public final class ContractBlockAssembler {
         }
     }
 
-    public Contract build() {
+    public ContractBlock build() {
         if (!hasAccount) {
             throw error(lines.getFirst(), "A contract must contain at least one ACC");
         }
@@ -68,7 +68,7 @@ public final class ContractBlockAssembler {
             throw error(lines.getFirst(), "A contract must contain at least one ART");
         }
 
-        return new Contract(List.copyOf(lines));
+        return new ContractBlock(List.copyOf(lines));
     }
 
     private void validatePrerequisites(ParsedLine line) {

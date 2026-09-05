@@ -1,6 +1,6 @@
 package com.example.jobaggregator.writer;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import java.io.IOException;
 import java.util.List;
 
@@ -15,7 +15,7 @@ public interface ContractRejectWriter {
     void reject(List<String> rawLines, String reason) throws IOException;
 
     /**
-     * Rejects a fully-built {@link Contract} with the given reason.
+     * Rejects a fully-built {@link ContractBlock} with the given reason.
      */
-    void reject(Contract contract, String reason) throws IOException;
+    void reject(ContractBlock contract, String reason) throws IOException;
 }

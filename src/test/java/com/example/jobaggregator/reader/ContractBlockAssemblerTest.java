@@ -3,7 +3,7 @@ package com.example.jobaggregator.reader;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.error.ContractFormatException;
@@ -29,7 +29,7 @@ class ContractBlockAssemblerTest {
         assembler.accept(createParsedLine(12, LineType.AVT, "AVT"));
 
         // Act: Build the assembled contract
-        Contract contract = assembler.build();
+        ContractBlock contract = assembler.build();
 
         // Assert: Assembled contract contains all 12 accepted lines
         assertThat(contract.lines()).hasSize(12);
@@ -57,7 +57,7 @@ class ContractBlockAssemblerTest {
         assembler.accept(createParsedLine(4, LineType.ART, "ART", "1"));
 
         // Act: Build the assembled contract
-        Contract contract = assembler.build();
+        ContractBlock contract = assembler.build();
 
         // Assert: Assembled contract contains exactly the 4 mandatory lines
         assertThat(contract.lines()).hasSize(4);

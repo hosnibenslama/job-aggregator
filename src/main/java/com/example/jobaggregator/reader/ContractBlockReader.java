@@ -1,6 +1,6 @@
 package com.example.jobaggregator.reader;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.domain.ParsedLine;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import org.springframework.batch.infrastructure.item.support.SingleItemPeekableI
 
 /**
  * Spring Batch {@link ItemStreamReader} that groups individual parsed lines into
- * {@link Contract} blocks.
+ * {@link ContractBlock} blocks.
  *
  * <p>Grouping rule: a new block starts on every {@code CTR} line. Every following
  * line belongs to the current block until the next {@code CTR}, {@code TRL}, or EOF
@@ -27,7 +27,7 @@ import org.springframework.batch.infrastructure.item.support.SingleItemPeekableI
  * the {@link ExecutionContext} under {@link #KEY_EXPECTED_CONTRACT_COUNT} so that
  * the step listener can verify it against the actual read count (rule 3).</p>
  */
-public class ContractBlockReader implements ItemStreamReader<Contract> {
+public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
 
     /** ExecutionContext key for the expected contract count from the TRL line. */
     public static final String KEY_EXPECTED_CONTRACT_COUNT = "contract.expected.count";
@@ -52,7 +52,7 @@ public class ContractBlockReader implements ItemStreamReader<Contract> {
     // -----------------------------------------------------------------------
 
     @Override
-    public Contract read() throws Exception {
+    public ContractBlock read() throws Exception {
         ParsedLine ctrLine = skipToCtr();
         if (ctrLine == null) {
             return null;
@@ -61,7 +61,7 @@ public class ContractBlockReader implements ItemStreamReader<Contract> {
         List<ParsedLine> lines = new ArrayList<>();
         lines.add(ctrLine);
         collectUntilNextBoundary(lines);
-        return new Contract(lines);
+        return new ContractBlock(lines);
     }
 
     @Override

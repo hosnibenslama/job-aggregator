@@ -1,6 +1,6 @@
 package com.example.jobaggregator.config;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.listener.ContractFileIntegrityListener;
 import com.example.jobaggregator.processor.ContractStructureValidator;
@@ -99,7 +99,7 @@ public class ContractImportJobConfig {
             ContractPersistenceWriter writer,
             ContractFileIntegrityListener integrityListener) {
         return new StepBuilder("contractImportStep", jobRepository)
-                .<Contract, Contract>chunk(100)
+                .<ContractBlock, ContractBlock>chunk(100)
                 .transactionManager(transactionManager)
                 .reader(contractItemReader)
                 .processor(processor)

@@ -2,7 +2,11 @@ package com.example.jobaggregator.domain;
 
 import java.util.List;
 
-public record Contract(List<ParsedLine> lines) {
+/**
+ * Represents an aggregated block of parsed lines constituting a single contract.
+ * The block begins with a CTR line (the root) followed by all its child lines.
+ */
+public record ContractBlock(List<ParsedLine> lines) {
 
     /**
      * Returns the typed representation of the CTR (contract root) line.

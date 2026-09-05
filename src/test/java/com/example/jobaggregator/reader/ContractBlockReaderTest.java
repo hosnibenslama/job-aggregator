@@ -2,7 +2,7 @@ package com.example.jobaggregator.reader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.jobaggregator.domain.Contract;
+import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.LineType;
 import com.example.jobaggregator.domain.ParsedLine;
 import java.util.List;
@@ -39,8 +39,8 @@ class ContractBlockReaderTest {
         ContractBlockReader reader = readerFor(lines);
 
         // Act: Read the first contract block and subsequent read
-        Contract contract = reader.read();
-        Contract next = reader.read();
+        ContractBlock contract = reader.read();
+        ContractBlock next = reader.read();
 
         // Assert: Assembled contract contains only the 4 contract lines, and next read signals EOF (null)
         assertThat(contract).isNotNull();
@@ -66,9 +66,9 @@ class ContractBlockReaderTest {
         ContractBlockReader reader = readerFor(lines);
 
         // Act: Read the two contract blocks sequentially
-        Contract first = reader.read();
-        Contract second = reader.read();
-        Contract third = reader.read();
+        ContractBlock first = reader.read();
+        ContractBlock second = reader.read();
+        ContractBlock third = reader.read();
 
         // Assert: Both contracts are grouped correctly by CTR boundaries, and third read is null
         assertThat(first).isNotNull();
@@ -90,7 +90,7 @@ class ContractBlockReaderTest {
         ));
 
         // Act: Read contract block
-        Contract contract = reader.read();
+        ContractBlock contract = reader.read();
 
         // Assert: Reader immediately returns null
         assertThat(contract).isNull();
@@ -102,7 +102,7 @@ class ContractBlockReaderTest {
         ContractBlockReader reader = readerFor(List.of());
 
         // Act: Read contract block
-        Contract contract = reader.read();
+        ContractBlock contract = reader.read();
 
         // Assert: Reader returns null
         assertThat(contract).isNull();
@@ -121,7 +121,7 @@ class ContractBlockReaderTest {
         ContractBlockReader reader = readerFor(lines);
 
         // Act: Read the first contract block
-        Contract contract = reader.read();
+        ContractBlock contract = reader.read();
 
         // Assert: Contract begins with CTR and does not contain the HDR line
         assertThat(contract).isNotNull();
