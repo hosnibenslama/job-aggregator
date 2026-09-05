@@ -14,38 +14,63 @@ class ContractFileIntegrityListenerTest {
     private final ContractFileIntegrityListener listener = new ContractFileIntegrityListener();
 
     @Test
-    void rule4Violation_noContractsRead_returnsFailed() {
+    void shouldReturnFailedExitStatusWhenNoContractsWereRead() {
+        // Given: Step execution where 0 contracts were read (Rule 4 violation)
         StepExecution stepExecution = stepExecution(0, null);
 
-        assertThat(listener.afterStep(stepExecution)).isEqualTo(ExitStatus.FAILED);
+        // Act: Execute the file integrity listener after step completion
+        ExitStatus exitStatus = listener.afterStep(stepExecution);
+
+        // Assert: Step exit status is FAILED
+        assertThat(exitStatus).isEqualTo(ExitStatus.FAILED);
     }
 
     @Test
-    void rule3Violation_mismatchBetweenExpectedAndActual_returnsFailed() {
+    void shouldReturnFailedExitStatusWhenActualCountMismatchesTrailerExpectedCount() {
+        // Given: Step execution where actual read count (5) does not match trailer count (10) (Rule 3 violation)
         StepExecution stepExecution = stepExecution(5, 10);
 
-        assertThat(listener.afterStep(stepExecution)).isEqualTo(ExitStatus.FAILED);
+        // Act: Execute the file integrity listener after step completion
+        ExitStatus exitStatus = listener.afterStep(stepExecution);
+
+        // Assert: Step exit status is FAILED
+        assertThat(exitStatus).isEqualTo(ExitStatus.FAILED);
     }
 
     @Test
-    void rule3Success_matchBetweenExpectedAndActual_returnsCompleted() {
+    void shouldReturnCompletedExitStatusWhenActualCountMatchesTrailerExpectedCount() {
+        // Given: Step execution where actual read count (100) matches expected trailer count (100) (Rule 3 satisfied)
         StepExecution stepExecution = stepExecution(100, 100);
 
-        assertThat(listener.afterStep(stepExecution)).isEqualTo(ExitStatus.COMPLETED);
+        // Act: Execute the file integrity listener after step completion
+        ExitStatus exitStatus = listener.afterStep(stepExecution);
+
+        // Assert: Step exit status is COMPLETED
+        assertThat(exitStatus).isEqualTo(ExitStatus.COMPLETED);
     }
 
     @Test
-    void rule3Skipped_trlLineNotEncountered_returnsCompleted() {
+    void shouldReturnCompletedExitStatusWhenTrailerLineWasNotEncountered() {
+        // Given: Step execution with valid read count (50) but no trailer count recorded in ExecutionContext
         StepExecution stepExecution = stepExecution(50, null);
 
-        assertThat(listener.afterStep(stepExecution)).isEqualTo(ExitStatus.COMPLETED);
+        // Act: Execute the file integrity listener after step completion
+        ExitStatus exitStatus = listener.afterStep(stepExecution);
+
+        // Assert: Step exit status is COMPLETED with Rule 3 skipped
+        assertThat(exitStatus).isEqualTo(ExitStatus.COMPLETED);
     }
 
     @Test
-    void singleContractWithMatchingTrl_returnsCompleted() {
+    void shouldReturnCompletedExitStatusForSingleContractWithMatchingTrailerCount() {
+        // Given: Step execution with 1 contract read and trailer count of 1
         StepExecution stepExecution = stepExecution(1, 1);
 
-        assertThat(listener.afterStep(stepExecution)).isEqualTo(ExitStatus.COMPLETED);
+        // Act: Execute the file integrity listener after step completion
+        ExitStatus exitStatus = listener.afterStep(stepExecution);
+
+        // Assert: Step exit status is COMPLETED
+        assertThat(exitStatus).isEqualTo(ExitStatus.COMPLETED);
     }
 
     private StepExecution stepExecution(long readCount, Integer expectedContractCount) {

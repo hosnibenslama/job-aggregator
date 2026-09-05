@@ -30,91 +30,107 @@ class ContractStructureValidatorTest {
     private ContractStructureValidator validator;
 
     @Test
-    void validContractPassesThrough() throws Exception {
+    void shouldReturnContractUnchangedWhenStructureIsValid() throws Exception {
+        // Given: A valid, complete contract containing CTR, ACC, OM, and ART
         Contract contract = new Contract(List.of(
-                line(1, LineType.CTR, "CTR"),
-                line(2, LineType.ACC, "ACC", "BILL"),
-                line(3, LineType.OM, "OM", "OM-001"),
-                line(4, LineType.ART, "ART", "1")
+                createParsedLine(1, LineType.CTR, "CTR"),
+                createParsedLine(2, LineType.ACC, "ACC", "BILL"),
+                createParsedLine(3, LineType.OM, "OM", "OM-001"),
+                createParsedLine(4, LineType.ART, "ART", "1")
         ));
 
+        // Act: Process the contract through structure validator
         Contract result = validator.process(contract);
 
+        // Assert: The original contract is returned unaltered and reject writer is not invoked
         assertThat(result).isSameAs(contract);
         verifyNoInteractions(rejectWriter);
     }
 
     @Test
-    void invalidContractReturnsNullAndCallsRejectWriter() throws Exception {
+    void shouldFilterContractAndCallRejectWriterWhenStructureIsInvalid() throws Exception {
+        // Given: An invalid contract missing mandatory OM and ART lines
         Contract contract = new Contract(List.of(
-                line(1, LineType.CTR, "CTR"),
-                line(2, LineType.ACC, "ACC", "BILL")
+                createParsedLine(1, LineType.CTR, "CTR"),
+                createParsedLine(2, LineType.ACC, "ACC", "BILL")
         ));
 
+        // Act: Process the contract through structure validator
         Contract result = validator.process(contract);
 
+        // Assert: Result is null (filtered from writer) and reject writer is called
         assertThat(result).isNull();
         verify(rejectWriter).reject(eq(contract), any(String.class));
     }
 
     @Test
-    void rejectWriterCalledWithCorrectReason() throws Exception {
+    void shouldCallRejectWriterWithDescriptiveReasonWhenContractIsMissingRequiredLine() throws Exception {
+        // Given: An invalid contract missing the required ART line
         Contract contract = new Contract(List.of(
-                line(1, LineType.CTR, "CTR"),
-                line(2, LineType.ACC, "ACC", "BILL"),
-                line(3, LineType.OM, "OM", "OM-001")
+                createParsedLine(1, LineType.CTR, "CTR"),
+                createParsedLine(2, LineType.ACC, "ACC", "BILL"),
+                createParsedLine(3, LineType.OM, "OM", "OM-001")
         ));
 
+        // Act: Process the contract through structure validator
         validator.process(contract);
 
+        // Assert: Reject writer is called with specific descriptive failure reason
         verify(rejectWriter).reject(eq(contract), eq("Invalid contract input: line=1, contractId=<unknown>, reason=A contract must contain at least one ART"));
     }
 
     @Test
-    void ioExceptionFromRejectWriterPropagatesDirectly() throws Exception {
+    void shouldPropagateIoExceptionWhenRejectWriterFails() throws Exception {
+        // Given: An invalid contract and a reject writer that fails with IOException
         Contract contract = new Contract(List.of(
-                line(1, LineType.CTR, "CTR"),
-                line(2, LineType.ACC, "ACC", "BILL")
+                createParsedLine(1, LineType.CTR, "CTR"),
+                createParsedLine(2, LineType.ACC, "ACC", "BILL")
         ));
-
         doThrow(new IOException("Disk full")).when(rejectWriter).reject(any(Contract.class), any(String.class));
 
+        // Act & Assert: IOException is propagated directly when validator attempts to reject
         assertThatThrownBy(() -> validator.process(contract))
                 .isInstanceOf(IOException.class)
                 .hasMessage("Disk full");
     }
 
     @Test
-    void invalidSequenceRejectsContract() throws Exception {
+    void shouldFilterContractAndCallRejectWriterWhenLineSequenceIsInvalid() throws Exception {
+        // Given: A contract with an invalid hierarchy (IKAC appearing before ART)
         Contract contract = new Contract(List.of(
-                line(1, LineType.CTR, "CTR"),
-                line(2, LineType.ACC, "ACC", "BILL"),
-                line(3, LineType.OM, "OM", "OM-001"),
-                line(4, LineType.IKAC, "IKAC", "value")
+                createParsedLine(1, LineType.CTR, "CTR"),
+                createParsedLine(2, LineType.ACC, "ACC", "BILL"),
+                createParsedLine(3, LineType.OM, "OM", "OM-001"),
+                createParsedLine(4, LineType.IKAC, "IKAC", "value")
         ));
 
+        // Act: Process the contract through structure validator
         Contract result = validator.process(contract);
 
+        // Assert: Result is null and reject writer is called
         assertThat(result).isNull();
         verify(rejectWriter).reject(eq(contract), any(String.class));
     }
 
     @Test
-    void unknownLineTypeRejectsContract() throws Exception {
+    void shouldFilterContractAndCallRejectWriterWhenContractContainsUnknownLineType() throws Exception {
+        // Given: A contract containing an UNKNOWN poison line
         Contract contract = new Contract(List.of(
-                line(1, LineType.UNKNOWN, "CTTR"),
-                line(2, LineType.ACC, "ACC", "BILL"),
-                line(3, LineType.OM, "OM", "OM-001"),
-                line(4, LineType.ART, "ART", "1")
+                createParsedLine(1, LineType.UNKNOWN, "CTTR"),
+                createParsedLine(2, LineType.ACC, "ACC", "BILL"),
+                createParsedLine(3, LineType.OM, "OM", "OM-001"),
+                createParsedLine(4, LineType.ART, "ART", "1")
         ));
 
+        // Act: Process the contract through structure validator
         Contract result = validator.process(contract);
 
+        // Assert: Result is null and reject writer is called
         assertThat(result).isNull();
         verify(rejectWriter).reject(eq(contract), any(String.class));
     }
 
-    private ParsedLine line(long number, LineType type, String... fields) {
+    private ParsedLine createParsedLine(long number, LineType type, String... fields) {
         return new ParsedLine(number, type, String.join(";", fields), List.of(fields));
     }
 }

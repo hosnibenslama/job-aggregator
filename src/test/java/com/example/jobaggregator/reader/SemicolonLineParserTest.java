@@ -22,16 +22,25 @@ class SemicolonLineParserTest {
     // =========================================================================
 
     @Test
-    void rejectsBlankLine() {
-        assertThatThrownBy(() -> mapper.mapLine("", 1))
+    void shouldThrowContractFormatExceptionWhenLineIsBlank() {
+        // Given: An empty line string
+        String emptyLine = "";
+
+        // Act & Assert: Parser throws ContractFormatException stating line cannot be blank
+        assertThatThrownBy(() -> mapper.mapLine(emptyLine, 1))
                 .isInstanceOf(ContractFormatException.class)
                 .hasMessageContaining("Blank");
     }
 
     @Test
-    void unknownLineTypeReturnsPoisonLine() {
-        ParsedLine line = mapper.mapLine("XYZ;data", 1);
+    void shouldReturnPoisonLineWithUnknownTypeWhenPrefixIsUnrecognized() {
+        // Given: A line with an unrecognized prefix
+        String lineContent = "XYZ;data";
 
+        // Act: Map the line
+        ParsedLine line = mapper.mapLine(lineContent, 1);
+
+        // Assert: Line is recognized as UNKNOWN with lineNumber and raw content preserved
         assertThat(line.type()).isEqualTo(LineType.UNKNOWN);
         assertThat(line.lineNumber()).isEqualTo(1);
         assertThat(line.raw()).isEqualTo("XYZ;data");
@@ -49,8 +58,14 @@ class SemicolonLineParserTest {
                 "abcdef0123456789;fedcba9876543210;1234567890abcdef;001;003";
 
         @Test
-        void parsesValidCtrLine() {
-            ParsedLine line = mapper.mapLine(VALID_CTR, 1);
+        void shouldParseValidCtrLineWhenAllFieldsMeetRequirements() {
+            // Given: A fully compliant CTR line
+            String rawLine = VALID_CTR;
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: Type is CTR and all mapped fields match expected values
             assertThat(line.type()).isEqualTo(LineType.CTR);
             assertThat(line.field(1)).isEqualTo("EUR");
             assertThat(line.field(5)).isEqualTo("031030000");
@@ -61,63 +76,115 @@ class SemicolonLineParserTest {
         }
 
         @Test
-        void rejectsTooFewFields() {
-            assertThatThrownBy(() -> mapper.mapLine("CTR;EUR;16", 2))
+        void shouldThrowContractFormatExceptionWhenCtrLineHasFewerThan16Fields() {
+            // Given: A CTR line with fewer than the required 16 fields
+            String shortLine = "CTR;EUR;16";
+
+            // Act & Assert: Parser throws ContractFormatException mentioning 16 fields
+            assertThatThrownBy(() -> mapper.mapLine(shortLine, 2))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("16 fields");
         }
 
         @Test
-        void rejectsBlankDevise()               { assertCtrFieldRequired(1,  "Devise"); }
-        @Test
-        void rejectsBlankState()                { assertCtrFieldRequired(2,  "State"); }
-        @Test
-        void rejectsBlankOuManagement()         { assertCtrFieldRequired(5,  "OuManagement"); }
-        @Test
-        void rejectsBlankBusinessRelationship() { assertCtrFieldRequired(7,  "BusinessRelationship"); }
+        void shouldRejectCtrWhenDeviseIsBlank() {
+            // Given & Act & Assert: CTR line with blank Devise throws ContractFormatException
+            assertCtrFieldRequired(1, "Devise");
+        }
 
         @Test
-        void rejectsInvalidTraceId() {
-            assertThatThrownBy(() -> mapper.mapLine(buildCtr(11, "not-hex!"), 7))
+        void shouldRejectCtrWhenStateIsBlank() {
+            // Given & Act & Assert: CTR line with blank State throws ContractFormatException
+            assertCtrFieldRequired(2, "State");
+        }
+
+        @Test
+        void shouldRejectCtrWhenOuManagementIsBlank() {
+            // Given & Act & Assert: CTR line with blank OuManagement throws ContractFormatException
+            assertCtrFieldRequired(5, "OuManagement");
+        }
+
+        @Test
+        void shouldRejectCtrWhenBusinessRelationshipIsBlank() {
+            // Given & Act & Assert: CTR line with blank BusinessRelationship throws ContractFormatException
+            assertCtrFieldRequired(7, "BusinessRelationship");
+        }
+
+        @Test
+        void shouldRejectCtrWhenTraceIdIsNotValidHex() {
+            // Given: CTR line with non-hexadecimal trace ID
+            String line = buildCtr(11, "not-hex!");
+
+            // Act & Assert: Parser throws ContractFormatException for invalid X-B3-TraceId
+            assertThatThrownBy(() -> mapper.mapLine(line, 7))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("X-B3-TraceId");
         }
 
         @Test
-        void rejectsTraceIdTooShort() {
-            assertThatThrownBy(() -> mapper.mapLine(buildCtr(11, "abcdef01"), 8))
+        void shouldRejectCtrWhenTraceIdIsTooShort() {
+            // Given: CTR line with trace ID shorter than required 16 hex characters
+            String line = buildCtr(11, "abcdef01");
+
+            // Act & Assert: Parser throws ContractFormatException for short X-B3-TraceId
+            assertThatThrownBy(() -> mapper.mapLine(line, 8))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("X-B3-TraceId");
         }
 
         @Test
-        void rejectsBlankUserId() { assertCtrFieldRequired(13, "UserId"); }
+        void shouldRejectCtrWhenUserIdIsBlank() {
+            // Given & Act & Assert: CTR line with blank UserId throws ContractFormatException
+            assertCtrFieldRequired(13, "UserId");
+        }
 
         @Test
-        void rejectsInvalidChannel() {
-            assertThatThrownBy(() -> mapper.mapLine(buildCtr(14, "999"), 9))
+        void shouldRejectCtrWhenChannelIsInvalid() {
+            // Given: CTR line with invalid channel code
+            String line = buildCtr(14, "999");
+
+            // Act & Assert: Parser throws ContractFormatException for unknown Channel
+            assertThatThrownBy(() -> mapper.mapLine(line, 9))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("Channel");
         }
 
         @Test
-        void acceptsAllValidChannels() {
-            for (String ch : List.of("001", "007", "008", "012")) {
-                assertThat(mapper.mapLine(buildCtr(14, ch), 1).field(14)).isEqualTo(ch);
+        void shouldAcceptCtrWhenChannelIsAnyAllowedValue() {
+            // Given: All valid channels defined in specification
+            List<String> validChannels = List.of("001", "007", "008", "012");
+
+            for (String ch : validChannels) {
+                // Act: Parse CTR line with each channel
+                ParsedLine line = mapper.mapLine(buildCtr(14, ch), 1);
+
+                // Assert: Channel is successfully parsed
+                assertThat(line.field(14)).isEqualTo(ch);
             }
         }
 
         @Test
-        void rejectsInvalidMedia() {
-            assertThatThrownBy(() -> mapper.mapLine(buildCtr(15, "WEB"), 10))
+        void shouldRejectCtrWhenMediaIsInvalid() {
+            // Given: CTR line with invalid media code
+            String line = buildCtr(15, "WEB");
+
+            // Act & Assert: Parser throws ContractFormatException for unknown Media
+            assertThatThrownBy(() -> mapper.mapLine(line, 10))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("Media");
         }
 
         @Test
-        void acceptsAllValidMediaCodes() {
-            for (String media : List.of("001", "003", "055", "073")) {
-                assertThat(mapper.mapLine(buildCtr(15, media), 1).field(15)).isEqualTo(media);
+        void shouldAcceptCtrWhenMediaIsAnyAllowedCode() {
+            // Given: All valid media codes defined in specification
+            List<String> validMediaCodes = List.of("001", "003", "055", "073");
+
+            for (String media : validMediaCodes) {
+                // Act: Parse CTR line with each media code
+                ParsedLine line = mapper.mapLine(buildCtr(15, media), 1);
+
+                // Assert: Media is successfully parsed
+                assertThat(line.field(15)).isEqualTo(media);
             }
         }
 
@@ -161,43 +228,71 @@ class SemicolonLineParserTest {
         private static final String VALID_ACC = "ACC;BILL;BNPAFRPP;FR76300040219600001;300040219600001";
 
         @Test
-        void parsesValidAccLine() {
-            ParsedLine line = mapper.mapLine(VALID_ACC, 1);
+        void shouldParseValidAccLineWhenAllFieldsAreProvided() {
+            // Given: A valid ACC line with BILL subtype, BIC, and IBAN
+            String rawLine = VALID_ACC;
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: Parsed line has ACC type and correct subtype and BIC
             assertThat(line.type()).isEqualTo(LineType.ACC);
             assertThat(line.field(1)).isEqualTo("BILL");
             assertThat(line.field(2)).isEqualTo("BNPAFRPP");
         }
 
         @Test
-        void acceptsFeeSubtype() {
-            assertThat(mapper.mapLine("ACC;FEE;BNPAFRPP;FR76300040219600001;", 1).field(1))
-                    .isEqualTo("FEE");
+        void shouldAcceptAccWhenSubtypeIsFee() {
+            // Given: An ACC line with FEE subtype
+            String rawLine = "ACC;FEE;BNPAFRPP;FR76300040219600001;";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: Subtype is FEE
+            assertThat(line.field(1)).isEqualTo("FEE");
         }
 
         @Test
-        void rejectsInvalidSubtype() {
-            assertThatThrownBy(() -> mapper.mapLine("ACC;UNKNOWN;BIC;IBAN;", 1))
+        void shouldRejectAccWhenSubtypeIsInvalid() {
+            // Given: An ACC line with invalid subtype UNKNOWN
+            String rawLine = "ACC;UNKNOWN;BIC;IBAN;";
+
+            // Act & Assert: Parser throws ContractFormatException for unknown subtype
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("Sous-type");
         }
 
         @Test
-        void rejectsBlankBic() {
-            assertThatThrownBy(() -> mapper.mapLine("ACC;BILL;;FR76300040219600001;", 1))
+        void shouldRejectAccWhenBicIsBlank() {
+            // Given: An ACC line with blank BIC field
+            String rawLine = "ACC;BILL;;FR76300040219600001;";
+
+            // Act & Assert: Parser throws ContractFormatException for blank BIC
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("BIC");
         }
 
         @Test
-        void rejectsBlankIban() {
-            assertThatThrownBy(() -> mapper.mapLine("ACC;BILL;BNPAFRPP;;", 1))
+        void shouldRejectAccWhenIbanIsBlank() {
+            // Given: An ACC line with blank IBAN field
+            String rawLine = "ACC;BILL;BNPAFRPP;;";
+
+            // Act & Assert: Parser throws ContractFormatException for blank IBAN
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("IBAN");
         }
 
         @Test
-        void rejectsTooFewFields() {
-            assertThatThrownBy(() -> mapper.mapLine("ACC;BILL;BIC", 1))
+        void shouldRejectAccWhenFieldCountIsLessThanFour() {
+            // Given: An ACC line with only 3 fields
+            String shortLine = "ACC;BILL;BIC";
+
+            // Act & Assert: Parser throws ContractFormatException requiring at least 4 fields
+            assertThatThrownBy(() -> mapper.mapLine(shortLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("4 fields");
         }
@@ -211,23 +306,37 @@ class SemicolonLineParserTest {
     class OmValidation {
 
         @Test
-        void parsesValidOmLine() {
-            ParsedLine line = mapper.mapLine("OM;00058680432692016;000058680432692016", 1);
+        void shouldParseValidOmLineWhenIdentifierAndRelationshipArePresent() {
+            // Given: A valid OM line with identifier and BusinessRelationship
+            String rawLine = "OM;00058680432692016;000058680432692016";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: OM type is identified with correct fields
             assertThat(line.type()).isEqualTo(LineType.OM);
             assertThat(line.field(1)).isEqualTo("00058680432692016");
             assertThat(line.field(2)).isEqualTo("000058680432692016");
         }
 
         @Test
-        void rejectsBlankOmId() {
-            assertThatThrownBy(() -> mapper.mapLine("OM;;BR-001", 1))
+        void shouldRejectOmWhenIdentifierIsBlank() {
+            // Given: An OM line with missing OM identifier
+            String rawLine = "OM;;BR-001";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("OM identifier");
         }
 
         @Test
-        void rejectsBlankBusinessRelationship() {
-            assertThatThrownBy(() -> mapper.mapLine("OM;OM-001;", 1))
+        void shouldRejectOmWhenBusinessRelationshipIsBlank() {
+            // Given: An OM line with missing BusinessRelationship
+            String rawLine = "OM;OM-001;";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("BusinessRelationship");
         }
@@ -241,29 +350,49 @@ class SemicolonLineParserTest {
     class OffValidation {
 
         @Test
-        void parsesValidOffLine() {
-            ParsedLine line = mapper.mapLine("OFF;OFF-0000000001090;AP00111;Carte VISA PREMIER DI", 1);
+        void shouldParseValidOffLineWithMandatoryAndOptionalFields() {
+            // Given: A valid OFF line with optional label
+            String rawLine = "OFF;OFF-0000000001090;AP00111;Carte VISA PREMIER DI";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: OFF type is identified with all fields
             assertThat(line.type()).isEqualTo(LineType.OFF);
             assertThat(line.field(1)).isEqualTo("OFF-0000000001090");
             assertThat(line.field(3)).isEqualTo("Carte VISA PREMIER DI");
         }
 
         @Test
-        void parsesOffWithoutOptionalLabel() {
-            ParsedLine line = mapper.mapLine("OFF;OFF-0000000001090;AP00111", 1);
+        void shouldParseValidOffLineWithoutOptionalLabel() {
+            // Given: A valid OFF line without optional label
+            String rawLine = "OFF;OFF-0000000001090;AP00111";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: OFF type is identified successfully
             assertThat(line.type()).isEqualTo(LineType.OFF);
         }
 
         @Test
-        void rejectsBlankOfferId() {
-            assertThatThrownBy(() -> mapper.mapLine("OFF;;AP00111", 1))
+        void shouldRejectOffWhenOfferIdIsBlank() {
+            // Given: An OFF line with blank offer ID
+            String rawLine = "OFF;;AP00111";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("Identifiant offre");
         }
 
         @Test
-        void rejectsBlankProvider() {
-            assertThatThrownBy(() -> mapper.mapLine("OFF;OFF-001;", 1))
+        void shouldRejectOffWhenProviderIsBlank() {
+            // Given: An OFF line with blank provider
+            String rawLine = "OFF;OFF-001;";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("Provider");
         }
@@ -277,29 +406,47 @@ class SemicolonLineParserTest {
     class ArtValidation {
 
         @Test
-        void parsesValidArtLine() {
-            ParsedLine line = mapper.mapLine("ART;5", 1);
+        void shouldParseValidArtLineWithPositiveIntegerIndex() {
+            // Given: An ART line with a valid positive integer index
+            String rawLine = "ART;5";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: ART type is identified with index 5
             assertThat(line.type()).isEqualTo(LineType.ART);
             assertThat(line.field(1)).isEqualTo("5");
         }
 
         @Test
-        void rejectsNonIntegerIndex() {
-            assertThatThrownBy(() -> mapper.mapLine("ART;abc", 1))
+        void shouldRejectArtWhenIndexIsNotAnInteger() {
+            // Given: An ART line with non-integer index
+            String rawLine = "ART;abc";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("integer");
         }
 
         @Test
-        void rejectsZeroIndex() {
-            assertThatThrownBy(() -> mapper.mapLine("ART;0", 1))
+        void shouldRejectArtWhenIndexIsZero() {
+            // Given: An ART line with index 0
+            String rawLine = "ART;0";
+
+            // Act & Assert: Parser throws ContractFormatException requiring strictly positive integer
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("positive");
         }
 
         @Test
-        void rejectsNegativeIndex() {
-            assertThatThrownBy(() -> mapper.mapLine("ART;-1", 1))
+        void shouldRejectArtWhenIndexIsNegative() {
+            // Given: An ART line with negative index
+            String rawLine = "ART;-1";
+
+            // Act & Assert: Parser throws ContractFormatException requiring strictly positive integer
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("positive");
         }
@@ -315,8 +462,14 @@ class SemicolonLineParserTest {
         private static final String VALID_ROL = "ROL;1;001;PRI;01970013368500000;01970013368500002";
 
         @Test
-        void parsesValidRolLine() {
-            ParsedLine line = mapper.mapLine(VALID_ROL, 1);
+        void shouldParseValidRolLineWithAllMandatoryFields() {
+            // Given: A valid ROL line with all required fields
+            String rawLine = VALID_ROL;
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: ROL line type and fields are mapped correctly
             assertThat(line.type()).isEqualTo(LineType.ROL);
             assertThat(line.field(3)).isEqualTo("PRI");
             assertThat(line.field(4)).isEqualTo("01970013368500000");
@@ -324,22 +477,45 @@ class SemicolonLineParserTest {
         }
 
         @Test
-        void rejectsTooFewFields() {
-            assertThatThrownBy(() -> mapper.mapLine("ROL;1;001;PRI;holderID", 1))
+        void shouldRejectRolWhenFieldCountIsLessThanSix() {
+            // Given: A ROL line with only 5 fields
+            String shortLine = "ROL;1;001;PRI;holderID";
+
+            // Act & Assert: Parser throws ContractFormatException requiring 6 fields
+            assertThatThrownBy(() -> mapper.mapLine(shortLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("6 fields");
         }
 
         @Test
-        void rejectsBlankRole()     { assertRolFieldRequired(1, "Role"); }
+        void shouldRejectRolWhenRoleIsBlank() {
+            // Given & Act & Assert: Blank role field throws ContractFormatException
+            assertRolFieldRequired(1, "Role");
+        }
+
         @Test
-        void rejectsBlankBrand()    { assertRolFieldRequired(2, "Brand"); }
+        void shouldRejectRolWhenBrandIsBlank() {
+            // Given & Act & Assert: Blank brand field throws ContractFormatException
+            assertRolFieldRequired(2, "Brand");
+        }
+
         @Test
-        void rejectsBlankScope()    { assertRolFieldRequired(3, "Scope"); }
+        void shouldRejectRolWhenScopeIsBlank() {
+            // Given & Act & Assert: Blank scope field throws ContractFormatException
+            assertRolFieldRequired(3, "Scope");
+        }
+
         @Test
-        void rejectsBlankHolderId() { assertRolFieldRequired(4, "Holder ID"); }
+        void shouldRejectRolWhenHolderIdIsBlank() {
+            // Given & Act & Assert: Blank holder ID field throws ContractFormatException
+            assertRolFieldRequired(4, "Holder ID");
+        }
+
         @Test
-        void rejectsBlankIkpi()     { assertRolFieldRequired(5, "IKPI"); }
+        void shouldRejectRolWhenIkpiIsBlank() {
+            // Given & Act & Assert: Blank IKPI field throws ContractFormatException
+            assertRolFieldRequired(5, "IKPI");
+        }
 
         private void assertRolFieldRequired(int idx, String name) {
             String[] f = {"ROL", "1", "001", "PRI", "holderID", "ikpi"};
@@ -358,92 +534,127 @@ class SemicolonLineParserTest {
     class TarValidation {
 
         @Test
-        void parsesMinimalTarLine() {
-            ParsedLine line = mapper.mapLine("TAR", 1);
+        void shouldParseMinimalTarLineWithOnlyPrefix() {
+            // Given: A minimal TAR line containing only the prefix
+            String rawLine = "TAR";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: Mapped type is TAR
             assertThat(line.type()).isEqualTo(LineType.TAR);
         }
 
         @Test
-        void parsesFullSpecCompliantTarLine() {
-            // formatTarif=001 → tauxTarif + montantBase required
+        void shouldParseFullSpecCompliantTarLine() {
+            // Given: A complete TAR line with all fields matching specification
             String tar = "TAR;TARIF_001;001;2026-01-01T00:00:00.000000Z;2026-01-01T00:00:00.000000Z;" +
                          "EUR;1;001;007;001;;10.50;50.00;1.0;;;0;1000.00;1;";
+
+            // Act: Map the line
             ParsedLine line = mapper.mapLine(tar, 1);
+
+            // Assert: Mapped type is TAR
             assertThat(line.type()).isEqualTo(LineType.TAR);
         }
 
         @Test
-        void rejectsInvalidTypeFraisWhenPresent() {
-            assertThatThrownBy(() -> mapper.mapLine("TAR;id;INVALID", 1))
+        void shouldRejectTarWhenTypeFraisIsInvalid() {
+            // Given: A TAR line with an unrecognized typeFrais
+            String tar = "TAR;id;INVALID";
+
+            // Act & Assert: Parser throws ContractFormatException for invalid typeFrais
+            assertThatThrownBy(() -> mapper.mapLine(tar, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("typeFrais");
         }
 
         @Test
-        void rejectsInvalidFormatTarifWhenPresent() {
-            assertThatThrownBy(() -> mapper.mapLine("TAR;id;001;;;EUR;1;999", 1))
+        void shouldRejectTarWhenFormatTarifIsInvalid() {
+            // Given: A TAR line with an unrecognized formatTarif
+            String tar = "TAR;id;001;;;EUR;1;999";
+
+            // Act & Assert: Parser throws ContractFormatException for invalid formatTarif
+            assertThatThrownBy(() -> mapper.mapLine(tar, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("formatTarif");
         }
 
         @Test
-        void rejectsInvalidTypeTauxTarifWhenPresent() {
-            // position 11 (index 10)
-            assertThatThrownBy(() -> mapper.mapLine("TAR;id;001;;;;;;007;001;INVALID", 1))
+        void shouldRejectTarWhenTypeTauxTarifIsInvalid() {
+            // Given: A TAR line with invalid typeTauxTarif at position 11
+            String tar = "TAR;id;001;;;;;;007;001;INVALID";
+
+            // Act & Assert: Parser throws ContractFormatException for invalid typeTauxTarif
+            assertThatThrownBy(() -> mapper.mapLine(tar, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("typeTauxTarif");
         }
 
         @Test
-        void rejectsInvalidTypeUniteWhenPresent() {
-            // No formatTarif (index 7 blank) so no conditional rules fire.
-            // INVALID is placed at index 15 = typeUnite.
-            // TAR(0);id(1);(2);(3);(4);(5);(6);(7-empty);007(8);001(9);(10);(11);(12);(13);(14);INVALID(15)
+        void shouldRejectTarWhenTypeUniteIsInvalid() {
+            // Given: A TAR line with invalid typeUnite at position 16
             String tar = "TAR;id;;;;;;;007;001;;;;;;INVALID";
+
+            // Act & Assert: Parser throws ContractFormatException for invalid typeUnite
             assertThatThrownBy(() -> mapper.mapLine(tar, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("typeUnite");
         }
 
         @Test
-        void rejectsInvalidIndicLimiteHauteWhenPresent() {
-            // position 17 (index 16) = indicLimiteHaute
+        void shouldRejectTarWhenIndicLimiteHauteIsInvalid() {
+            // Given: A TAR line with invalid indicLimiteHaute value 2 at position 17
             String tar = "TAR;id;001;;;;1;001;007;001;;10.50;50.00;;;;2;1000.00;1;";
+
+            // Act & Assert: Parser throws ContractFormatException for invalid indicLimiteHaute
             assertThatThrownBy(() -> mapper.mapLine(tar, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("indicLimiteHaute");
         }
 
         @Test
-        void conditionalFormatTarif003RequiresTypeTauxTarif() {
-            // formatTarif=003 (taux) but typeTauxTarif (index 10) is blank
+        void shouldRejectTarWhenFormatTarif003IsMissingTypeTauxTarif() {
+            // Given: formatTarif=003 without required typeTauxTarif
             String tar = "TAR;id;001;;;;1;003;007;001;";
+
+            // Act & Assert: Parser throws ContractFormatException
             assertThatThrownBy(() -> mapper.mapLine(tar, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("typeTauxTarif");
         }
 
         @Test
-        void conditionalFormatTarif001RequiresTauxTarifAndMontantBase() {
-            // formatTarif=001 (forfaitaire) but tauxTarif (index 11) is blank
+        void shouldRejectTarWhenFormatTarif001IsMissingTauxTarifOrMontantBase() {
+            // Given: formatTarif=001 without required tauxTarif
             String tar = "TAR;id;001;;;;1;001;007;001;;";
+
+            // Act & Assert: Parser throws ContractFormatException
             assertThatThrownBy(() -> mapper.mapLine(tar, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("tauxTarif");
         }
 
         @Test
-        void conditionalFormatTarif002RequiresMontantUniteAndTypeUnite() {
-            // formatTarif=002 (par unité) but montantUnite (index 14) is blank
+        void shouldRejectTarWhenFormatTarif002IsMissingMontantUniteOrTypeUnite() {
+            // Given: formatTarif=002 without required montantUnite
             String tar = "TAR;id;001;;;;1;002;007;001;;;;;";
+
+            // Act & Assert: Parser throws ContractFormatException
             assertThatThrownBy(() -> mapper.mapLine(tar, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("montantUnite");
         }
 
         @Test
-        void ignoresBlankOptionalFields() {
-            ParsedLine line = mapper.mapLine("TAR;;;;;;;;;;;;;;;;;;;;;", 1);
+        void shouldAcceptTarWhenOptionalFieldsAreBlank() {
+            // Given: A TAR line with trailing blank delimiters
+            String tar = "TAR;;;;;;;;;;;;;;;;;;;;;";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(tar, 1);
+
+            // Assert: Line is parsed successfully as TAR
             assertThat(line.type()).isEqualTo(LineType.TAR);
         }
     }
@@ -456,16 +667,28 @@ class SemicolonLineParserTest {
     class AvtValidation {
 
         @Test
-        void parsesCode1WithIdOpra() {
-            ParsedLine line = mapper.mapLine("AVT;OPRA-000000000001;2026-01-01T00:00:00.000000Z;;1;;", 1);
+        void shouldParseAvtWithCode1AndIdOpra() {
+            // Given: An AVT line with code 1 and valid idOpra
+            String rawLine = "AVT;OPRA-000000000001;2026-01-01T00:00:00.000000Z;;1;;";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: Type is AVT with idOpra and code 1 preserved
             assertThat(line.type()).isEqualTo(LineType.AVT);
             assertThat(line.field(1)).isEqualTo("OPRA-000000000001");
             assertThat(line.field(4)).isEqualTo("1");
         }
 
         @Test
-        void parsesCode2WithValeurAndDevise() {
-            ParsedLine line = mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;EUR", 1);
+        void shouldParseAvtWithCode2AndValeurAndDevise() {
+            // Given: An AVT line with code 2, valeur, and devise
+            String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;EUR";
+
+            // Act: Map the line
+            ParsedLine line = mapper.mapLine(rawLine, 1);
+
+            // Assert: Type is AVT with code 2, valeur, and devise mapped correctly
             assertThat(line.type()).isEqualTo(LineType.AVT);
             assertThat(line.field(4)).isEqualTo("2");
             assertThat(line.field(5)).isEqualTo("50.00");
@@ -473,58 +696,92 @@ class SemicolonLineParserTest {
         }
 
         @Test
-        void rejectsTooFewFields() {
-            assertThatThrownBy(() -> mapper.mapLine("AVT;OPRA;2026-01-01T00:00:00.000000Z;", 1))
+        void shouldRejectAvtWhenFewerThanFiveFields() {
+            // Given: An AVT line with fewer than 5 fields
+            String shortLine = "AVT;OPRA;2026-01-01T00:00:00.000000Z;";
+
+            // Act & Assert: Parser throws ContractFormatException requiring 5 fields
+            assertThatThrownBy(() -> mapper.mapLine(shortLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("5 fields");
         }
 
         @Test
-        void rejectsBlankDateDebut() {
-            assertThatThrownBy(() -> mapper.mapLine("AVT;OPRA;;2026-12-31T00:00:00.000000Z;1;;", 1))
+        void shouldRejectAvtWhenDateDebutIsBlank() {
+            // Given: An AVT line with blank dateDebut
+            String rawLine = "AVT;OPRA;;2026-12-31T00:00:00.000000Z;1;;";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("dateDebut");
         }
 
         @Test
-        void rejectsInvalidCodeAvantage() {
-            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;5;;", 1))
+        void shouldRejectAvtWhenCodeAvantageIsInvalid() {
+            // Given: An AVT line with invalid codeAvantage 5
+            String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;5;;";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("codeAvantage");
         }
 
         @Test
-        void rejectsCode1WithoutIdOpra() {
-            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;1;;", 1))
+        void shouldRejectAvtWhenCode1IsMissingIdOpra() {
+            // Given: An AVT line with codeAvantage 1 but blank idOpra
+            String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;1;;";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("idOpraAvantage");
         }
 
         @Test
-        void rejectsCode2WithoutValeurAvantage() {
-            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;2;;", 1))
+        void shouldRejectAvtWhenCode2IsMissingValeurAvantage() {
+            // Given: An AVT line with codeAvantage 2 but blank valeurAvantage
+            String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;2;;";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("valeurAvantage");
         }
 
         @Test
-        void rejectsValeurAvantageWithoutDevise() {
-            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;", 1))
+        void shouldRejectAvtWhenValeurAvantageIsPresentWithoutDevise() {
+            // Given: An AVT line with valeurAvantage but blank deviseAvantage
+            String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("deviseAvantage");
         }
 
         @Test
-        void rejectsDeviseLongerThanThreeChars() {
-            assertThatThrownBy(() -> mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;EURO", 1))
+        void shouldRejectAvtWhenDeviseIsLongerThanThreeCharacters() {
+            // Given: An AVT line with devise longer than 3 characters
+            String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;EURO";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("deviseAvantage");
         }
 
         @Test
-        void acceptsCode3And4WithValeurAndDevise() {
+        void shouldAcceptAvtWithCode3And4WhenValeurAndDeviseAreProvided() {
+            // Given: Allowed numeric advantage codes 3 and 4 with valeur and devise
             for (String code : List.of("3", "4")) {
-                ParsedLine line = mapper.mapLine("AVT;;2026-01-01T00:00:00.000000Z;;" + code + ";10.00;USD", 1);
+                String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;" + code + ";10.00;USD";
+
+                // Act: Map the line
+                ParsedLine line = mapper.mapLine(rawLine, 1);
+
+                // Assert: Advantage code is parsed properly
                 assertThat(line.field(4)).isEqualTo(code);
             }
         }

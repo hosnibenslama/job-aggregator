@@ -20,33 +20,37 @@ class CosDownloadTaskletTest {
     Path tempDir;
 
     @Test
-    void skipsDownloadWhenCosDisabled() throws Exception {
+    void shouldSkipDownloadWhenCosIsDisabled() throws Exception {
+        // Given: Cloud Object Storage is disabled in configuration
         CloudObjectStorageService storageService = mock(CloudObjectStorageService.class);
         CosProperties properties = new CosProperties(
                 false, "http://endpoint", "region", "bucket", "key", "secret",
                 "remote-input.txt", "remote-reject.txt", tempDir);
-
         Path target = tempDir.resolve("target.txt");
         CosDownloadTasklet tasklet = new CosDownloadTasklet(storageService, properties, target);
 
+        // Act: Execute the download tasklet
         RepeatStatus status = tasklet.execute(null, null);
 
+        // Assert: Tasklet finishes successfully without downloading from remote storage
         assertThat(status).isEqualTo(RepeatStatus.FINISHED);
         verify(storageService, never()).download(any(), any());
     }
 
     @Test
-    void downloadsFileWhenCosEnabled() throws Exception {
+    void shouldDownloadFileFromCosWhenCosIsEnabled() throws Exception {
+        // Given: Cloud Object Storage is enabled with remote input file configured
         CloudObjectStorageService storageService = mock(CloudObjectStorageService.class);
         CosProperties properties = new CosProperties(
                 true, "http://endpoint", "region", "bucket", "key", "secret",
                 "remote-input.txt", "remote-reject.txt", tempDir);
-
         Path target = tempDir.resolve("target.txt");
         CosDownloadTasklet tasklet = new CosDownloadTasklet(storageService, properties, target);
 
+        // Act: Execute the download tasklet
         RepeatStatus status = tasklet.execute(null, null);
 
+        // Assert: Tasklet finishes and downloads remote input file to target path
         assertThat(status).isEqualTo(RepeatStatus.FINISHED);
         verify(storageService).download(eq("remote-input.txt"), eq(target));
     }
