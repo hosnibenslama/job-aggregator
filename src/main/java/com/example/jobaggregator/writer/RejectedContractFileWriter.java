@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Each rejected block is prefixed with a comment line that contains the rejection reason:
  * <pre>
- * # REJECTED: Mandatory ACC line missing
+ * # ERROR: Mandatory ACC line missing
  * CTR;EUR;16;...
  * </pre>
  *
@@ -69,7 +69,7 @@ public class RejectedContractFileWriter implements ContractRejectWriter {
 
     @Override
     public synchronized void reject(List<String> rawLines, String reason) throws IOException {
-        writer.write("# REJECTED: " + reason);
+        writer.write("# ERROR: " + reason);
         writer.newLine();
         for (String raw : rawLines) {
             writer.write(raw);

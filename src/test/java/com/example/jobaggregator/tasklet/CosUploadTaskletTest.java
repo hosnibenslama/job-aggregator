@@ -84,7 +84,7 @@ class CosUploadTaskletTest {
                 true, "http://endpoint", "region", "bucket", "key", "secret",
                 "remote-input.txt", "remote-reject.txt", tempDir);
         Path rejectFile = tempDir.resolve("reject.txt");
-        Files.writeString(rejectFile, "# REJECTED: Mandatory ACC line missing");
+        Files.writeString(rejectFile, "# ERROR: Mandatory ACC line missing");
         CosUploadTasklet tasklet = new CosUploadTasklet(storageService, properties, rejectFile);
 
         // Act: Execute the upload tasklet
