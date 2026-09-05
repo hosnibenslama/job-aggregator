@@ -18,10 +18,8 @@ spring:
 
 contract:
   import:
-    input-file: src/main/resources/visa-premier.txt
-    partition-directory: target/partitions
-    invalid-file: target/invalid-contracts.dat
-    requested-partitions: 4
+    input-file: classpath:visa-premier.txt
+    invalid-file: src/main/resources/invalid-contracts.txt
     charset: UTF-8
 
 logging:

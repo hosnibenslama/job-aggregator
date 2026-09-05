@@ -8,7 +8,6 @@ import com.example.jobaggregator.reader.ContractBlockReader;
 import com.example.jobaggregator.reader.SemicolonLineParser;
 import com.example.jobaggregator.writer.ContractPersistenceWriter;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -21,18 +20,30 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 @EnableConfigurationProperties(ContractImportProperties.class)
 public class ContractImportJobConfig {
 
-    private final Path inputContractFile;
+    private final Resource inputContractResource;
     private final Charset charset;
 
-    public ContractImportJobConfig(ContractImportProperties props) {
-        this.inputContractFile = props.inputFile();
+    public ContractImportJobConfig(ContractImportProperties props, ResourceLoader resourceLoader) {
+        this.inputContractResource = resolveResource(props.inputFile(), resourceLoader);
         this.charset = props.charset();
+    }
+
+    private static Resource resolveResource(String location, ResourceLoader resourceLoader) {
+        if (location == null || location.isBlank()) {
+            return null;
+        }
+        if (location.startsWith("classpath:") || location.startsWith("file:")) {
+            return resourceLoader.getResource(location);
+        }
+        return new FileSystemResource(location);
     }
 
     @Bean
@@ -64,7 +75,7 @@ public class ContractImportJobConfig {
     @StepScope
     public SingleItemPeekableItemReader<ParsedLine> peekableLineReader() {
         FlatFileItemReader<ParsedLine> flatFileReader = new FlatFileItemReader<>(new SemicolonLineParser());
-        flatFileReader.setResource(new FileSystemResource(inputContractFile));
+        flatFileReader.setResource(inputContractResource);
         flatFileReader.setEncoding(charset.name());
         flatFileReader.setStrict(true);
         flatFileReader.setComments(new String[]{});
