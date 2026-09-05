@@ -1,7 +1,7 @@
 package com.example.jobaggregator.reader;
 
-import com.example.jobaggregator.domain.feed.LineType;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.error.ContractFormatException;
 import com.example.jobaggregator.reader.validator.AccountValidator;
 import com.example.jobaggregator.reader.validator.AdvantageValidator;
@@ -23,37 +23,37 @@ import java.util.Map;
 import org.springframework.batch.infrastructure.item.file.LineMapper;
 
 /**
- * Maps a raw semicolon-delimited text line to a {@link ParsedLine}.
+ * Maps a raw semicolon-delimited text line to a {@link FeedRecord}.
  *
  * <p>Parsing steps:
  * <ol>
  *   <li>Reject blank lines</li>
  *   <li>Split on {@code ;} and strip each field</li>
- *   <li>Determine the {@link LineType} from the first field</li>
+ *   <li>Determine the {@link FeedRecordType} from the first field</li>
  *   <li>Delegate field-level validation to the registered {@link LineFieldValidator} for that type</li>
- *   <li>Return the immutable {@link ParsedLine}</li>
+ *   <li>Return the immutable {@link FeedRecord}</li>
  * </ol>
  */
-public final class ContractLineMapper implements LineMapper<ParsedLine> {
+public final class ContractLineMapper implements LineMapper<FeedRecord> {
 
-    /** Registry of per-type field validators. Line types not listed (HDR, TRL) pass through. */
-    private static final Map<LineType, LineFieldValidator> VALIDATORS = Map.ofEntries(
-            Map.entry(LineType.CTR,  ContractHeaderValidator::validate),
-            Map.entry(LineType.ACC,  AccountValidator::validate),
-            Map.entry(LineType.OM,   OmValidator::validate),
-            Map.entry(LineType.OFF,  OfferValidator::validate),
-            Map.entry(LineType.ART,  ArticleValidator::validate),
-            Map.entry(LineType.ROL,  RoleValidator::validate),
-            Map.entry(LineType.TAR,  TarifValidator::validate),
-            Map.entry(LineType.OID,  ExternalIdValidator::validate),
-            Map.entry(LineType.IKAC, IkacValidator::validate),
-            Map.entry(LineType.COND, ConditionValidator::validate),
-            Map.entry(LineType.AVT,  AdvantageValidator::validate),
-            Map.entry(LineType.TRL,  TrailerValidator::validate)
+    /** Registry of per-type field validators. Record types not listed (HDR, TRL) pass through. */
+    private static final Map<FeedRecordType, LineFieldValidator> VALIDATORS = Map.ofEntries(
+            Map.entry(FeedRecordType.CTR,  ContractHeaderValidator::validate),
+            Map.entry(FeedRecordType.ACC,  AccountValidator::validate),
+            Map.entry(FeedRecordType.OM,   OmValidator::validate),
+            Map.entry(FeedRecordType.OFF,  OfferValidator::validate),
+            Map.entry(FeedRecordType.ART,  ArticleValidator::validate),
+            Map.entry(FeedRecordType.ROL,  RoleValidator::validate),
+            Map.entry(FeedRecordType.TAR,  TarifValidator::validate),
+            Map.entry(FeedRecordType.OID,  ExternalIdValidator::validate),
+            Map.entry(FeedRecordType.IKAC, IkacValidator::validate),
+            Map.entry(FeedRecordType.COND, ConditionValidator::validate),
+            Map.entry(FeedRecordType.AVT,  AdvantageValidator::validate),
+            Map.entry(FeedRecordType.TRL,  TrailerValidator::validate)
     );
 
     @Override
-    public ParsedLine mapLine(String line, int lineNumber) {
+    public FeedRecord mapLine(String line, int lineNumber) {
         if (line == null || line.isBlank()) {
             throw new ContractFormatException(lineNumber, null, "Blank input line");
         }
@@ -62,11 +62,11 @@ public final class ContractLineMapper implements LineMapper<ParsedLine> {
                 .map(String::strip)
                 .toList();
 
-        LineType type = LineType.determineFromFields(fields.toArray(String[]::new));
-        if (type == LineType.UNKNOWN) {
-            // Return a poison line instead of throwing — allows the contract block
+        FeedRecordType type = FeedRecordType.determineFromFields(fields.toArray(String[]::new));
+        if (type == FeedRecordType.UNKNOWN) {
+            // Return a poison record instead of throwing — allows the contract block
             // to be assembled and rejected as a whole by the processor
-            return new ParsedLine(lineNumber, LineType.UNKNOWN, line, fields);
+            return new FeedRecord(lineNumber, FeedRecordType.UNKNOWN, line, fields);
         }
 
         LineFieldValidator validator = VALIDATORS.get(type);
@@ -74,6 +74,6 @@ public final class ContractLineMapper implements LineMapper<ParsedLine> {
             validator.validate(fields, lineNumber);
         }
 
-        return new ParsedLine(lineNumber, type, line, fields);
+        return new FeedRecord(lineNumber, type, line, fields);
     }
 }

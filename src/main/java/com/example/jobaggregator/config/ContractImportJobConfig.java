@@ -1,7 +1,7 @@
 package com.example.jobaggregator.config;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.listener.ContractFileIntegrityListener;
 import com.example.jobaggregator.processor.ContractStructureValidator;
 import com.example.jobaggregator.reader.ContractBlockReader;
@@ -122,8 +122,8 @@ public class ContractImportJobConfig {
 
     @Bean
     @StepScope
-    public SingleItemPeekableItemReader<ParsedLine> peekableLineReader() {
-        FlatFileItemReader<ParsedLine> flatFileReader = new FlatFileItemReader<>(new ContractLineMapper());
+    public SingleItemPeekableItemReader<FeedRecord> peekableLineReader() {
+        FlatFileItemReader<FeedRecord> flatFileReader = new FlatFileItemReader<>(new ContractLineMapper());
         flatFileReader.setResource(inputContractResource);
         flatFileReader.setEncoding(charset.name());
         flatFileReader.setStrict(true);
@@ -135,7 +135,7 @@ public class ContractImportJobConfig {
     @Bean
     @StepScope
     public ContractBlockReader contractItemReader(
-            SingleItemPeekableItemReader<ParsedLine> peekableLineReader) {
+            SingleItemPeekableItemReader<FeedRecord> peekableLineReader) {
         return new ContractBlockReader(peekableLineReader);
     }
 }

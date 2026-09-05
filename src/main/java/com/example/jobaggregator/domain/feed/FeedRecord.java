@@ -3,11 +3,11 @@ package com.example.jobaggregator.domain.feed;
 import java.util.List;
 
 /**
- * Represents an immutable semicolon-delimited input line parsed from the raw feed.
+ * Represents an immutable semicolon-delimited feed record parsed from the raw contract input file.
  */
-public record ParsedLine(
+public record FeedRecord(
         long lineNumber,
-        LineType type,
+        FeedRecordType type,
         String raw,
         List<String> fields) {
 

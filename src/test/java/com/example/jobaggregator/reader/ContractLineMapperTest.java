@@ -3,8 +3,8 @@ package com.example.jobaggregator.reader;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.example.jobaggregator.domain.feed.LineType;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.error.ContractFormatException;
 import java.util.List;
 import org.junit.jupiter.api.Nested;
@@ -38,10 +38,10 @@ class ContractLineMapperTest {
         String lineContent = "XYZ;data";
 
         // Act: Map the line
-        ParsedLine line = mapper.mapLine(lineContent, 1);
+        FeedRecord line = mapper.mapLine(lineContent, 1);
 
         // Assert: Line is recognized as UNKNOWN with lineNumber and raw content preserved
-        assertThat(line.type()).isEqualTo(LineType.UNKNOWN);
+        assertThat(line.type()).isEqualTo(FeedRecordType.UNKNOWN);
         assertThat(line.lineNumber()).isEqualTo(1);
         assertThat(line.raw()).isEqualTo("XYZ;data");
     }
@@ -63,10 +63,10 @@ class ContractLineMapperTest {
             String rawLine = VALID_CTR;
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: Type is CTR and all mapped fields match expected values
-            assertThat(line.type()).isEqualTo(LineType.CTR);
+            assertThat(line.type()).isEqualTo(FeedRecordType.CTR);
             assertThat(line.field(1)).isEqualTo("EUR");
             assertThat(line.field(5)).isEqualTo("031030000");
             assertThat(line.field(7)).isEqualTo("BR-00001090");
@@ -156,7 +156,7 @@ class ContractLineMapperTest {
 
             for (String ch : validChannels) {
                 // Act: Parse CTR line with each channel
-                ParsedLine line = mapper.mapLine(buildCtr(14, ch), 1);
+                FeedRecord line = mapper.mapLine(buildCtr(14, ch), 1);
 
                 // Assert: Channel is successfully parsed
                 assertThat(line.field(14)).isEqualTo(ch);
@@ -181,7 +181,7 @@ class ContractLineMapperTest {
 
             for (String media : validMediaCodes) {
                 // Act: Parse CTR line with each media code
-                ParsedLine line = mapper.mapLine(buildCtr(15, media), 1);
+                FeedRecord line = mapper.mapLine(buildCtr(15, media), 1);
 
                 // Assert: Media is successfully parsed
                 assertThat(line.field(15)).isEqualTo(media);
@@ -233,10 +233,10 @@ class ContractLineMapperTest {
             String rawLine = VALID_ACC;
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: Parsed line has ACC type and correct subtype and BIC
-            assertThat(line.type()).isEqualTo(LineType.ACC);
+            assertThat(line.type()).isEqualTo(FeedRecordType.ACC);
             assertThat(line.field(1)).isEqualTo("BILL");
             assertThat(line.field(2)).isEqualTo("BNPAFRPP");
         }
@@ -247,7 +247,7 @@ class ContractLineMapperTest {
             String rawLine = "ACC;FEE;BNPAFRPP;FR76300040219600001;";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: Subtype is FEE
             assertThat(line.field(1)).isEqualTo("FEE");
@@ -311,10 +311,10 @@ class ContractLineMapperTest {
             String rawLine = "OM;00058680432692016;000058680432692016";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: OM type is identified with correct fields
-            assertThat(line.type()).isEqualTo(LineType.OM);
+            assertThat(line.type()).isEqualTo(FeedRecordType.OM);
             assertThat(line.field(1)).isEqualTo("00058680432692016");
             assertThat(line.field(2)).isEqualTo("000058680432692016");
         }
@@ -355,10 +355,10 @@ class ContractLineMapperTest {
             String rawLine = "OFF;OFF-0000000001090;AP00111;Carte VISA PREMIER DI";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: OFF type is identified with all fields
-            assertThat(line.type()).isEqualTo(LineType.OFF);
+            assertThat(line.type()).isEqualTo(FeedRecordType.OFF);
             assertThat(line.field(1)).isEqualTo("OFF-0000000001090");
             assertThat(line.field(3)).isEqualTo("Carte VISA PREMIER DI");
         }
@@ -369,10 +369,10 @@ class ContractLineMapperTest {
             String rawLine = "OFF;OFF-0000000001090;AP00111";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: OFF type is identified successfully
-            assertThat(line.type()).isEqualTo(LineType.OFF);
+            assertThat(line.type()).isEqualTo(FeedRecordType.OFF);
         }
 
         @Test
@@ -411,10 +411,10 @@ class ContractLineMapperTest {
             String rawLine = "ART;5";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: ART type is identified with index 5
-            assertThat(line.type()).isEqualTo(LineType.ART);
+            assertThat(line.type()).isEqualTo(FeedRecordType.ART);
             assertThat(line.field(1)).isEqualTo("5");
         }
 
@@ -467,10 +467,10 @@ class ContractLineMapperTest {
             String rawLine = VALID_ROL;
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: ROL line type and fields are mapped correctly
-            assertThat(line.type()).isEqualTo(LineType.ROL);
+            assertThat(line.type()).isEqualTo(FeedRecordType.ROL);
             assertThat(line.field(3)).isEqualTo("PRI");
             assertThat(line.field(4)).isEqualTo("01970013368500000");
             assertThat(line.field(5)).isEqualTo("01970013368500002");
@@ -539,10 +539,10 @@ class ContractLineMapperTest {
             String rawLine = "TAR";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: Mapped type is TAR
-            assertThat(line.type()).isEqualTo(LineType.TAR);
+            assertThat(line.type()).isEqualTo(FeedRecordType.TAR);
         }
 
         @Test
@@ -552,10 +552,10 @@ class ContractLineMapperTest {
                          "EUR;1;001;007;001;;10.50;50.00;1.0;;;0;1000.00;1;";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(tar, 1);
+            FeedRecord line = mapper.mapLine(tar, 1);
 
             // Assert: Mapped type is TAR
-            assertThat(line.type()).isEqualTo(LineType.TAR);
+            assertThat(line.type()).isEqualTo(FeedRecordType.TAR);
         }
 
         @Test
@@ -652,10 +652,10 @@ class ContractLineMapperTest {
             String tar = "TAR;;;;;;;;;;;;;;;;;;;;;";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(tar, 1);
+            FeedRecord line = mapper.mapLine(tar, 1);
 
             // Assert: Line is parsed successfully as TAR
-            assertThat(line.type()).isEqualTo(LineType.TAR);
+            assertThat(line.type()).isEqualTo(FeedRecordType.TAR);
         }
     }
 
@@ -672,10 +672,10 @@ class ContractLineMapperTest {
             String rawLine = "AVT;OPRA-000000000001;2026-01-01T00:00:00.000000Z;;1;;";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: Type is AVT with idOpra and code 1 preserved
-            assertThat(line.type()).isEqualTo(LineType.AVT);
+            assertThat(line.type()).isEqualTo(FeedRecordType.AVT);
             assertThat(line.field(1)).isEqualTo("OPRA-000000000001");
             assertThat(line.field(4)).isEqualTo("1");
         }
@@ -686,10 +686,10 @@ class ContractLineMapperTest {
             String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;2;50.00;EUR";
 
             // Act: Map the line
-            ParsedLine line = mapper.mapLine(rawLine, 1);
+            FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: Type is AVT with code 2, valeur, and devise mapped correctly
-            assertThat(line.type()).isEqualTo(LineType.AVT);
+            assertThat(line.type()).isEqualTo(FeedRecordType.AVT);
             assertThat(line.field(4)).isEqualTo("2");
             assertThat(line.field(5)).isEqualTo("50.00");
             assertThat(line.field(6)).isEqualTo("EUR");
@@ -779,7 +779,7 @@ class ContractLineMapperTest {
                 String rawLine = "AVT;;2026-01-01T00:00:00.000000Z;;" + code + ";10.00;USD";
 
                 // Act: Map the line
-                ParsedLine line = mapper.mapLine(rawLine, 1);
+                FeedRecord line = mapper.mapLine(rawLine, 1);
 
                 // Assert: Advantage code is parsed properly
                 assertThat(line.field(4)).isEqualTo(code);

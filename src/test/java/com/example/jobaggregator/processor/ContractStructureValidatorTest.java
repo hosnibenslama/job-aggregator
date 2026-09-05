@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.feed.LineType;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.writer.ContractRejectWriter;
 import java.io.IOException;
 import java.util.List;
@@ -33,10 +33,10 @@ class ContractStructureValidatorTest {
     void shouldReturnContractUnchangedWhenStructureIsValid() throws Exception {
         // Given: A valid, complete contract containing CTR, ACC, OM, and ART
         ContractBlock contract = new ContractBlock(List.of(
-                createParsedLine(1, LineType.CTR, "CTR"),
-                createParsedLine(2, LineType.ACC, "ACC", "BILL"),
-                createParsedLine(3, LineType.OM, "OM", "OM-001"),
-                createParsedLine(4, LineType.ART, "ART", "1")
+                createFeedRecord(1, FeedRecordType.CTR, "CTR"),
+                createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"),
+                createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"),
+                createFeedRecord(4, FeedRecordType.ART, "ART", "1")
         ));
 
         // Act: Process the contract through structure validator
@@ -51,8 +51,8 @@ class ContractStructureValidatorTest {
     void shouldFilterContractAndCallRejectWriterWhenStructureIsInvalid() throws Exception {
         // Given: An invalid contract missing mandatory OM and ART lines
         ContractBlock contract = new ContractBlock(List.of(
-                createParsedLine(1, LineType.CTR, "CTR"),
-                createParsedLine(2, LineType.ACC, "ACC", "BILL")
+                createFeedRecord(1, FeedRecordType.CTR, "CTR"),
+                createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL")
         ));
 
         // Act: Process the contract through structure validator
@@ -67,9 +67,9 @@ class ContractStructureValidatorTest {
     void shouldCallRejectWriterWithDescriptiveReasonWhenContractIsMissingRequiredLine() throws Exception {
         // Given: An invalid contract missing the required ART line
         ContractBlock contract = new ContractBlock(List.of(
-                createParsedLine(1, LineType.CTR, "CTR"),
-                createParsedLine(2, LineType.ACC, "ACC", "BILL"),
-                createParsedLine(3, LineType.OM, "OM", "OM-001")
+                createFeedRecord(1, FeedRecordType.CTR, "CTR"),
+                createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"),
+                createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001")
         ));
 
         // Act: Process the contract through structure validator
@@ -83,8 +83,8 @@ class ContractStructureValidatorTest {
     void shouldPropagateIoExceptionWhenRejectWriterFails() throws Exception {
         // Given: An invalid contract and a reject writer that fails with IOException
         ContractBlock contract = new ContractBlock(List.of(
-                createParsedLine(1, LineType.CTR, "CTR"),
-                createParsedLine(2, LineType.ACC, "ACC", "BILL")
+                createFeedRecord(1, FeedRecordType.CTR, "CTR"),
+                createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL")
         ));
         doThrow(new IOException("Disk full")).when(rejectWriter).reject(any(ContractBlock.class), any(String.class));
 
@@ -98,10 +98,10 @@ class ContractStructureValidatorTest {
     void shouldFilterContractAndCallRejectWriterWhenLineSequenceIsInvalid() throws Exception {
         // Given: A contract with an invalid hierarchy (IKAC appearing before ART)
         ContractBlock contract = new ContractBlock(List.of(
-                createParsedLine(1, LineType.CTR, "CTR"),
-                createParsedLine(2, LineType.ACC, "ACC", "BILL"),
-                createParsedLine(3, LineType.OM, "OM", "OM-001"),
-                createParsedLine(4, LineType.IKAC, "IKAC", "value")
+                createFeedRecord(1, FeedRecordType.CTR, "CTR"),
+                createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"),
+                createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"),
+                createFeedRecord(4, FeedRecordType.IKAC, "IKAC", "value")
         ));
 
         // Act: Process the contract through structure validator
@@ -113,13 +113,13 @@ class ContractStructureValidatorTest {
     }
 
     @Test
-    void shouldFilterContractAndCallRejectWriterWhenContractContainsUnknownLineType() throws Exception {
+    void shouldFilterContractAndCallRejectWriterWhenContractContainsUnknownFeedRecordType() throws Exception {
         // Given: A contract containing an UNKNOWN poison line
         ContractBlock contract = new ContractBlock(List.of(
-                createParsedLine(1, LineType.UNKNOWN, "CTTR"),
-                createParsedLine(2, LineType.ACC, "ACC", "BILL"),
-                createParsedLine(3, LineType.OM, "OM", "OM-001"),
-                createParsedLine(4, LineType.ART, "ART", "1")
+                createFeedRecord(1, FeedRecordType.UNKNOWN, "CTTR"),
+                createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"),
+                createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"),
+                createFeedRecord(4, FeedRecordType.ART, "ART", "1")
         ));
 
         // Act: Process the contract through structure validator
@@ -130,7 +130,7 @@ class ContractStructureValidatorTest {
         verify(rejectWriter).reject(eq(contract), any(String.class));
     }
 
-    private ParsedLine createParsedLine(long number, LineType type, String... fields) {
-        return new ParsedLine(number, type, String.join(";", fields), List.of(fields));
+    private FeedRecord createFeedRecord(long number, FeedRecordType type, String... fields) {
+        return new FeedRecord(number, type, String.join(";", fields), List.of(fields));
     }
 }

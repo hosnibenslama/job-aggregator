@@ -1,8 +1,8 @@
 package com.example.jobaggregator.reader;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.feed.LineType;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.error.ContractFormatException;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Assembles and validates the structural sequencing of a single {@link ContractBlock} from ordered lines.
+ * Assembles and validates the structural sequencing of a single {@link ContractBlock} from ordered feed records.
  *
  * <p>Responsibilities (Single Responsibility Principle):
  * <ul>
- *   <li>Enforces line sequencing grammar (which line types may follow a given line type)</li>
+ *   <li>Enforces record sequencing grammar (which record types may follow a given record type)</li>
  *   <li>Enforces structural prerequisites (e.g. OID requires OM, TAR requires ART)</li>
  *   <li>Enforces mandatory block content (at least one ACC, OM, ART per contract)</li>
  * </ul>
@@ -23,33 +23,33 @@ import java.util.Set;
  */
 public final class ContractBlockAssembler {
 
-    private final List<ParsedLine> lines = new ArrayList<>();
-    private LineType previous;
+    private final List<FeedRecord> records = new ArrayList<>();
+    private FeedRecordType previous;
     private boolean hasAccount;
     private boolean hasMarketedObject;
     private boolean hasArticle;
 
-    public ContractBlockAssembler(ParsedLine ctr) {
-        if (ctr.type() != LineType.CTR) {
+    public ContractBlockAssembler(FeedRecord ctr) {
+        if (ctr.type() != FeedRecordType.CTR) {
             throw new ContractFormatException(ctr.lineNumber(), null, "A contract must begin with CTR");
         }
 
-        lines.add(ctr);
-        previous = LineType.CTR;
+        records.add(ctr);
+        previous = FeedRecordType.CTR;
     }
 
-    public void accept(ParsedLine line) {
-        Set<LineType> allowed = allowedAfter(previous);
-        if (!allowed.contains(line.type())) {
-            throw error(line, "Unexpected " + line.type()
+    public void accept(FeedRecord record) {
+        Set<FeedRecordType> allowed = allowedAfter(previous);
+        if (!allowed.contains(record.type())) {
+            throw error(record, "Unexpected " + record.type()
                     + " after " + previous + "; expected one of " + allowed);
         }
 
-        validatePrerequisites(line);
-        lines.add(line);
-        previous = line.type();
+        validatePrerequisites(record);
+        records.add(record);
+        previous = record.type();
 
-        switch (line.type()) {
+        switch (record.type()) {
             case ACC -> hasAccount = true;
             case OM -> hasMarketedObject = true;
             case ART -> hasArticle = true;
@@ -59,130 +59,130 @@ public final class ContractBlockAssembler {
 
     public ContractBlock build() {
         if (!hasAccount) {
-            throw error(lines.getFirst(), "A contract must contain at least one ACC");
+            throw error(records.getFirst(), "A contract must contain at least one ACC");
         }
         if (!hasMarketedObject) {
-            throw error(lines.getFirst(), "A contract must contain at least one OM");
+            throw error(records.getFirst(), "A contract must contain at least one OM");
         }
         if (!hasArticle) {
-            throw error(lines.getFirst(), "A contract must contain at least one ART");
+            throw error(records.getFirst(), "A contract must contain at least one ART");
         }
 
-        return new ContractBlock(List.copyOf(lines));
+        return new ContractBlock(List.copyOf(records));
     }
 
-    private void validatePrerequisites(ParsedLine line) {
-        if (line.type() == LineType.OID && !hasMarketedObject) {
-            throw error(line, "OID requires a preceding OM");
+    private void validatePrerequisites(FeedRecord record) {
+        if (record.type() == FeedRecordType.OID && !hasMarketedObject) {
+            throw error(record, "OID requires a preceding OM");
         }
-        if (Set.of(LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT).contains(line.type())
+        if (Set.of(FeedRecordType.IKAC, FeedRecordType.COND, FeedRecordType.TAR, FeedRecordType.AVT).contains(record.type())
                 && !hasArticle) {
-            throw error(line, line.type() + " requires a preceding ART");
+            throw error(record, record.type() + " requires a preceding ART");
         }
     }
 
     /**
-     * Line-ordering grammar: defines the allowed successor line types according to the specification.
+     * Record-ordering grammar: defines the allowed successor record types according to the specification.
      */
-    private Set<LineType> allowedAfter(LineType type) {
+    private Set<FeedRecordType> allowedAfter(FeedRecordType type) {
         return switch (type) {
             // After Contract root or Offer: can transition to account, commercial role, offer, or product
             case CTR, OFF -> EnumSet.of(
-                    LineType.ACC,
-                    LineType.ROL,
-                    LineType.OFF,
-                    LineType.OM);
+                    FeedRecordType.ACC,
+                    FeedRecordType.ROL,
+                    FeedRecordType.OFF,
+                    FeedRecordType.OM);
 
             // After Commercial Role: can transition to account, role, offer, product, operation detail, or article
             case ROL -> EnumSet.of(
-                    LineType.ACC,
-                    LineType.ROL,
-                    LineType.OFF,
-                    LineType.OM,
-                    LineType.OID,
-                    LineType.ART);
+                    FeedRecordType.ACC,
+                    FeedRecordType.ROL,
+                    FeedRecordType.OFF,
+                    FeedRecordType.OM,
+                    FeedRecordType.OID,
+                    FeedRecordType.ART);
 
             // After Account: can transition to further accounts, roles, offers, products, articles, conditions, tarifs
             case ACC -> EnumSet.of(
-                    LineType.ACC,
-                    LineType.ROL,
-                    LineType.OFF,
-                    LineType.OM,
-                    LineType.ART,
-                    LineType.IKAC,
-                    LineType.COND,
-                    LineType.TAR,
-                    LineType.AVT,
-                    LineType.OID);
+                    FeedRecordType.ACC,
+                    FeedRecordType.ROL,
+                    FeedRecordType.OFF,
+                    FeedRecordType.OM,
+                    FeedRecordType.ART,
+                    FeedRecordType.IKAC,
+                    FeedRecordType.COND,
+                    FeedRecordType.TAR,
+                    FeedRecordType.AVT,
+                    FeedRecordType.OID);
 
             // After Marketed Product (OM): can transition to operation detail, commercial role, or article
             case OM -> EnumSet.of(
-                    LineType.OID,
-                    LineType.ROL,
-                    LineType.ART);
+                    FeedRecordType.OID,
+                    FeedRecordType.ROL,
+                    FeedRecordType.ART);
 
             // After Operation Detail (OID): transitions within article/product scope
             case OID -> EnumSet.of(
-                    LineType.ROL,
-                    LineType.ART,
-                    LineType.IKAC,
-                    LineType.COND,
-                    LineType.ACC,
-                    LineType.TAR,
-                    LineType.AVT,
-                    LineType.OID);
+                    FeedRecordType.ROL,
+                    FeedRecordType.ART,
+                    FeedRecordType.IKAC,
+                    FeedRecordType.COND,
+                    FeedRecordType.ACC,
+                    FeedRecordType.TAR,
+                    FeedRecordType.AVT,
+                    FeedRecordType.OID);
 
             // After Article: transitions to tarif, conditions, next article, or account
             case ART -> EnumSet.of(
-                    LineType.OID,
-                    LineType.IKAC,
-                    LineType.COND,
-                    LineType.ACC,
-                    LineType.TAR,
-                    LineType.AVT,
-                    LineType.ART,
-                    LineType.ROL);
+                    FeedRecordType.OID,
+                    FeedRecordType.IKAC,
+                    FeedRecordType.COND,
+                    FeedRecordType.ACC,
+                    FeedRecordType.TAR,
+                    FeedRecordType.AVT,
+                    FeedRecordType.ART,
+                    FeedRecordType.ROL);
 
             // After IKAC: conditions, account, tarifs, or next article
             case IKAC -> EnumSet.of(
-                    LineType.COND,
-                    LineType.ACC,
-                    LineType.TAR,
-                    LineType.AVT,
-                    LineType.ART,
-                    LineType.ROL,
-                    LineType.OID);
+                    FeedRecordType.COND,
+                    FeedRecordType.ACC,
+                    FeedRecordType.TAR,
+                    FeedRecordType.AVT,
+                    FeedRecordType.ART,
+                    FeedRecordType.ROL,
+                    FeedRecordType.OID);
 
             // After COND: further conditions, tarifs, or accounts
             case COND -> EnumSet.of(
-                    LineType.ACC,
-                    LineType.TAR,
-                    LineType.AVT,
-                    LineType.ART,
-                    LineType.ROL,
-                    LineType.OID,
-                    LineType.COND);
+                    FeedRecordType.ACC,
+                    FeedRecordType.TAR,
+                    FeedRecordType.AVT,
+                    FeedRecordType.ART,
+                    FeedRecordType.ROL,
+                    FeedRecordType.OID,
+                    FeedRecordType.COND);
 
             // After Tarif (TAR): advantages, next article, role, account, or OID
             case TAR -> EnumSet.of(
-                    LineType.AVT,
-                    LineType.ART,
-                    LineType.ROL,
-                    LineType.ACC,
-                    LineType.OID);
+                    FeedRecordType.AVT,
+                    FeedRecordType.ART,
+                    FeedRecordType.ROL,
+                    FeedRecordType.ACC,
+                    FeedRecordType.OID);
 
             // After Avantage (AVT): next article, role, account, or OID
             case AVT -> EnumSet.of(
-                    LineType.ART,
-                    LineType.ROL,
-                    LineType.ACC,
-                    LineType.OID);
+                    FeedRecordType.ART,
+                    FeedRecordType.ROL,
+                    FeedRecordType.ACC,
+                    FeedRecordType.OID);
 
-            default -> throw new IllegalStateException("No grammar rule for LineType: " + type);
+            default -> throw new IllegalStateException("No grammar rule for FeedRecordType: " + type);
         };
     }
 
-    private ContractFormatException error(ParsedLine line, String reason) {
-        return new ContractFormatException(line.lineNumber(), null, reason);
+    private ContractFormatException error(FeedRecord record, String reason) {
+        return new ContractFormatException(record.lineNumber(), null, reason);
     }
 }

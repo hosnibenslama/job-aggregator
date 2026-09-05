@@ -1,8 +1,8 @@
 package com.example.jobaggregator.processor;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.feed.LineType;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.error.ContractFormatException;
 import com.example.jobaggregator.reader.ContractBlockAssembler;
 import com.example.jobaggregator.writer.ContractRejectWriter;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Validation is delegated to {@link ContractBlockAssembler}, which enforces:
  * <ul>
- *   <li>Line sequencing grammar (which line types may follow a given type)</li>
+ *   <li>Record sequencing grammar (which record types may follow a given type)</li>
  *   <li>Structural prerequisites (e.g. OID requires OM, TAR requires ART)</li>
  *   <li>Mandatory block content (at least one ACC, OM, ART per contract)</li>
  * </ul>
@@ -49,28 +49,28 @@ public final class ContractStructureValidator implements ItemProcessor<ContractB
     // -----------------------------------------------------------------------
 
     /**
-     * Rejects contracts containing lines that failed to parse (marked as UNKNOWN).
+     * Rejects contracts containing records that failed to parse (marked as UNKNOWN).
      * This ensures that contracts with typos like "CTTR" instead of "CTR" are
      * rejected to the file rather than silently skipped.
      */
     private void checkForUnknownLines(ContractBlock contract) {
-        for (ParsedLine line : contract.lines()) {
-            if (line.type() == LineType.UNKNOWN) {
-                throw new ContractFormatException(line.lineNumber(), null,
-                        "Unparseable line: " + line.raw());
+        for (FeedRecord record : contract.records()) {
+            if (record.type() == FeedRecordType.UNKNOWN) {
+                throw new ContractFormatException(record.lineNumber(), null,
+                        "Unparseable line: " + record.raw());
             }
         }
     }
 
     /**
-     * Replays the block's lines through the assembler to enforce sequencing,
+     * Replays the block's records through the assembler to enforce sequencing,
      * prerequisites, and mandatory-type rules.
      */
     private void validateContract(ContractBlock contract) {
-        List<ParsedLine> lines = contract.lines();
-        ContractBlockAssembler assembler = new ContractBlockAssembler(lines.getFirst());
-        for (int i = 1; i < lines.size(); i++) {
-            assembler.accept(lines.get(i));
+        List<FeedRecord> records = contract.records();
+        ContractBlockAssembler assembler = new ContractBlockAssembler(records.getFirst());
+        for (int i = 1; i < records.size(); i++) {
+            assembler.accept(records.get(i));
         }
         assembler.build(); // validates mandatory ACC, OM, ART
     }

@@ -3,8 +3,8 @@ package com.example.jobaggregator.writer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.feed.LineType;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.domain.feed.FeedRecord;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,8 +53,8 @@ class RejectedContractFileWriterTest {
     @Test
     void shouldWriteErrorCommentWhenRejectingContractBlock() throws IOException {
         // Given: A ContractBlock with parsed lines and an error reason
-        ParsedLine ctrLine = new ParsedLine(1, LineType.CTR, "CTR;EUR;16;ABC", List.of("CTR", "EUR", "16", "ABC"));
-        ParsedLine ikacLine = new ParsedLine(2, LineType.IKAC, "IKAC;001;DATA", List.of("IKAC", "001", "DATA"));
+        FeedRecord ctrLine = new FeedRecord(1, FeedRecordType.CTR, "CTR;EUR;16;ABC", List.of("CTR", "EUR", "16", "ABC"));
+        FeedRecord ikacLine = new FeedRecord(2, FeedRecordType.IKAC, "IKAC;001;DATA", List.of("IKAC", "001", "DATA"));
         ContractBlock contractBlock = new ContractBlock(List.of(ctrLine, ikacLine));
         String reason = "Invalid contract structure";
 

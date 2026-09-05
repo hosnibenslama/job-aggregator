@@ -1,19 +1,19 @@
 package com.example.jobaggregator.domain;
 
 import com.example.jobaggregator.domain.feed.ContractFeedMapper;
-import com.example.jobaggregator.domain.feed.LineType;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecord;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
 /**
  * Represents a normalized domain aggregate root constituting a single contract.
- * Holds a unique generated UUID, typed child components, and raw line strings for rejection.
+ * Holds a unique generated UUID, typed child components, and raw feed records.
  */
 public record ContractBlock(
         UUID id,
-        List<ParsedLine> lines,
+        List<FeedRecord> records,
         ContractHeader header,
         List<Account> accounts,
         List<Role> roles,
@@ -26,27 +26,34 @@ public record ContractBlock(
         List<Tarif> tarifs,
         List<Advantage> advantages) {
 
-    public ContractBlock(List<ParsedLine> lines) {
-        this(UUID.randomUUID(), lines);
+    public ContractBlock(List<FeedRecord> records) {
+        this(UUID.randomUUID(), records);
     }
 
-    public ContractBlock(UUID id, List<ParsedLine> lines) {
+    public ContractBlock(UUID id, List<FeedRecord> records) {
         this(
                 id,
-                lines,
-                (!lines.isEmpty() && lines.getFirst().type() == LineType.CTR)
-                        ? ContractFeedMapper.toHeader(lines.getFirst()) : null,
-                filter(lines, LineType.ACC, ContractFeedMapper::toAccount),
-                filter(lines, LineType.ROL, ContractFeedMapper::toRole),
-                filter(lines, LineType.OFF, ContractFeedMapper::toOffer),
-                filter(lines, LineType.OM, ContractFeedMapper::toMarketedObject),
-                filter(lines, LineType.OID, ContractFeedMapper::toExternalId),
-                filter(lines, LineType.ART, ContractFeedMapper::toArticle),
-                filter(lines, LineType.IKAC, ContractFeedMapper::toIkac),
-                filter(lines, LineType.COND, ContractFeedMapper::toCondition),
-                filter(lines, LineType.TAR, ContractFeedMapper::toTarif),
-                filter(lines, LineType.AVT, ContractFeedMapper::toAdvantage)
+                records,
+                (!records.isEmpty() && records.getFirst().type() == FeedRecordType.CTR)
+                        ? ContractFeedMapper.toHeader(records.getFirst()) : null,
+                filter(records, FeedRecordType.ACC, ContractFeedMapper::toAccount),
+                filter(records, FeedRecordType.ROL, ContractFeedMapper::toRole),
+                filter(records, FeedRecordType.OFF, ContractFeedMapper::toOffer),
+                filter(records, FeedRecordType.OM, ContractFeedMapper::toMarketedObject),
+                filter(records, FeedRecordType.OID, ContractFeedMapper::toExternalId),
+                filter(records, FeedRecordType.ART, ContractFeedMapper::toArticle),
+                filter(records, FeedRecordType.IKAC, ContractFeedMapper::toIkac),
+                filter(records, FeedRecordType.COND, ContractFeedMapper::toCondition),
+                filter(records, FeedRecordType.TAR, ContractFeedMapper::toTarif),
+                filter(records, FeedRecordType.AVT, ContractFeedMapper::toAdvantage)
         );
+    }
+
+    /**
+     * Backward-compatible accessor for feed records.
+     */
+    public List<FeedRecord> lines() {
+        return records;
     }
 
     /**
@@ -71,14 +78,14 @@ public record ContractBlock(
     }
 
     public List<String> rawLines() {
-        return lines != null ? lines.stream().map(ParsedLine::raw).toList() : List.of();
+        return records != null ? records.stream().map(FeedRecord::raw).toList() : List.of();
     }
 
-    private static <T> List<T> filter(List<ParsedLine> lines, LineType type, Function<ParsedLine, T> mapper) {
-        if (lines == null) {
+    private static <T> List<T> filter(List<FeedRecord> records, FeedRecordType type, Function<FeedRecord, T> mapper) {
+        if (records == null) {
             return List.of();
         }
-        return lines.stream()
+        return records.stream()
                 .filter(l -> l.type() == type)
                 .map(mapper)
                 .toList();

@@ -5,8 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.feed.LineType;
-import com.example.jobaggregator.domain.feed.ParsedLine;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.persistence.ContractEntity;
 import com.example.jobaggregator.persistence.ContractEntityRepository;
 import java.util.List;
@@ -23,21 +23,21 @@ class ContractPersistenceWriterTest {
         ContractPersistenceWriter writer = new ContractPersistenceWriter(repository);
 
         // A ContractBlock with multiple child line types
-        ParsedLine ctr = new ParsedLine(1, LineType.CTR, "CTR", List.of(
+        FeedRecord ctr = new FeedRecord(1, FeedRecordType.CTR, "CTR", List.of(
                 "CTR", "EUR", "16", "003", "ouDist", "ouMgmt", "addr1", "rel1",
                 "2026-01-01T00:00:00.000000Z", "MENSUELLE", "2026-01-01",
                 "0123456789abcdef", "0123456789abcdef", "user1", "001", "003"));
-        ParsedLine acc = new ParsedLine(2, LineType.ACC, "ACC", List.of(
+        FeedRecord acc = new FeedRecord(2, FeedRecordType.ACC, "ACC", List.of(
                 "ACC", "BILL", "BNPAFRPP", "FR76300040219600000167638828", "RIB123"));
-        ParsedLine om = new ParsedLine(3, LineType.OM, "OM", List.of(
+        FeedRecord om = new FeedRecord(3, FeedRecordType.OM, "OM", List.of(
                 "OM", "OM-001", "BR-001"));
-        ParsedLine art = new ParsedLine(4, LineType.ART, "ART", List.of(
+        FeedRecord art = new FeedRecord(4, FeedRecordType.ART, "ART", List.of(
                 "ART", "1"));
-        ParsedLine ikac = new ParsedLine(5, LineType.IKAC, "IKAC", List.of(
+        FeedRecord ikac = new FeedRecord(5, FeedRecordType.IKAC, "IKAC", List.of(
                 "IKAC", "IKAC-VAL-1"));
-        ParsedLine cond = new ParsedLine(6, LineType.COND, "COND", List.of(
+        FeedRecord cond = new FeedRecord(6, FeedRecordType.COND, "COND", List.of(
                 "COND", "COND-1", "VAL-1"));
-        ParsedLine tar = new ParsedLine(7, LineType.TAR, "TAR", List.of(
+        FeedRecord tar = new FeedRecord(7, FeedRecordType.TAR, "TAR", List.of(
                 "TAR", "TAR-1", "001", "2026-01-01", "2026-01-01", "EUR"));
 
         ContractBlock block = new ContractBlock(List.of(ctr, acc, om, art, ikac, cond, tar));
