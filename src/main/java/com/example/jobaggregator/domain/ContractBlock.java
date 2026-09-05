@@ -1,11 +1,9 @@
 package com.example.jobaggregator.domain;
 
-import com.example.jobaggregator.domain.feed.ContractFeedMapper;
 import com.example.jobaggregator.domain.feed.FeedRecord;
-import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.reader.ContractBlockAssembler;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 
 /**
  * Represents a normalized domain aggregate root constituting a single contract.
@@ -15,16 +13,12 @@ public record ContractBlock(
         UUID id,
         List<FeedRecord> records,
         ContractHeader header,
-        List<Account> accounts,
-        List<Role> roles,
-        List<Offer> offers,
-        List<MarketedObject> marketedObjects,
-        List<ExternalId> externalIds,
-        List<Article> articles,
-        List<Ikac> ikacs,
-        List<Condition> conditions,
-        List<Tarif> tarifs,
-        List<Advantage> advantages) {
+        List<Account> accounts,          // Contract-level accounts
+        List<Role> roles,                // Contract-level roles
+        List<Offer> offers,              // Contract-level offers
+        List<Tarif> tarifs,              // Contract-level tarifs
+        List<Advantage> advantages,      // Contract-level advantages
+        List<MarketedObject> marketedObjects) {
 
     public ContractBlock(List<FeedRecord> records) {
         this(UUID.randomUUID(), records);
@@ -34,18 +28,21 @@ public record ContractBlock(
         this(
                 id,
                 records,
-                (!records.isEmpty() && records.getFirst().type() == FeedRecordType.CTR)
-                        ? ContractFeedMapper.toHeader(records.getFirst()) : null,
-                filter(records, FeedRecordType.ACC, ContractFeedMapper::toAccount),
-                filter(records, FeedRecordType.ROL, ContractFeedMapper::toRole),
-                filter(records, FeedRecordType.OFF, ContractFeedMapper::toOffer),
-                filter(records, FeedRecordType.OM, ContractFeedMapper::toMarketedObject),
-                filter(records, FeedRecordType.OID, ContractFeedMapper::toExternalId),
-                filter(records, FeedRecordType.ART, ContractFeedMapper::toArticle),
-                filter(records, FeedRecordType.IKAC, ContractFeedMapper::toIkac),
-                filter(records, FeedRecordType.COND, ContractFeedMapper::toCondition),
-                filter(records, FeedRecordType.TAR, ContractFeedMapper::toTarif),
-                filter(records, FeedRecordType.AVT, ContractFeedMapper::toAdvantage)
+                ContractBlockAssembler.assemble(id, records)
+        );
+    }
+
+    private ContractBlock(UUID id, List<FeedRecord> records, ContractBlock assembled) {
+        this(
+                id,
+                records,
+                assembled.header(),
+                assembled.accounts(),
+                assembled.roles(),
+                assembled.offers(),
+                assembled.tarifs(),
+                assembled.advantages(),
+                assembled.marketedObjects()
         );
     }
 
@@ -54,15 +51,5 @@ public record ContractBlock(
      */
     public List<String> rawRecords() {
         return records != null ? records.stream().map(FeedRecord::raw).toList() : List.of();
-    }
-
-    private static <T> List<T> filter(List<FeedRecord> records, FeedRecordType type, Function<FeedRecord, T> mapper) {
-        if (records == null) {
-            return List.of();
-        }
-        return records.stream()
-                .filter(l -> l.type() == type)
-                .map(mapper)
-                .toList();
     }
 }

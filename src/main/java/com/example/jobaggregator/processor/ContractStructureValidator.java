@@ -68,7 +68,7 @@ public final class ContractStructureValidator implements ItemProcessor<ContractB
      */
     private void validateContract(ContractBlock contract) {
         List<FeedRecord> records = contract.records();
-        ContractBlockAssembler assembler = new ContractBlockAssembler(records.getFirst());
+        ContractBlockAssembler assembler = new ContractBlockAssembler(contract.id(), records.getFirst());
         for (int i = 1; i < records.size(); i++) {
             assembler.accept(records.get(i));
         }

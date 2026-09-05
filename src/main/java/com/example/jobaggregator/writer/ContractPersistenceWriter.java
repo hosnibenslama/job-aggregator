@@ -8,148 +8,320 @@ import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.ContractHeader;
 import com.example.jobaggregator.domain.ExternalId;
 import com.example.jobaggregator.domain.Ikac;
-import com.example.jobaggregator.domain.Offer;
 import com.example.jobaggregator.domain.MarketedObject;
+import com.example.jobaggregator.domain.Offer;
 import com.example.jobaggregator.domain.Role;
 import com.example.jobaggregator.domain.Tarif;
-import com.example.jobaggregator.persistence.ContractAccountEntity;
-import com.example.jobaggregator.persistence.ContractAdvantageEntity;
-import com.example.jobaggregator.persistence.ContractArticleEntity;
-import com.example.jobaggregator.persistence.ContractConditionEntity;
-import com.example.jobaggregator.persistence.ContractEntity;
-import com.example.jobaggregator.persistence.ContractEntityRepository;
-import com.example.jobaggregator.persistence.ContractExternalIdEntity;
-import com.example.jobaggregator.persistence.ContractIkacEntity;
-import com.example.jobaggregator.persistence.ContractMarketedObjectEntity;
-import com.example.jobaggregator.persistence.ContractOfferEntity;
-import com.example.jobaggregator.persistence.ContractRoleEntity;
-import com.example.jobaggregator.persistence.ContractTarifEntity;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.batch.infrastructure.item.Chunk;
 import org.springframework.batch.infrastructure.item.ItemWriter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Persists validated {@link ContractBlock} aggregate roots and their normalized child entities
- * directly into relational tables using Spring Data JDBC.
+ * Persists validated hierarchical {@link ContractBlock} aggregate roots and their normalized child entities
+ * directly into relational tables with hierarchical foreign keys.
  */
 @Component
 public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
 
-    private final ContractEntityRepository repository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public ContractPersistenceWriter(ContractEntityRepository repository) {
-        this.repository = repository;
+    public ContractPersistenceWriter(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
+    @Transactional
     public void write(Chunk<? extends ContractBlock> items) {
-        List<ContractEntity> entities = items.getItems().stream()
-                .map(this::toEntity)
-                .toList();
-        repository.saveAll(entities);
+        for (ContractBlock contract : items) {
+            persistContract(contract);
+        }
     }
 
-    // -----------------------------------------------------------------------
-    // Mapping: domain model → persistence model
-    // -----------------------------------------------------------------------
+    private void persistContract(ContractBlock contract) {
+        UUID contractId = contract.id();
 
-    private ContractEntity toEntity(ContractBlock contract) {
-        ContractEntity entity = new ContractEntity();
-        entity.setId(contract.id());
+        // 1. Insert Root Contract
+        insertContractRoot(contractId, contract.header());
 
-        ContractHeader ctr = contract.header();
-        if (ctr != null) {
-            entity.setDevise(ctr.devise());
-            entity.setState(ctr.state());
-            entity.setMotif(blankToNull(ctr.motif()));
-            entity.setOuDistribution(blankToNull(ctr.ouDistribution()));
-            entity.setOuManagement(ctr.ouManagement());
-            entity.setAddressId(blankToNull(ctr.addressId()));
-            entity.setBusinessRelationship(ctr.businessRelationship());
-            entity.setEffectiveDate(blankToNull(ctr.effectiveDate()));
-            entity.setPeriodeFacturation(blankToNull(ctr.periodeFacturation()));
-            entity.setDatesFacturation(blankToNull(ctr.datesFacturation()));
-            entity.setXB3TraceId(ctr.xB3TraceId());
-            entity.setXB3SpanId(ctr.xB3SpanId());
-            entity.setUserId(ctr.userId());
-            entity.setChannel(ctr.channel());
-            entity.setMedia(ctr.media());
+        // 2. Insert Contract-level Accounts
+        for (Account acc : contract.accounts()) {
+            insertAccount(contractId, null, "CONTRACT", acc);
         }
 
-        entity.setAccounts(contract.accounts().stream()
-                .map(a -> new ContractAccountEntity(a.subType(), a.bic(), a.iban(), blankToNull(a.rib())))
-                .collect(Collectors.toSet()));
+        // 3. Insert Contract-level Roles
+        for (Role rol : contract.roles()) {
+            insertRole(contractId, null, null, "CONTRACT", rol);
+        }
 
-        entity.setRoles(contract.roles().stream()
-                .map(r -> new ContractRoleEntity(r.role(), r.brand(), r.scope(), r.holderId(), r.ikpi()))
-                .collect(Collectors.toSet()));
+        // 4. Insert Contract-level Offers
+        for (Offer off : contract.offers()) {
+            insertOffer(contractId, off);
+        }
 
-        entity.setOffers(contract.offers().stream()
-                .map(o -> new ContractOfferEntity(o.offerId(), o.provider(), blankToNull(o.personalizedLabel())))
-                .collect(Collectors.toSet()));
+        // 5. Insert Contract-level Tarifs (if any)
+        for (Tarif tar : contract.tarifs()) {
+            insertTarif(contractId, null, null, "CONTRACT", tar);
+        }
 
-        entity.setMarketedObjects(contract.marketedObjects().stream()
-                .map(om -> new ContractMarketedObjectEntity(om.omId(), om.businessRelationship()))
-                .collect(Collectors.toSet()));
+        // 6. Insert Contract-level Advantages (if any)
+        for (Advantage avt : contract.advantages()) {
+            insertAdvantage(contractId, null, null, "CONTRACT", avt);
+        }
 
-        entity.setExternalIds(contract.externalIds().stream()
-                .map(oid -> new ContractExternalIdEntity(oid.externalId()))
-                .collect(Collectors.toSet()));
+        // 7. Insert MarketedObjects (OM) and their descendants
+        for (MarketedObject om : contract.marketedObjects()) {
+            long omId = insertMarketedObject(contractId, om);
 
-        entity.setArticles(contract.articles().stream()
-                .map(art -> new ContractArticleEntity(art.sequentialIndex()))
-                .collect(Collectors.toSet()));
+            // OM-level External IDs
+            for (ExternalId oid : om.externalIds()) {
+                insertExternalId(contractId, omId, null, "OM", oid);
+            }
 
-        entity.setIkacLines(contract.ikacs().stream()
-                .map(ikac -> new ContractIkacEntity(ikac.ikacValue()))
-                .collect(Collectors.toSet()));
+            // OM-level Roles
+            for (Role rol : om.roles()) {
+                insertRole(contractId, omId, null, "OM", rol);
+            }
 
-        entity.setConditions(contract.conditions().stream()
-                .map(c -> new ContractConditionEntity(c.conditionId(), c.conditionValue()))
-                .collect(Collectors.toSet()));
+            // OM-level Tarifs (if any)
+            for (Tarif tar : om.tarifs()) {
+                insertTarif(contractId, omId, null, "OM", tar);
+            }
 
-        entity.setTarifs(contract.tarifs().stream()
-                .map(this::toTarifEntity)
-                .collect(Collectors.toSet()));
+            // OM-level Advantages (if any)
+            for (Advantage avt : om.advantages()) {
+                insertAdvantage(contractId, omId, null, "OM", avt);
+            }
 
-        entity.setAdvantages(contract.advantages().stream()
-                .map(avt -> new ContractAdvantageEntity(
-                        blankToNull(avt.idOpraAvantage()),
-                        avt.dateDebut(),
-                        blankToNull(avt.dateFin()),
-                        avt.codeAvantage(),
-                        blankToNull(avt.valeurAvantage()),
-                        blankToNull(avt.deviseAvantage())))
-                .collect(Collectors.toSet()));
+            // Articles attached to this OM
+            for (Article art : om.articles()) {
+                long articleId = insertArticle(contractId, omId, art);
 
-        return entity;
+                // Article-level External IDs
+                for (ExternalId oid : art.externalIds()) {
+                    insertExternalId(contractId, omId, articleId, "ARTICLE", oid);
+                }
+
+                // Article-level IKAC
+                for (Ikac ikac : art.ikacs()) {
+                    insertIkac(contractId, articleId, ikac);
+                }
+
+                // Article-level Conditions
+                for (Condition cond : art.conditions()) {
+                    insertCondition(contractId, articleId, cond);
+                }
+
+                // Article-level Accounts
+                for (Account acc : art.accounts()) {
+                    insertAccount(contractId, articleId, "ARTICLE", acc);
+                }
+
+                // Article-level Roles
+                for (Role rol : art.roles()) {
+                    insertRole(contractId, omId, articleId, "ARTICLE", rol);
+                }
+
+                // Article-level Tarifs
+                for (Tarif tar : art.tarifs()) {
+                    insertTarif(contractId, omId, articleId, "ARTICLE", tar);
+                }
+
+                // Article-level Advantages
+                for (Advantage avt : art.advantages()) {
+                    insertAdvantage(contractId, omId, articleId, "ARTICLE", avt);
+                }
+            }
+        }
     }
 
-    private ContractTarifEntity toTarifEntity(Tarif t) {
-        ContractTarifEntity te = new ContractTarifEntity();
-        te.setIdOpraTarif(blankToNull(t.idOpraTarif()));
-        te.setTypeFrais(blankToNull(t.typeFrais()));
-        te.setDateCreationTarif(blankToNull(t.dateCreationTarif()));
-        te.setDateEffetTarif(blankToNull(t.dateEffetTarif()));
-        te.setDeviseTarif(blankToNull(t.deviseTarif()));
-        te.setIndicTarifPaliers(blankToNull(t.indicTarifPaliers()));
-        te.setFormatTarif(blankToNull(t.formatTarif()));
-        te.setPeriodiciteFacturation(blankToNull(t.periodiciteFacturation()));
-        te.setTypeTaxation(blankToNull(t.typeTaxation()));
-        te.setTypeTauxTarif(blankToNull(t.typeTauxTarif()));
-        te.setTauxTarif(blankToNull(t.tauxTarif()));
-        te.setMontantBase(blankToNull(t.montantBase()));
-        te.setRatioTarif(blankToNull(t.ratioTarif()));
-        te.setMontantUnite(blankToNull(t.montantUnite()));
-        te.setTypeUnite(blankToNull(t.typeUnite()));
-        te.setIndicLimiteHaute(blankToNull(t.indicLimiteHaute()));
-        te.setLimiteHauteMontant(blankToNull(t.limiteHauteMontant()));
-        te.setIndicLimiteBasse(blankToNull(t.indicLimiteBasse()));
-        te.setLimiteBasseMontant(blankToNull(t.limiteBasseMontant()));
-        return te;
+    private void insertContractRoot(UUID contractId, ContractHeader ctr) {
+        String sql = """
+            INSERT INTO contracts (
+                id, devise, state, motif, ou_distribution, ou_management,
+                address_id, business_relationship, effective_date,
+                periode_facturation, dates_facturation, x_b3_trace_id,
+                x_b3_span_id, user_id, channel, media
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
+
+        jdbcTemplate.update(sql,
+                contractId,
+                ctr != null ? ctr.devise() : null,
+                ctr != null ? ctr.state() : null,
+                ctr != null ? blankToNull(ctr.motif()) : null,
+                ctr != null ? blankToNull(ctr.ouDistribution()) : null,
+                ctr != null ? ctr.ouManagement() : null,
+                ctr != null ? blankToNull(ctr.addressId()) : null,
+                ctr != null ? ctr.businessRelationship() : null,
+                ctr != null ? blankToNull(ctr.effectiveDate()) : null,
+                ctr != null ? blankToNull(ctr.periodeFacturation()) : null,
+                ctr != null ? blankToNull(ctr.datesFacturation()) : null,
+                ctr != null ? ctr.xB3TraceId() : null,
+                ctr != null ? ctr.xB3SpanId() : null,
+                ctr != null ? ctr.userId() : null,
+                ctr != null ? ctr.channel() : null,
+                ctr != null ? ctr.media() : null
+        );
+    }
+
+    private void insertAccount(UUID contractId, Long articleId, String level, Account a) {
+        String sql = """
+            INSERT INTO contract_accounts (contract_id, article_id, level, sub_type, bic, iban, rib)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(sql, contractId, articleId, level, a.subType(), a.bic(), a.iban(), blankToNull(a.rib()));
+    }
+
+    private void insertRole(UUID contractId, Long omId, Long articleId, String level, Role r) {
+        String sql = """
+            INSERT INTO contract_roles (contract_id, marketed_object_id, article_id, level, role, brand, scope, holder_id, ikpi)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(sql, contractId, omId, articleId, level, r.role(), r.brand(), r.scope(), r.holderId(), r.ikpi());
+    }
+
+    private void insertOffer(UUID contractId, Offer o) {
+        String sql = """
+            INSERT INTO contract_offers (contract_id, offer_id, provider, personalized_label)
+            VALUES (?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(sql, contractId, o.offerId(), o.provider(), blankToNull(o.personalizedLabel()));
+    }
+
+    private long insertMarketedObject(UUID contractId, MarketedObject om) {
+        String sql = """
+            INSERT INTO contract_marketed_objects (contract_id, om_id, business_relationship)
+            VALUES (?, ?, ?)
+            """;
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setObject(1, contractId);
+            ps.setString(2, om.omId());
+            ps.setString(3, om.businessRelationship());
+            return ps;
+        }, keyHolder);
+
+        return extractGeneratedId(keyHolder);
+    }
+
+    private long insertArticle(UUID contractId, long omId, Article art) {
+        String sql = """
+            INSERT INTO contract_articles (contract_id, marketed_object_id, sequential_index)
+            VALUES (?, ?, ?)
+            """;
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setObject(1, contractId);
+            ps.setLong(2, omId);
+            ps.setInt(3, art.sequentialIndex());
+            return ps;
+        }, keyHolder);
+
+        return extractGeneratedId(keyHolder);
+    }
+
+    private long extractGeneratedId(KeyHolder keyHolder) {
+        try {
+            Map<String, Object> keys = keyHolder.getKeys();
+            if (keys != null) {
+                for (Map.Entry<String, Object> entry : keys.entrySet()) {
+                    if ("id".equalsIgnoreCase(entry.getKey()) && entry.getValue() instanceof Number n) {
+                        return n.longValue();
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        Number key = keyHolder.getKey();
+        return key != null ? key.longValue() : 0L;
+    }
+
+    private void insertExternalId(UUID contractId, Long omId, Long articleId, String level, ExternalId oid) {
+        String sql = """
+            INSERT INTO contract_external_ids (contract_id, marketed_object_id, article_id, level, external_id)
+            VALUES (?, ?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(sql, contractId, omId, articleId, level, oid.externalId());
+    }
+
+    private void insertIkac(UUID contractId, long articleId, Ikac ikac) {
+        String sql = """
+            INSERT INTO contract_ikac (contract_id, article_id, ikac_value)
+            VALUES (?, ?, ?)
+            """;
+        jdbcTemplate.update(sql, contractId, articleId, ikac.ikacValue());
+    }
+
+    private void insertCondition(UUID contractId, long articleId, Condition c) {
+        String sql = """
+            INSERT INTO contract_conditions (contract_id, article_id, condition_id, condition_value)
+            VALUES (?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(sql, contractId, articleId, c.conditionId(), c.conditionValue());
+    }
+
+    private void insertTarif(UUID contractId, Long omId, Long articleId, String level, Tarif t) {
+        String sql = """
+            INSERT INTO contract_tarifs (
+                contract_id, marketed_object_id, article_id, level,
+                id_opra_tarif, type_frais, date_creation_tarif, date_effet_tarif,
+                devise_tarif, indic_tarif_paliers, format_tarif, periodicite_facturation,
+                type_taxation, type_taux_tarif, taux_tarif, montant_base, ratio_tarif,
+                montant_unite, type_unite, indic_limite_haute, limite_haute_montant,
+                indic_limite_basse, limite_basse_montant
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(sql,
+                contractId, omId, articleId, level,
+                blankToNull(t.idOpraTarif()),
+                blankToNull(t.typeFrais()),
+                blankToNull(t.dateCreationTarif()),
+                blankToNull(t.dateEffetTarif()),
+                blankToNull(t.deviseTarif()),
+                blankToNull(t.indicTarifPaliers()),
+                blankToNull(t.formatTarif()),
+                blankToNull(t.periodiciteFacturation()),
+                blankToNull(t.typeTaxation()),
+                blankToNull(t.typeTauxTarif()),
+                blankToNull(t.tauxTarif()),
+                blankToNull(t.montantBase()),
+                blankToNull(t.ratioTarif()),
+                blankToNull(t.montantUnite()),
+                blankToNull(t.typeUnite()),
+                blankToNull(t.indicLimiteHaute()),
+                blankToNull(t.limiteHauteMontant()),
+                blankToNull(t.indicLimiteBasse()),
+                blankToNull(t.limiteBasseMontant())
+        );
+    }
+
+    private void insertAdvantage(UUID contractId, Long omId, Long articleId, String level, Advantage a) {
+        String sql = """
+            INSERT INTO contract_advantages (
+                contract_id, marketed_object_id, article_id, level,
+                id_opra_avantage, date_debut, date_fin, code_avantage,
+                valeur_avantage, devise_avantage
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(sql,
+                contractId, omId, articleId, level,
+                blankToNull(a.idOpraAvantage()),
+                a.dateDebut(),
+                blankToNull(a.dateFin()),
+                a.codeAvantage(),
+                blankToNull(a.valeurAvantage()),
+                blankToNull(a.deviseAvantage())
+        );
     }
 
     private static String blankToNull(String value) {

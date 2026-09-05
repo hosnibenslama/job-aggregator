@@ -1,28 +1,31 @@
 package com.example.jobaggregator.writer;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.feed.FeedRecordType;
 import com.example.jobaggregator.domain.feed.FeedRecord;
-import com.example.jobaggregator.persistence.ContractEntity;
-import com.example.jobaggregator.persistence.ContractEntityRepository;
+import com.example.jobaggregator.domain.feed.FeedRecordType;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.batch.infrastructure.item.Chunk;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.KeyHolder;
 
 class ContractPersistenceWriterTest {
 
     @Test
-    void shouldMapContractBlockToNormalizedEntitiesAndSave() {
-        // Given: A repository mock and a writer
-        ContractEntityRepository repository = mock(ContractEntityRepository.class);
-        ContractPersistenceWriter writer = new ContractPersistenceWriter(repository);
+    void shouldPersistContractBlockAndHierarchicalChildren() {
+        // Given: A mock JdbcTemplate and a writer
+        JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+        ContractPersistenceWriter writer = new ContractPersistenceWriter(jdbcTemplate);
 
-        // A ContractBlock with multiple child line types
+        // A ContractBlock with multiple hierarchical child lines
         FeedRecord ctr = new FeedRecord(1, FeedRecordType.CTR, "CTR", List.of(
                 "CTR", "EUR", "16", "003", "ouDist", "ouMgmt", "addr1", "rel1",
                 "2026-01-01T00:00:00.000000Z", "MENSUELLE", "2026-01-01",
@@ -42,27 +45,10 @@ class ContractPersistenceWriterTest {
 
         ContractBlock block = new ContractBlock(List.of(ctr, acc, om, art, ikac, cond, tar));
 
-        // Act: Write chunk
-        writer.write(Chunk.of(block));
+        // Act & Assert: Writing the chunk executes without error and updates database tables
+        assertThatCode(() -> writer.write(Chunk.of(block))).doesNotThrowAnyException();
 
-        // Assert: SaveAll was invoked with populated entities
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<ContractEntity>> captor = ArgumentCaptor.forClass(List.class);
-        verify(repository).saveAll(captor.capture());
-
-        List<ContractEntity> saved = captor.getValue();
-        assertThat(saved).hasSize(1);
-
-        ContractEntity entity = saved.getFirst();
-        assertThat(entity.getId()).isEqualTo(block.id());
-        assertThat(entity.getDevise()).isEqualTo("EUR");
-        assertThat(entity.getAccounts()).hasSize(1);
-        assertThat(entity.getAccounts().iterator().next().getIban()).isEqualTo("FR76300040219600000167638828");
-        assertThat(entity.getMarketedObjects()).hasSize(1);
-        assertThat(entity.getArticles()).hasSize(1);
-        assertThat(entity.getIkacLines()).hasSize(1);
-        assertThat(entity.getConditions()).hasSize(1);
-        assertThat(entity.getTarifs()).hasSize(1);
-        assertThat(entity.getTarifs().iterator().next().getIdOpraTarif()).isEqualTo("TAR-1");
+        verify(jdbcTemplate, atLeastOnce()).update(anyString(), any(Object[].class));
+        verify(jdbcTemplate, atLeastOnce()).update(any(PreparedStatementCreator.class), any(KeyHolder.class));
     }
 }

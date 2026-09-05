@@ -3,7 +3,9 @@ package com.example.jobaggregator.reader;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.example.jobaggregator.domain.Article;
 import com.example.jobaggregator.domain.ContractBlock;
+import com.example.jobaggregator.domain.MarketedObject;
 import com.example.jobaggregator.domain.feed.FeedRecordType;
 import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.error.ContractFormatException;
@@ -34,6 +36,27 @@ class ContractBlockAssemblerTest {
         // Assert: Assembled contract contains all 12 accepted lines
         assertThat(contract.records()).hasSize(12);
         assertThat(contract.rawRecords()).hasSize(12);
+
+        // Assert: Contract-level children
+        assertThat(contract.accounts()).hasSize(1);
+        assertThat(contract.roles()).hasSize(1);
+        assertThat(contract.offers()).hasSize(1);
+
+        // Assert: OM-level children
+        assertThat(contract.marketedObjects()).hasSize(1);
+        MarketedObject om = contract.marketedObjects().getFirst();
+        assertThat(om.omId()).isEqualTo("OM-001");
+        assertThat(om.externalIds()).hasSize(1);
+
+        // Assert: Article-level children
+        assertThat(om.articles()).hasSize(1);
+        Article art = om.articles().getFirst();
+        assertThat(art.sequentialIndex()).isEqualTo(1);
+        assertThat(art.ikacs()).hasSize(1);
+        assertThat(art.conditions()).hasSize(1);
+        assertThat(art.accounts()).hasSize(1);
+        assertThat(art.tarifs()).hasSize(1);
+        assertThat(art.advantages()).hasSize(1);
     }
 
     @Test
@@ -63,6 +86,8 @@ class ContractBlockAssemblerTest {
         // Assert: Assembled contract contains exactly the 4 mandatory lines
         assertThat(contract.records()).hasSize(4);
         assertThat(contract.rawRecords()).hasSize(4);
+        assertThat(contract.marketedObjects()).hasSize(1);
+        assertThat(contract.marketedObjects().getFirst().articles()).hasSize(1);
     }
 
     @Test
@@ -97,7 +122,7 @@ class ContractBlockAssemblerTest {
         // Act & Assert: Building the contract without OM throws ContractFormatException
         assertThatThrownBy(assembler::build)
                 .isInstanceOf(ContractFormatException.class)
-        	.hasMessageContaining("OM");
+                .hasMessageContaining("OM");
     }
 
     private FeedRecord createFeedRecord(long number, FeedRecordType type, String... fields) {
