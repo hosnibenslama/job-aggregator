@@ -42,7 +42,7 @@ public record CtrLine(
 
     /**
      * Extracts a typed {@code CtrLine} from a raw {@link ParsedLine} of type CTR.
-     * Assumes the line has already been validated by {@code SemicolonLineParser}.
+     * Assumes the line has already been validated by {@code ContractLineMapper}.
      */
     public static CtrLine from(ParsedLine line) {
         if (line.type() != LineType.CTR) {

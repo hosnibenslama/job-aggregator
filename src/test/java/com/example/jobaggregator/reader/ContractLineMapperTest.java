@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link SemicolonLineParser} covering all spec-defined line type validators.
+ * Unit tests for {@link ContractLineMapper} covering all spec-defined line type validators.
  */
-class SemicolonLineParserTest {
+class ContractLineMapperTest {
 
-    private final SemicolonLineParser mapper = new SemicolonLineParser();
+    private final ContractLineMapper mapper = new ContractLineMapper();
 
     // =========================================================================
     // General parsing

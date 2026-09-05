@@ -5,7 +5,7 @@ import com.example.jobaggregator.domain.ParsedLine;
 import com.example.jobaggregator.listener.ContractFileIntegrityListener;
 import com.example.jobaggregator.processor.ContractStructureValidator;
 import com.example.jobaggregator.reader.ContractBlockReader;
-import com.example.jobaggregator.reader.SemicolonLineParser;
+import com.example.jobaggregator.reader.ContractLineMapper;
 import com.example.jobaggregator.storage.CloudObjectStorageService;
 import com.example.jobaggregator.tasklet.CosDownloadTasklet;
 import com.example.jobaggregator.tasklet.CosUploadTasklet;
@@ -123,7 +123,7 @@ public class ContractImportJobConfig {
     @Bean
     @StepScope
     public SingleItemPeekableItemReader<ParsedLine> peekableLineReader() {
-        FlatFileItemReader<ParsedLine> flatFileReader = new FlatFileItemReader<>(new SemicolonLineParser());
+        FlatFileItemReader<ParsedLine> flatFileReader = new FlatFileItemReader<>(new ContractLineMapper());
         flatFileReader.setResource(inputContractResource);
         flatFileReader.setEncoding(charset.name());
         flatFileReader.setStrict(true);

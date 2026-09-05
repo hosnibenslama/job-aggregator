@@ -34,7 +34,7 @@ import org.springframework.batch.infrastructure.item.file.LineMapper;
  *   <li>Return the immutable {@link ParsedLine}</li>
  * </ol>
  */
-public final class SemicolonLineParser implements LineMapper<ParsedLine> {
+public final class ContractLineMapper implements LineMapper<ParsedLine> {
 
     /** Registry of per-type field validators. Line types not listed (HDR, TRL) pass through. */
     private static final Map<LineType, LineFieldValidator> VALIDATORS = Map.ofEntries(

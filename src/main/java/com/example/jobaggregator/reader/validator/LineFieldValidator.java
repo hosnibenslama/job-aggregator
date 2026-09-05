@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Strategy interface for validating the parsed fields of a specific line type.
  * Implementations are registered per {@link com.example.jobaggregator.domain.LineType}
- * in {@link com.example.jobaggregator.reader.SemicolonLineParser}.
+ * in {@link com.example.jobaggregator.reader.ContractLineMapper}.
  */
 @FunctionalInterface
 public interface LineFieldValidator {

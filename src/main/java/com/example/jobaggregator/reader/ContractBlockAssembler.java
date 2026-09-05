@@ -19,7 +19,7 @@ import java.util.Set;
  *   <li>Enforces mandatory block content (at least one ACC, OM, ART per contract)</li>
  * </ul>
  * Field-level validation is delegated to {@link com.example.jobaggregator.reader.validator.LineFieldValidator}
- * implementations in {@link SemicolonLineParser}.
+ * implementations in {@link ContractLineMapper}.
  */
 public final class ContractBlockAssembler {
 
