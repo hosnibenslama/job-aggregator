@@ -22,6 +22,17 @@ contract:
     invalid-file: src/main/resources/invalid-contracts.txt
     charset: UTF-8
 
+cos:
+  enabled: false
+  endpoint: ${COS_ENDPOINT:https://s3.eu-de.cloud-object-storage.appdomain.cloud}
+  region: ${COS_REGION:eu-de}
+  bucket: ${COS_BUCKET:contracts-bucket}
+  access-key: ${COS_ACCESS_KEY:dummy-access-key}
+  secret-key: ${COS_SECRET_KEY:dummy-secret-key}
+  input-key: ${COS_INPUT_KEY:incoming/contracts/visa-premier.txt}
+  reject-key: ${COS_REJECT_KEY:outgoing/rejects/invalid-contracts.txt}
+  staging-directory: target/staging
+
 logging:
   level:
     org.springframework.batch: INFO

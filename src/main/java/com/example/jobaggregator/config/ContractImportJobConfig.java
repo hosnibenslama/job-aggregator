@@ -6,8 +6,12 @@ import com.example.jobaggregator.listener.ContractFileIntegrityListener;
 import com.example.jobaggregator.processor.ContractStructureValidator;
 import com.example.jobaggregator.reader.ContractBlockReader;
 import com.example.jobaggregator.reader.SemicolonLineParser;
+import com.example.jobaggregator.storage.CloudObjectStorageService;
+import com.example.jobaggregator.tasklet.CosDownloadTasklet;
+import com.example.jobaggregator.tasklet.CosUploadTasklet;
 import com.example.jobaggregator.writer.ContractPersistenceWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -16,6 +20,7 @@ import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
 import org.springframework.batch.infrastructure.item.support.SingleItemPeekableItemReader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,14 +30,26 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@EnableConfigurationProperties(ContractImportProperties.class)
+@EnableConfigurationProperties({
+        com.example.jobaggregator.config.ContractImportProperties.class,
+        com.example.jobaggregator.config.CosProperties.class
+})
 public class ContractImportJobConfig {
 
     private final Resource inputContractResource;
     private final Charset charset;
+    private final Path localStagingInputFile;
 
-    public ContractImportJobConfig(ContractImportProperties props, ResourceLoader resourceLoader) {
-        this.inputContractResource = resolveResource(props.inputFile(), resourceLoader);
+    public ContractImportJobConfig(
+            ContractImportProperties props,
+            CosProperties cosProps,
+            ResourceLoader resourceLoader) {
+        this.localStagingInputFile = cosProps.stagingDirectory().resolve("contracts-input.txt");
+        if (cosProps.enabled()) {
+            this.inputContractResource = new FileSystemResource(this.localStagingInputFile);
+        } else {
+            this.inputContractResource = resolveResource(props.inputFile(), resourceLoader);
+        }
         this.charset = props.charset();
     }
 
@@ -47,9 +64,29 @@ public class ContractImportJobConfig {
     }
 
     @Bean
-    public Job contractImportJob(JobRepository jobRepository, Step contractImportStep) {
+    public Job contractImportJob(
+            JobRepository jobRepository,
+            Step cosDownloadStep,
+            Step contractImportStep,
+            Step cosUploadStep) {
         return new JobBuilder("contractImportJob", jobRepository)
-                .start(contractImportStep)
+                .start(cosDownloadStep)
+                .on("FAILED").fail()
+                .from(cosDownloadStep).on("*").to(contractImportStep)
+                .from(contractImportStep).on("FAILED").fail()
+                .from(contractImportStep).on("*").to(cosUploadStep)
+                .end()
+                .build();
+    }
+
+    @Bean
+    public Step cosDownloadStep(
+            JobRepository jobRepository,
+            PlatformTransactionManager transactionManager,
+            CloudObjectStorageService storageService,
+            CosProperties cosProperties) {
+        return new StepBuilder("cosDownloadStep", jobRepository)
+                .tasklet(new CosDownloadTasklet(storageService, cosProperties, localStagingInputFile), transactionManager)
                 .build();
     }
 
@@ -68,6 +105,18 @@ public class ContractImportJobConfig {
                 .processor(processor)
                 .writer(writer)
                 .listener(integrityListener)
+                .build();
+    }
+
+    @Bean
+    public Step cosUploadStep(
+            JobRepository jobRepository,
+            PlatformTransactionManager transactionManager,
+            CloudObjectStorageService storageService,
+            CosProperties cosProperties,
+            @Value("${contract.import.invalid-file:src/main/resources/invalid-contracts.txt}") String rejectFile) {
+        return new StepBuilder("cosUploadStep", jobRepository)
+                .tasklet(new CosUploadTasklet(storageService, cosProperties, Path.of(rejectFile)), transactionManager)
                 .build();
     }
 
