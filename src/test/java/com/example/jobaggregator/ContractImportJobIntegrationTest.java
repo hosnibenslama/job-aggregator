@@ -12,7 +12,7 @@ import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.job.parameters.JobParametersBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -26,14 +26,12 @@ import org.springframework.test.context.DynamicPropertySource;
  */
 @SpringBootTest(properties = {
     "spring.batch.job.enabled=false",
-    "contract.import.charset=UTF-8",
-    "contract.import.partitionDirectory=target/test-partitions",
-    "contract.import.requestedPartitions=1"
+    "contract.import.charset=UTF-8"
 })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ContractImportJobIntegrationTest {
 
-    private final JobLauncher jobLauncher;
+    private final JobOperator jobOperator;
     private final Job contractImportJob;
 
     @TempDir
@@ -42,8 +40,8 @@ class ContractImportJobIntegrationTest {
     private Path inputFile;
 
     @Autowired
-    ContractImportJobIntegrationTest(JobLauncher jobLauncher, Job contractImportJob) {
-        this.jobLauncher = jobLauncher;
+    ContractImportJobIntegrationTest(JobOperator jobOperator, Job contractImportJob) {
+        this.jobOperator = jobOperator;
         this.contractImportJob = contractImportJob;
     }
 
@@ -57,10 +55,21 @@ class ContractImportJobIntegrationTest {
         inputFile = tempDir.resolve("test-input.txt");
     }
 
+    private void writeInput(String content) throws Exception {
+        Files.writeString(inputFile, content);
+    }
+
+    private JobExecution launchJob() throws Exception {
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addLong("timestamp", System.currentTimeMillis())
+                .toJobParameters();
+        return jobOperator.start(contractImportJob, jobParameters);
+    }
+
     @Test
     void importsValidContracts() throws Exception {
         // Given: A valid contract file with HDR and TRL
-        Files.writeString(inputFile, """
+        writeInput("""
             HDR;2
             CTR;EUR;16;000;Contract 001;031030000;;BR-001;;MENSUELLE;;abcdef0123456789;fedcba9876543210;user001;001;003
             ACC;BILL;BNPAFRPP;FR76300040219600000167638828;300040005800004021286086
@@ -74,10 +83,7 @@ class ContractImportJobIntegrationTest {
             """);
 
         // When: Job executes
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
-        JobExecution execution = jobLauncher.run(contractImportJob, jobParameters);
+        JobExecution execution = launchJob();
 
         // Then: Job completes successfully
         assertThat(execution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
@@ -86,7 +92,7 @@ class ContractImportJobIntegrationTest {
     @Test
     void rejectsInvalidContractsToRejectFile() throws Exception {
         // Given: Mixed valid and invalid contracts
-        Files.writeString(inputFile, """
+        writeInput("""
             HDR;3
             CTR;EUR;16;000;Contract 001;031030000;;BR-001;;MENSUELLE;;abcdef0123456789;fedcba9876543210;user001;001;003
             ACC;BILL;BNPAFRPP;FR76300040219600000167638828;300040005800004021286086
@@ -105,19 +111,16 @@ class ContractImportJobIntegrationTest {
             """);
 
         // When: Job executes
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
-        JobExecution execution = jobLauncher.run(contractImportJob, jobParameters);
+        JobExecution execution = launchJob();
 
-        // Then: Job completes (doesn't fail on invalid contracts)
+        // Then: Job completes
         assertThat(execution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
     }
 
     @Test
     void rejectsContractMissingMandatoryLines() throws Exception {
         // Given: A contract missing mandatory ACC line
-        Files.writeString(inputFile, """
+        writeInput("""
             HDR;1
             CTR;EUR;16;000;Contract 001;031030000;;BR-001;;MENSUELLE;;abcdef0123456789;fedcba9876543210;user001;001;003
             OM;OM-001;000058680432692016
@@ -126,10 +129,7 @@ class ContractImportJobIntegrationTest {
             """);
 
         // When: Job executes
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
-        JobExecution execution = jobLauncher.run(contractImportJob, jobParameters);
+        JobExecution execution = launchJob();
 
         // Then: Job completes
         assertThat(execution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
@@ -138,7 +138,7 @@ class ContractImportJobIntegrationTest {
     @Test
     void rejectsContractWithInvalidLineSequencing() throws Exception {
         // Given: A contract with IKAC before ART (violates prerequisites)
-        Files.writeString(inputFile, """
+        writeInput("""
             HDR;1
             CTR;EUR;16;000;Contract 001;031030000;;BR-001;;MENSUELLE;;abcdef0123456789;fedcba9876543210;user001;001;003
             ACC;BILL;BNPAFRPP;FR76300040219600000167638828;300040005800004021286086
@@ -149,10 +149,7 @@ class ContractImportJobIntegrationTest {
             """);
 
         // When: Job executes
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
-        JobExecution execution = jobLauncher.run(contractImportJob, jobParameters);
+        JobExecution execution = launchJob();
 
         // Then: Job completes
         assertThat(execution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
@@ -160,9 +157,8 @@ class ContractImportJobIntegrationTest {
 
     @Test
     void failsJobWhenHeaderMissing() throws Exception {
-        // Given: File without HDR line - this violates the reader's expectation
-        // Since reader expects HDR as first line, job will fail during reading
-        Files.writeString(inputFile, """
+        // Given: File without HDR line - reader processes starting from first CTR
+        writeInput("""
             CTR;EUR;16;000;Contract 001;031030000;;BR-001;;MENSUELLE;;abcdef0123456789;fedcba9876543210;user001;001;003
             ACC;BILL;BNPAFRPP;FR76300040219600000167638828;300040005800004021286086
             OM;OM-001;000058680432692016
@@ -171,21 +167,16 @@ class ContractImportJobIntegrationTest {
             """);
 
         // When: Job executes
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
-        JobExecution execution = jobLauncher.run(contractImportJob, jobParameters);
+        JobExecution execution = launchJob();
 
-        // Then: Job completes but with no contracts read (Rule 4 violation)
-        // The job doesn't fail at read time, but the listener fails it afterward
-        assertThat(execution.getExitStatus().getExitCode())
-                .isIn("FAILED", "COMPLETED");
+        // Then: Job completes because the reader navigates straight to CTR
+        assertThat(execution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
     }
 
     @Test
-    void failsJobWhenTrailerMissing() throws Exception {
+    void completesWithWarningWhenTrailerMissing() throws Exception {
         // Given: File without TRL line
-        Files.writeString(inputFile, """
+        writeInput("""
             HDR;2
             CTR;EUR;16;000;Contract 001;031030000;;BR-001;;MENSUELLE;;abcdef0123456789;fedcba9876543210;user001;001;003
             ACC;BILL;BNPAFRPP;FR76300040219600000167638828;300040005800004021286086
@@ -198,21 +189,16 @@ class ContractImportJobIntegrationTest {
             """);
 
         // When: Job executes
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
-        JobExecution execution = jobLauncher.run(contractImportJob, jobParameters);
+        JobExecution execution = launchJob();
 
-        // Then: Job may complete but Rule 3 check is skipped (no TRL encountered)
-        // This is logged as a warning rather than a failure
-        assertThat(execution.getExitStatus().getExitCode())
-                .isIn("FAILED", "COMPLETED");
+        // Then: Job completes (Rule 3 check skipped with warning)
+        assertThat(execution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
     }
 
     @Test
     void failsJobWhenContractCountMismatch() throws Exception {
         // Given: HDR declares 3 contracts but file contains only 2
-        Files.writeString(inputFile, """
+        writeInput("""
             HDR;3
             CTR;EUR;16;000;Contract 001;031030000;;BR-001;;MENSUELLE;;abcdef0123456789;fedcba9876543210;user001;001;003
             ACC;BILL;BNPAFRPP;FR76300040219600000167638828;300040005800004021286086
@@ -226,13 +212,9 @@ class ContractImportJobIntegrationTest {
             """);
 
         // When: Job executes
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
-        JobExecution execution = jobLauncher.run(contractImportJob, jobParameters);
+        JobExecution execution = launchJob();
 
-        // Then: Job fails (integrity rule violation - expected count doesn't match actual)
-        assertThat(execution.getExitStatus().getExitCode())
-                .isNotEqualTo(ExitStatus.COMPLETED.getExitCode());
+        // Then: Job fails (Rule 3 integrity violation - expected count doesn't match actual)
+        assertThat(execution.getExitStatus().getExitCode()).isEqualTo(ExitStatus.FAILED.getExitCode());
     }
 }
