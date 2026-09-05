@@ -60,7 +60,7 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
         ContractEntity entity = new ContractEntity();
         entity.setId(contract.id());
 
-        ContractHeader ctr = contract.ctrLine();
+        ContractHeader ctr = contract.header();
         if (ctr != null) {
             entity.setDevise(ctr.devise());
             entity.setState(ctr.state());
@@ -103,7 +103,7 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
                 .map(art -> new ContractArticleEntity(art.sequentialIndex()))
                 .collect(Collectors.toSet()));
 
-        entity.setIkacLines(contract.ikacLines().stream()
+        entity.setIkacLines(contract.ikacs().stream()
                 .map(ikac -> new ContractIkacEntity(ikac.ikacValue()))
                 .collect(Collectors.toSet()));
 

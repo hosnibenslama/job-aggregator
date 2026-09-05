@@ -21,7 +21,7 @@ public record ContractBlock(
         List<MarketedObject> marketedObjects,
         List<ExternalId> externalIds,
         List<Article> articles,
-        List<Ikac> ikacAttributes,
+        List<Ikac> ikacs,
         List<Condition> conditions,
         List<Tarif> tarifs,
         List<Advantage> advantages) {
@@ -50,34 +50,9 @@ public record ContractBlock(
     }
 
     /**
-     * Backward-compatible accessor for feed records.
+     * Returns the raw text strings of all feed records in this contract block.
      */
-    public List<FeedRecord> lines() {
-        return records;
-    }
-
-    /**
-     * Backward-compatible accessor for the contract header.
-     */
-    public ContractHeader ctrLine() {
-        return header;
-    }
-
-    /**
-     * Backward-compatible accessor for IKAC attributes.
-     */
-    public List<Ikac> ikacLines() {
-        return ikacAttributes;
-    }
-
-    /**
-     * Backward-compatible accessor for marketed objects.
-     */
-    public List<MarketedObject> operations() {
-        return marketedObjects;
-    }
-
-    public List<String> rawLines() {
+    public List<String> rawRecords() {
         return records != null ? records.stream().map(FeedRecord::raw).toList() : List.of();
     }
 

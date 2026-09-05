@@ -32,8 +32,8 @@ class ContractBlockAssemblerTest {
         ContractBlock contract = assembler.build();
 
         // Assert: Assembled contract contains all 12 accepted lines
-        assertThat(contract.lines()).hasSize(12);
-        assertThat(contract.rawLines()).hasSize(12);
+        assertThat(contract.records()).hasSize(12);
+        assertThat(contract.rawRecords()).hasSize(12);
     }
 
     @Test
@@ -61,8 +61,8 @@ class ContractBlockAssemblerTest {
         ContractBlock contract = assembler.build();
 
         // Assert: Assembled contract contains exactly the 4 mandatory lines
-        assertThat(contract.lines()).hasSize(4);
-        assertThat(contract.rawLines()).hasSize(4);
+        assertThat(contract.records()).hasSize(4);
+        assertThat(contract.rawRecords()).hasSize(4);
     }
 
     @Test

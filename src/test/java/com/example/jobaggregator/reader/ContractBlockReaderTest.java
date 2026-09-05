@@ -44,7 +44,7 @@ class ContractBlockReaderTest {
 
         // Assert: Assembled contract contains only the 4 contract lines, and next read signals EOF (null)
         assertThat(contract).isNotNull();
-        assertThat(contract.lines()).hasSize(4); // CTR + ACC + OM + ART
+        assertThat(contract.records()).hasSize(4); // CTR + ACC + OM + ART
         assertThat(next).isNull();               // TRL -> EOF
     }
 
@@ -72,12 +72,12 @@ class ContractBlockReaderTest {
 
         // Assert: Both contracts are grouped correctly by CTR boundaries, and third read is null
         assertThat(first).isNotNull();
-        assertThat(first.lines()).hasSize(4);
-        assertThat(first.lines().getFirst().type()).isEqualTo(FeedRecordType.CTR);
+        assertThat(first.records()).hasSize(4);
+        assertThat(first.records().getFirst().type()).isEqualTo(FeedRecordType.CTR);
 
         assertThat(second).isNotNull();
-        assertThat(second.lines()).hasSize(4);
-        assertThat(second.lines().getFirst().lineNumber()).isEqualTo(6);
+        assertThat(second.records()).hasSize(4);
+        assertThat(second.records().getFirst().lineNumber()).isEqualTo(6);
 
         assertThat(third).isNull();
     }
@@ -125,7 +125,7 @@ class ContractBlockReaderTest {
 
         // Assert: Contract begins with CTR and does not contain the HDR line
         assertThat(contract).isNotNull();
-        assertThat(contract.lines().getFirst().type()).isEqualTo(FeedRecordType.CTR);
-        assertThat(contract.lines()).noneMatch(l -> l.type() == FeedRecordType.HDR);
+        assertThat(contract.records().getFirst().type()).isEqualTo(FeedRecordType.CTR);
+        assertThat(contract.records()).noneMatch(l -> l.type() == FeedRecordType.HDR);
     }
 }
