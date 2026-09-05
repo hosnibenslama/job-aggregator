@@ -19,11 +19,11 @@ import java.util.List;
  *
  * Example: {@code OFF;OFF-0000000001090;AP00111;Carte VISA PREMIER DI}
  */
-public final class OffLineValidator {
+public final class OfferValidator {
 
     private static final String TYPE = "OFF";
 
-    private OffLineValidator() {}
+    private OfferValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize (fields, 3, TYPE, lineNumber);

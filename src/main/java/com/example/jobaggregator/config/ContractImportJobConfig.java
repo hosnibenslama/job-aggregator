@@ -1,7 +1,7 @@
 package com.example.jobaggregator.config;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.domain.feed.ParsedLine;
 import com.example.jobaggregator.listener.ContractFileIntegrityListener;
 import com.example.jobaggregator.processor.ContractStructureValidator;
 import com.example.jobaggregator.reader.ContractBlockReader;

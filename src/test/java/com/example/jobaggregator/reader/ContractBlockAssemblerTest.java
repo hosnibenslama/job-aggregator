@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.LineType;
-import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.domain.feed.LineType;
+import com.example.jobaggregator.domain.feed.ParsedLine;
 import com.example.jobaggregator.error.ContractFormatException;
 import java.util.List;
 import org.junit.jupiter.api.Test;

@@ -24,14 +24,14 @@ import java.util.Set;
  * ACC;FEE;BNPAFRPP;FR76300040212400001100885705;300040212400001100885705
  * </pre>
  */
-public final class AccLineValidator {
+public final class AccountValidator {
 
     private static final String TYPE = "ACC";
 
     /** BILL = facturation, FEE = frais */
     public static final Set<String> VALID_SUBTYPES = Set.of("BILL", "FEE");
 
-    private AccLineValidator() {}
+    private AccountValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize(fields, 4,  TYPE, lineNumber);

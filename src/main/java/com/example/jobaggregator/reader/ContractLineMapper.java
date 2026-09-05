@@ -1,21 +1,21 @@
 package com.example.jobaggregator.reader;
 
-import com.example.jobaggregator.domain.LineType;
-import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.domain.feed.LineType;
+import com.example.jobaggregator.domain.feed.ParsedLine;
 import com.example.jobaggregator.error.ContractFormatException;
-import com.example.jobaggregator.reader.validator.AccLineValidator;
-import com.example.jobaggregator.reader.validator.ArtLineValidator;
-import com.example.jobaggregator.reader.validator.AvtLineValidator;
-import com.example.jobaggregator.reader.validator.CondLineValidator;
-import com.example.jobaggregator.reader.validator.CtrLineValidator;
-import com.example.jobaggregator.reader.validator.IkacLineValidator;
+import com.example.jobaggregator.reader.validator.AccountValidator;
+import com.example.jobaggregator.reader.validator.AdvantageValidator;
+import com.example.jobaggregator.reader.validator.ArticleValidator;
+import com.example.jobaggregator.reader.validator.ConditionValidator;
+import com.example.jobaggregator.reader.validator.ContractHeaderValidator;
+import com.example.jobaggregator.reader.validator.ExternalIdValidator;
+import com.example.jobaggregator.reader.validator.IkacValidator;
 import com.example.jobaggregator.reader.validator.LineFieldValidator;
-import com.example.jobaggregator.reader.validator.OffLineValidator;
-import com.example.jobaggregator.reader.validator.OidLineValidator;
-import com.example.jobaggregator.reader.validator.OmLineValidator;
-import com.example.jobaggregator.reader.validator.RolLineValidator;
-import com.example.jobaggregator.reader.validator.TarLineValidator;
-import com.example.jobaggregator.reader.validator.TrlLineValidator;
+import com.example.jobaggregator.reader.validator.OfferValidator;
+import com.example.jobaggregator.reader.validator.OmValidator;
+import com.example.jobaggregator.reader.validator.RoleValidator;
+import com.example.jobaggregator.reader.validator.TarifValidator;
+import com.example.jobaggregator.reader.validator.TrailerValidator;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -38,18 +38,18 @@ public final class ContractLineMapper implements LineMapper<ParsedLine> {
 
     /** Registry of per-type field validators. Line types not listed (HDR, TRL) pass through. */
     private static final Map<LineType, LineFieldValidator> VALIDATORS = Map.ofEntries(
-            Map.entry(LineType.CTR,  CtrLineValidator::validate),
-            Map.entry(LineType.ACC,  AccLineValidator::validate),
-            Map.entry(LineType.OM,   OmLineValidator::validate),
-            Map.entry(LineType.OFF,  OffLineValidator::validate),
-            Map.entry(LineType.ART,  ArtLineValidator::validate),
-            Map.entry(LineType.ROL,  RolLineValidator::validate),
-            Map.entry(LineType.TAR,  TarLineValidator::validate),
-            Map.entry(LineType.OID,  OidLineValidator::validate),
-            Map.entry(LineType.IKAC, IkacLineValidator::validate),
-            Map.entry(LineType.COND, CondLineValidator::validate),
-            Map.entry(LineType.AVT,  AvtLineValidator::validate),
-            Map.entry(LineType.TRL,  TrlLineValidator::validate)
+            Map.entry(LineType.CTR,  ContractHeaderValidator::validate),
+            Map.entry(LineType.ACC,  AccountValidator::validate),
+            Map.entry(LineType.OM,   OmValidator::validate),
+            Map.entry(LineType.OFF,  OfferValidator::validate),
+            Map.entry(LineType.ART,  ArticleValidator::validate),
+            Map.entry(LineType.ROL,  RoleValidator::validate),
+            Map.entry(LineType.TAR,  TarifValidator::validate),
+            Map.entry(LineType.OID,  ExternalIdValidator::validate),
+            Map.entry(LineType.IKAC, IkacValidator::validate),
+            Map.entry(LineType.COND, ConditionValidator::validate),
+            Map.entry(LineType.AVT,  AdvantageValidator::validate),
+            Map.entry(LineType.TRL,  TrailerValidator::validate)
     );
 
     @Override

@@ -1,7 +1,10 @@
-package com.example.jobaggregator.domain;
+package com.example.jobaggregator.domain.feed;
 
 import java.util.Locale;
 
+/**
+ * Line markers defining the record types in the raw contract input feed.
+ */
 public enum LineType {
     HDR,
     CTR,

@@ -17,11 +17,11 @@ import java.util.List;
  *
  * Example: {@code ART;1}, {@code ART;2}, {@code ART;3}
  */
-public final class ArtLineValidator {
+public final class ArticleValidator {
 
     private static final String TYPE = "ART";
 
-    private ArtLineValidator() {}
+    private ArticleValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize    (fields, 2, TYPE, lineNumber);

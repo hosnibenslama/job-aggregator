@@ -19,11 +19,11 @@ import java.util.List;
  * TRL:1000
  * </pre>
  */
-public final class TrlLineValidator {
+public final class TrailerValidator {
 
     private static final String TYPE = "TRL";
 
-    private TrlLineValidator() {}
+    private TrailerValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize(fields, 2, TYPE, lineNumber);

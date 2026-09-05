@@ -149,7 +149,7 @@ class ContractImportJobIntegrationTest {
             for (ContractEntity entity : contractRepository.findAll()) {
                 assertThat(entity.getId()).isNotNull();
                 assertThat(entity.getAccounts()).hasSize(1);
-                assertThat(entity.getOperations()).hasSize(1);
+                assertThat(entity.getMarketedObjects()).hasSize(1);
                 assertThat(entity.getArticles()).hasSize(1);
             }
         }

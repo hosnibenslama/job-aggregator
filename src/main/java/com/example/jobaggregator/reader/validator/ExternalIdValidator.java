@@ -19,11 +19,11 @@ import java.util.List;
  * OID;SER-0000000000637
  * </pre>
  */
-public final class OidLineValidator {
+public final class ExternalIdValidator {
 
     private static final String TYPE = "OID";
 
-    private OidLineValidator() {}
+    private ExternalIdValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize(fields, 2, TYPE, lineNumber);

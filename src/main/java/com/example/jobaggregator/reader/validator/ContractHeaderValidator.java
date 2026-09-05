@@ -29,7 +29,7 @@ import java.util.Set;
  * 16   Media                  Yes        001/003/055/073
  * </pre>
  */
-public final class CtrLineValidator {
+public final class ContractHeaderValidator {
 
     private static final String TYPE = "CTR";
 
@@ -39,7 +39,7 @@ public final class CtrLineValidator {
     /** 001=Face à face, 003=Téléphone, 055=SMS, 073=Chat */
     public static final Set<String> VALID_MEDIA = Set.of("001", "003", "055", "073");
 
-    private CtrLineValidator() {}
+    private ContractHeaderValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize (fields, 16, TYPE, lineNumber);

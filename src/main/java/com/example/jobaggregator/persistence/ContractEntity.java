@@ -56,7 +56,7 @@ public class ContractEntity implements Persistable<UUID> {
     private Set<ContractOfferEntity> offers;
 
     @MappedCollection(idColumn = "contract_id")
-    private Set<ContractOperationEntity> operations;
+    private Set<ContractMarketedObjectEntity> marketedObjects;
 
     @MappedCollection(idColumn = "contract_id")
     private Set<ContractExternalIdEntity> externalIds;
@@ -71,7 +71,7 @@ public class ContractEntity implements Persistable<UUID> {
     private Set<ContractConditionEntity> conditions;
 
     @MappedCollection(idColumn = "contract_id")
-    private Set<ContractTariffEntity> tariffs;
+    private Set<ContractTarifEntity> tarifs;
 
     @MappedCollection(idColumn = "contract_id")
     private Set<ContractAdvantageEntity> advantages;
@@ -140,8 +140,11 @@ public class ContractEntity implements Persistable<UUID> {
     public Set<ContractOfferEntity> getOffers() { return offers; }
     public void setOffers(Set<ContractOfferEntity> offers) { this.offers = offers; }
 
-    public Set<ContractOperationEntity> getOperations() { return operations; }
-    public void setOperations(Set<ContractOperationEntity> operations) { this.operations = operations; }
+    public Set<ContractMarketedObjectEntity> getMarketedObjects() { return marketedObjects; }
+    public void setMarketedObjects(Set<ContractMarketedObjectEntity> marketedObjects) { this.marketedObjects = marketedObjects; }
+
+    public Set<ContractMarketedObjectEntity> getOperations() { return marketedObjects; }
+    public void setOperations(Set<ContractMarketedObjectEntity> operations) { this.marketedObjects = operations; }
 
     public Set<ContractExternalIdEntity> getExternalIds() { return externalIds; }
     public void setExternalIds(Set<ContractExternalIdEntity> externalIds) { this.externalIds = externalIds; }
@@ -155,8 +158,8 @@ public class ContractEntity implements Persistable<UUID> {
     public Set<ContractConditionEntity> getConditions() { return conditions; }
     public void setConditions(Set<ContractConditionEntity> conditions) { this.conditions = conditions; }
 
-    public Set<ContractTariffEntity> getTariffs() { return tariffs; }
-    public void setTariffs(Set<ContractTariffEntity> tariffs) { this.tariffs = tariffs; }
+    public Set<ContractTarifEntity> getTarifs() { return tarifs; }
+    public void setTarifs(Set<ContractTarifEntity> tarifs) { this.tarifs = tarifs; }
 
     public Set<ContractAdvantageEntity> getAdvantages() { return advantages; }
     public void setAdvantages(Set<ContractAdvantageEntity> advantages) { this.advantages = advantages; }

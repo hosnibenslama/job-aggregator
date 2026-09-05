@@ -21,11 +21,11 @@ import java.util.List;
  * COND;PAR-0000007160920;123456
  * </pre>
  */
-public final class CondLineValidator {
+public final class ConditionValidator {
 
     private static final String TYPE = "COND";
 
-    private CondLineValidator() {}
+    private ConditionValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize(fields, 3, TYPE, lineNumber);

@@ -5,8 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.LineType;
-import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.domain.feed.LineType;
+import com.example.jobaggregator.domain.feed.ParsedLine;
 import com.example.jobaggregator.persistence.ContractEntity;
 import com.example.jobaggregator.persistence.ContractEntityRepository;
 import java.util.List;
@@ -37,8 +37,10 @@ class ContractPersistenceWriterTest {
                 "IKAC", "IKAC-VAL-1"));
         ParsedLine cond = new ParsedLine(6, LineType.COND, "COND", List.of(
                 "COND", "COND-1", "VAL-1"));
+        ParsedLine tar = new ParsedLine(7, LineType.TAR, "TAR", List.of(
+                "TAR", "TAR-1", "001", "2026-01-01", "2026-01-01", "EUR"));
 
-        ContractBlock block = new ContractBlock(List.of(ctr, acc, om, art, ikac, cond));
+        ContractBlock block = new ContractBlock(List.of(ctr, acc, om, art, ikac, cond, tar));
 
         // Act: Write chunk
         writer.write(Chunk.of(block));
@@ -56,9 +58,11 @@ class ContractPersistenceWriterTest {
         assertThat(entity.getDevise()).isEqualTo("EUR");
         assertThat(entity.getAccounts()).hasSize(1);
         assertThat(entity.getAccounts().iterator().next().getIban()).isEqualTo("FR76300040219600000167638828");
-        assertThat(entity.getOperations()).hasSize(1);
+        assertThat(entity.getMarketedObjects()).hasSize(1);
         assertThat(entity.getArticles()).hasSize(1);
         assertThat(entity.getIkacLines()).hasSize(1);
         assertThat(entity.getConditions()).hasSize(1);
+        assertThat(entity.getTarifs()).hasSize(1);
+        assertThat(entity.getTarifs().iterator().next().getIdOpraTarif()).isEqualTo("TAR-1");
     }
 }

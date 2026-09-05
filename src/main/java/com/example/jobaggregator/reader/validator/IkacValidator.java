@@ -21,11 +21,11 @@ import java.util.List;
  * IKAC;52050000000634205
  * </pre>
  */
-public final class IkacLineValidator {
+public final class IkacValidator {
 
     private static final String TYPE = "IKAC";
 
-    private IkacLineValidator() {}
+    private IkacValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize(fields, 2, TYPE, lineNumber);

@@ -1,8 +1,8 @@
 package com.example.jobaggregator.reader;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.LineType;
-import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.domain.feed.LineType;
+import com.example.jobaggregator.domain.feed.ParsedLine;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
@@ -109,7 +109,7 @@ public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
     /**
      * Reads the NBCTR value from a TRL line's fields (index 1).
      * Silently ignored if the field is absent or non-numeric — field-level
-     * validation in {@link com.example.jobaggregator.reader.validator.TrlLineValidator}
+     * validation in {@link com.example.jobaggregator.reader.validator.TrailerValidator}
      * already enforces the format before this point.
      */
     private void captureTrlCount(ParsedLine trl) {
@@ -118,7 +118,7 @@ public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
             try {
                 expectedContractCount = Integer.parseInt(fields.get(1).strip());
             } catch (NumberFormatException ignored) {
-                // TrlLineValidator already rejected non-numeric values
+                // TrailerValidator already rejected non-numeric values
             }
         }
     }

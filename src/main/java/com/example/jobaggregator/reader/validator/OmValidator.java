@@ -18,11 +18,11 @@ import java.util.List;
  *
  * Example: {@code OM;00058680432692016;000058680432692016}
  */
-public final class OmLineValidator {
+public final class OmValidator {
 
     private static final String TYPE = "OM";
 
-    private OmLineValidator() {}
+    private OmValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize (fields, 3, TYPE, lineNumber);

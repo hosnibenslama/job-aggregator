@@ -1,8 +1,8 @@
 package com.example.jobaggregator.reader;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.LineType;
-import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.domain.feed.LineType;
+import com.example.jobaggregator.domain.feed.ParsedLine;
 import com.example.jobaggregator.error.ContractFormatException;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -26,7 +26,7 @@ public final class ContractBlockAssembler {
     private final List<ParsedLine> lines = new ArrayList<>();
     private LineType previous;
     private boolean hasAccount;
-    private boolean hasOperation;
+    private boolean hasMarketedObject;
     private boolean hasArticle;
 
     public ContractBlockAssembler(ParsedLine ctr) {
@@ -51,7 +51,7 @@ public final class ContractBlockAssembler {
 
         switch (line.type()) {
             case ACC -> hasAccount = true;
-            case OM -> hasOperation = true;
+            case OM -> hasMarketedObject = true;
             case ART -> hasArticle = true;
             default -> {}
         }
@@ -61,7 +61,7 @@ public final class ContractBlockAssembler {
         if (!hasAccount) {
             throw error(lines.getFirst(), "A contract must contain at least one ACC");
         }
-        if (!hasOperation) {
+        if (!hasMarketedObject) {
             throw error(lines.getFirst(), "A contract must contain at least one OM");
         }
         if (!hasArticle) {
@@ -72,7 +72,7 @@ public final class ContractBlockAssembler {
     }
 
     private void validatePrerequisites(ParsedLine line) {
-        if (line.type() == LineType.OID && !hasOperation) {
+        if (line.type() == LineType.OID && !hasMarketedObject) {
             throw error(line, "OID requires a preceding OM");
         }
         if (Set.of(LineType.IKAC, LineType.COND, LineType.TAR, LineType.AVT).contains(line.type())
@@ -102,7 +102,7 @@ public final class ContractBlockAssembler {
                     LineType.OID,
                     LineType.ART);
 
-            // After Account: can transition to further accounts, roles, offers, products, articles, conditions, tariffs
+            // After Account: can transition to further accounts, roles, offers, products, articles, conditions, tarifs
             case ACC -> EnumSet.of(
                     LineType.ACC,
                     LineType.ROL,
@@ -132,7 +132,7 @@ public final class ContractBlockAssembler {
                     LineType.AVT,
                     LineType.OID);
 
-            // After Article: transitions to tariff, conditions, next article, or account
+            // After Article: transitions to tarif, conditions, next article, or account
             case ART -> EnumSet.of(
                     LineType.OID,
                     LineType.IKAC,
@@ -143,7 +143,7 @@ public final class ContractBlockAssembler {
                     LineType.ART,
                     LineType.ROL);
 
-            // After IKAC: conditions, account, tariffs, or next article
+            // After IKAC: conditions, account, tarifs, or next article
             case IKAC -> EnumSet.of(
                     LineType.COND,
                     LineType.ACC,
@@ -153,7 +153,7 @@ public final class ContractBlockAssembler {
                     LineType.ROL,
                     LineType.OID);
 
-            // After COND: further conditions, tariffs, or accounts
+            // After COND: further conditions, tarifs, or accounts
             case COND -> EnumSet.of(
                     LineType.ACC,
                     LineType.TAR,
@@ -163,7 +163,7 @@ public final class ContractBlockAssembler {
                     LineType.OID,
                     LineType.COND);
 
-            // After Tariff (TAR): advantages, next article, role, account, or OID
+            // After Tarif (TAR): advantages, next article, role, account, or OID
             case TAR -> EnumSet.of(
                     LineType.AVT,
                     LineType.ART,

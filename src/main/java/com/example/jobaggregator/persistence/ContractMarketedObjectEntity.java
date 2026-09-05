@@ -3,17 +3,17 @@ package com.example.jobaggregator.persistence;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("contract_operations")
-public class ContractOperationEntity {
+@Table("contract_marketed_objects")
+public class ContractMarketedObjectEntity {
 
     @Id
     private Long id;
     private String omId;
     private String businessRelationship;
 
-    public ContractOperationEntity() {}
+    public ContractMarketedObjectEntity() {}
 
-    public ContractOperationEntity(String omId, String businessRelationship) {
+    public ContractMarketedObjectEntity(String omId, String businessRelationship) {
         this.omId = omId;
         this.businessRelationship = businessRelationship;
     }

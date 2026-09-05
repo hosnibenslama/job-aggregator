@@ -29,7 +29,7 @@ import java.util.Set;
  * AVT;;2026-01-01T00:00:00.000000Z;;4;10.50;EUR
  * </pre>
  */
-public final class AvtLineValidator {
+public final class AdvantageValidator {
 
     private static final String TYPE = "AVT";
 
@@ -37,7 +37,7 @@ public final class AvtLineValidator {
     /** Codes that require a valeurAvantage */
     private static final Set<String> CODES_REQUIRING_VALEUR = Set.of("2", "3", "4");
 
-    private AvtLineValidator() {}
+    private AdvantageValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize(fields, 5, TYPE, lineNumber);

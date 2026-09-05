@@ -1,4 +1,4 @@
-package com.example.jobaggregator.domain;
+package com.example.jobaggregator.domain.feed;
 
 import java.util.List;
 

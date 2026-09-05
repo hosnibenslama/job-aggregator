@@ -1,5 +1,8 @@
 package com.example.jobaggregator.domain;
 
+import com.example.jobaggregator.domain.feed.ContractFeedMapper;
+import com.example.jobaggregator.domain.feed.LineType;
+import com.example.jobaggregator.domain.feed.ParsedLine;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -11,17 +14,17 @@ import java.util.function.Function;
 public record ContractBlock(
         UUID id,
         List<ParsedLine> lines,
-        CtrLine ctrLine,
-        List<AccLine> accounts,
-        List<RolLine> roles,
-        List<OffLine> offers,
-        List<OmLine> operations,
-        List<OidLine> externalIds,
-        List<ArtLine> articles,
-        List<IkacLine> ikacLines,
-        List<CondLine> conditions,
-        List<TarLine> tariffs,
-        List<AvtLine> advantages) {
+        ContractHeader header,
+        List<Account> accounts,
+        List<Role> roles,
+        List<Offer> offers,
+        List<MarketedObject> marketedObjects,
+        List<ExternalId> externalIds,
+        List<Article> articles,
+        List<Ikac> ikacAttributes,
+        List<Condition> conditions,
+        List<Tarif> tarifs,
+        List<Advantage> advantages) {
 
     public ContractBlock(List<ParsedLine> lines) {
         this(UUID.randomUUID(), lines);
@@ -32,18 +35,39 @@ public record ContractBlock(
                 id,
                 lines,
                 (!lines.isEmpty() && lines.getFirst().type() == LineType.CTR)
-                        ? CtrLine.from(lines.getFirst()) : null,
-                filter(lines, LineType.ACC, AccLine::from),
-                filter(lines, LineType.ROL, RolLine::from),
-                filter(lines, LineType.OFF, OffLine::from),
-                filter(lines, LineType.OM, OmLine::from),
-                filter(lines, LineType.OID, OidLine::from),
-                filter(lines, LineType.ART, ArtLine::from),
-                filter(lines, LineType.IKAC, IkacLine::from),
-                filter(lines, LineType.COND, CondLine::from),
-                filter(lines, LineType.TAR, TarLine::from),
-                filter(lines, LineType.AVT, AvtLine::from)
+                        ? ContractFeedMapper.toHeader(lines.getFirst()) : null,
+                filter(lines, LineType.ACC, ContractFeedMapper::toAccount),
+                filter(lines, LineType.ROL, ContractFeedMapper::toRole),
+                filter(lines, LineType.OFF, ContractFeedMapper::toOffer),
+                filter(lines, LineType.OM, ContractFeedMapper::toMarketedObject),
+                filter(lines, LineType.OID, ContractFeedMapper::toExternalId),
+                filter(lines, LineType.ART, ContractFeedMapper::toArticle),
+                filter(lines, LineType.IKAC, ContractFeedMapper::toIkac),
+                filter(lines, LineType.COND, ContractFeedMapper::toCondition),
+                filter(lines, LineType.TAR, ContractFeedMapper::toTarif),
+                filter(lines, LineType.AVT, ContractFeedMapper::toAdvantage)
         );
+    }
+
+    /**
+     * Backward-compatible accessor for the contract header.
+     */
+    public ContractHeader ctrLine() {
+        return header;
+    }
+
+    /**
+     * Backward-compatible accessor for IKAC attributes.
+     */
+    public List<Ikac> ikacLines() {
+        return ikacAttributes;
+    }
+
+    /**
+     * Backward-compatible accessor for marketed objects.
+     */
+    public List<MarketedObject> operations() {
+        return marketedObjects;
     }
 
     public List<String> rawLines() {

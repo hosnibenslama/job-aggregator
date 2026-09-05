@@ -1,17 +1,17 @@
 package com.example.jobaggregator.writer;
 
-import com.example.jobaggregator.domain.AccLine;
-import com.example.jobaggregator.domain.ArtLine;
-import com.example.jobaggregator.domain.AvtLine;
-import com.example.jobaggregator.domain.CondLine;
+import com.example.jobaggregator.domain.Account;
+import com.example.jobaggregator.domain.Advantage;
+import com.example.jobaggregator.domain.Article;
+import com.example.jobaggregator.domain.Condition;
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.CtrLine;
-import com.example.jobaggregator.domain.IkacLine;
-import com.example.jobaggregator.domain.OffLine;
-import com.example.jobaggregator.domain.OidLine;
-import com.example.jobaggregator.domain.OmLine;
-import com.example.jobaggregator.domain.RolLine;
-import com.example.jobaggregator.domain.TarLine;
+import com.example.jobaggregator.domain.ContractHeader;
+import com.example.jobaggregator.domain.ExternalId;
+import com.example.jobaggregator.domain.Ikac;
+import com.example.jobaggregator.domain.Offer;
+import com.example.jobaggregator.domain.MarketedObject;
+import com.example.jobaggregator.domain.Role;
+import com.example.jobaggregator.domain.Tarif;
 import com.example.jobaggregator.persistence.ContractAccountEntity;
 import com.example.jobaggregator.persistence.ContractAdvantageEntity;
 import com.example.jobaggregator.persistence.ContractArticleEntity;
@@ -20,10 +20,10 @@ import com.example.jobaggregator.persistence.ContractEntity;
 import com.example.jobaggregator.persistence.ContractEntityRepository;
 import com.example.jobaggregator.persistence.ContractExternalIdEntity;
 import com.example.jobaggregator.persistence.ContractIkacEntity;
+import com.example.jobaggregator.persistence.ContractMarketedObjectEntity;
 import com.example.jobaggregator.persistence.ContractOfferEntity;
-import com.example.jobaggregator.persistence.ContractOperationEntity;
 import com.example.jobaggregator.persistence.ContractRoleEntity;
-import com.example.jobaggregator.persistence.ContractTariffEntity;
+import com.example.jobaggregator.persistence.ContractTarifEntity;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -60,7 +60,7 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
         ContractEntity entity = new ContractEntity();
         entity.setId(contract.id());
 
-        CtrLine ctr = contract.ctrLine();
+        ContractHeader ctr = contract.ctrLine();
         if (ctr != null) {
             entity.setDevise(ctr.devise());
             entity.setState(ctr.state());
@@ -91,8 +91,8 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
                 .map(o -> new ContractOfferEntity(o.offerId(), o.provider(), blankToNull(o.personalizedLabel())))
                 .collect(Collectors.toSet()));
 
-        entity.setOperations(contract.operations().stream()
-                .map(om -> new ContractOperationEntity(om.omId(), om.businessRelationship()))
+        entity.setMarketedObjects(contract.marketedObjects().stream()
+                .map(om -> new ContractMarketedObjectEntity(om.omId(), om.businessRelationship()))
                 .collect(Collectors.toSet()));
 
         entity.setExternalIds(contract.externalIds().stream()
@@ -111,8 +111,8 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
                 .map(c -> new ContractConditionEntity(c.conditionId(), c.conditionValue()))
                 .collect(Collectors.toSet()));
 
-        entity.setTariffs(contract.tariffs().stream()
-                .map(this::toTariffEntity)
+        entity.setTarifs(contract.tarifs().stream()
+                .map(this::toTarifEntity)
                 .collect(Collectors.toSet()));
 
         entity.setAdvantages(contract.advantages().stream()
@@ -128,8 +128,8 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
         return entity;
     }
 
-    private ContractTariffEntity toTariffEntity(TarLine t) {
-        ContractTariffEntity te = new ContractTariffEntity();
+    private ContractTarifEntity toTarifEntity(Tarif t) {
+        ContractTarifEntity te = new ContractTarifEntity();
         te.setIdOpraTarif(blankToNull(t.idOpraTarif()));
         te.setTypeFrais(blankToNull(t.typeFrais()));
         te.setDateCreationTarif(blankToNull(t.dateCreationTarif()));

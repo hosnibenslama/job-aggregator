@@ -1,4 +1,4 @@
-package com.example.jobaggregator.domain;
+package com.example.jobaggregator.domain.feed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.example.jobaggregator.domain.ContractBlock;
-import com.example.jobaggregator.domain.LineType;
-import com.example.jobaggregator.domain.ParsedLine;
+import com.example.jobaggregator.domain.feed.LineType;
+import com.example.jobaggregator.domain.feed.ParsedLine;
 import com.example.jobaggregator.writer.ContractRejectWriter;
 import java.io.IOException;
 import java.util.List;

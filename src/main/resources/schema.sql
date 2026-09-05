@@ -1,16 +1,18 @@
 -- Drop and recreate all tables for development / batch runs
 DROP TABLE IF EXISTS contract_advantages;
+DROP TABLE IF EXISTS contract_tarifs;
 DROP TABLE IF EXISTS contract_tariffs;
 DROP TABLE IF EXISTS contract_conditions;
 DROP TABLE IF EXISTS contract_ikac;
 DROP TABLE IF EXISTS contract_articles;
 DROP TABLE IF EXISTS contract_external_ids;
+DROP TABLE IF EXISTS contract_marketed_objects;
 DROP TABLE IF EXISTS contract_operations;
 DROP TABLE IF EXISTS contract_offers;
 DROP TABLE IF EXISTS contract_roles;
 DROP TABLE IF EXISTS contract_accounts;
 DROP TABLE IF EXISTS contract_lines;
-DROP TABLE IF EXISTS contracts;
+DROP TABLE IF EXISTS contracts CASCADE;
 
 CREATE TABLE contracts (
     id                      UUID          PRIMARY KEY,
@@ -63,7 +65,7 @@ CREATE TABLE contract_offers (
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE contract_operations (
+CREATE TABLE contract_marketed_objects (
     id                      BIGSERIAL     PRIMARY KEY,
     contract_id             UUID          NOT NULL REFERENCES contracts (id) ON DELETE CASCADE,
     om_id                   VARCHAR(50)   NOT NULL,
@@ -100,7 +102,7 @@ CREATE TABLE contract_conditions (
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE contract_tariffs (
+CREATE TABLE contract_tarifs (
     id                      BIGSERIAL     PRIMARY KEY,
     contract_id             UUID          NOT NULL REFERENCES contracts (id) ON DELETE CASCADE,
     id_opra_tarif           VARCHAR(50),
@@ -138,15 +140,15 @@ CREATE TABLE contract_advantages (
 );
 
 -- Indices for foreign keys and frequent lookups
-CREATE INDEX idx_contracts_business_rel     ON contracts (business_relationship);
-CREATE INDEX idx_contracts_ou_management    ON contracts (ou_management);
-CREATE INDEX idx_contract_accounts_cid      ON contract_accounts (contract_id);
-CREATE INDEX idx_contract_roles_cid         ON contract_roles (contract_id);
-CREATE INDEX idx_contract_offers_cid        ON contract_offers (contract_id);
-CREATE INDEX idx_contract_operations_cid    ON contract_operations (contract_id);
+CREATE INDEX idx_contracts_business_rel        ON contracts (business_relationship);
+CREATE INDEX idx_contracts_ou_management       ON contracts (ou_management);
+CREATE INDEX idx_contract_accounts_cid         ON contract_accounts (contract_id);
+CREATE INDEX idx_contract_roles_cid            ON contract_roles (contract_id);
+CREATE INDEX idx_contract_offers_cid           ON contract_offers (contract_id);
+CREATE INDEX idx_contract_marketed_objects_cid ON contract_marketed_objects (contract_id);
 CREATE INDEX idx_contract_external_ids_cid  ON contract_external_ids (contract_id);
 CREATE INDEX idx_contract_articles_cid      ON contract_articles (contract_id);
 CREATE INDEX idx_contract_ikac_cid          ON contract_ikac (contract_id);
 CREATE INDEX idx_contract_conditions_cid    ON contract_conditions (contract_id);
-CREATE INDEX idx_contract_tariffs_cid       ON contract_tariffs (contract_id);
+CREATE INDEX idx_contract_tarifs_cid        ON contract_tarifs (contract_id);
 CREATE INDEX idx_contract_advantages_cid    ON contract_advantages (contract_id);

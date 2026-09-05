@@ -36,7 +36,7 @@ import java.util.Set;
  * 20   limiteBasseMontant      No
  * </pre>
  */
-public final class TarLineValidator {
+public final class TarifValidator {
 
     private static final String TYPE = "TAR";
 
@@ -77,7 +77,7 @@ public final class TarLineValidator {
     /** 0=limite renseignée, 1=limite non renseignée */
     public static final Set<String> VALID_INDIC_LIMITE = Set.of("0", "1");
 
-    private TarLineValidator() {}
+    private TarifValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         // ── fields 3-10: basic enum validation when present ──────────────────

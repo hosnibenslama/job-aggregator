@@ -3,8 +3,8 @@ package com.example.jobaggregator.persistence;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("contract_tariffs")
-public class ContractTariffEntity {
+@Table("contract_tarifs")
+public class ContractTarifEntity {
 
     @Id
     private Long id;
@@ -28,7 +28,7 @@ public class ContractTariffEntity {
     private String indicLimiteBasse;
     private String limiteBasseMontant;
 
-    public ContractTariffEntity() {}
+    public ContractTarifEntity() {}
 
     public Long getId() { return id; }
     public String getIdOpraTarif() { return idOpraTarif; }

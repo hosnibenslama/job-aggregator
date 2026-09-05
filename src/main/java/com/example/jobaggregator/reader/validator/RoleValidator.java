@@ -21,11 +21,11 @@ import java.util.List;
  *
  * Example: {@code ROL;1;001;PRI;01970013368500000;01970013368500002}
  */
-public final class RolLineValidator {
+public final class RoleValidator {
 
     private static final String TYPE = "ROL";
 
-    private RolLineValidator() {}
+    private RoleValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize (fields, 6, TYPE, lineNumber);
