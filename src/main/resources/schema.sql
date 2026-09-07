@@ -39,7 +39,6 @@ CREATE TABLE contract_offers (
     id                  BIGSERIAL     PRIMARY KEY,
     contract_id         UUID          NOT NULL REFERENCES contracts (id) ON DELETE CASCADE,
     offer_id            VARCHAR(50)   NOT NULL,
-    provider            VARCHAR(50)   NOT NULL,
     personalized_label  VARCHAR(255),
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );

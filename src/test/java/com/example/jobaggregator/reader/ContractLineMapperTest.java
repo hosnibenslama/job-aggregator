@@ -352,7 +352,7 @@ class ContractLineMapperTest {
         @Test
         void shouldParseValidOffLineWithMandatoryAndOptionalFields() {
             // Given: A valid OFF line with optional label
-            String rawLine = "OFF;OFF-0000000001090;AP00111;Carte VISA PREMIER DI";
+            String rawLine = "OFF;OFF-0000000001090;Carte VISA PREMIER DI";
 
             // Act: Map the line
             FeedRecord line = mapper.mapLine(rawLine, 1);
@@ -360,41 +360,42 @@ class ContractLineMapperTest {
             // Assert: OFF type is identified with all fields
             assertThat(line.type()).isEqualTo(FeedRecordType.OFF);
             assertThat(line.field(1)).isEqualTo("OFF-0000000001090");
-            assertThat(line.field(3)).isEqualTo("Carte VISA PREMIER DI");
+            assertThat(line.field(2)).isEqualTo("Carte VISA PREMIER DI");
         }
 
         @Test
         void shouldParseValidOffLineWithoutOptionalLabel() {
             // Given: A valid OFF line without optional label
-            String rawLine = "OFF;OFF-0000000001090;AP00111";
+            String rawLine = "OFF;OFF-0000000001090";
 
             // Act: Map the line
             FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: OFF type is identified successfully
             assertThat(line.type()).isEqualTo(FeedRecordType.OFF);
+            assertThat(line.field(1)).isEqualTo("OFF-0000000001090");
+        }
+
+        @Test
+        void shouldRejectOffWhenFewerThanTwoFields() {
+            // Given: An OFF line with fewer than 2 fields
+            String rawLine = "OFF";
+
+            // Act & Assert: Parser throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("2 fields");
         }
 
         @Test
         void shouldRejectOffWhenOfferIdIsBlank() {
             // Given: An OFF line with blank offer ID
-            String rawLine = "OFF;;AP00111";
+            String rawLine = "OFF; ;Carte VISA PREMIER DI";
 
             // Act & Assert: Parser throws ContractFormatException
             assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
                     .isInstanceOf(ContractFormatException.class)
                     .hasMessageContaining("Identifiant offre");
-        }
-
-        @Test
-        void shouldRejectOffWhenProviderIsBlank() {
-            // Given: An OFF line with blank provider
-            String rawLine = "OFF;OFF-001;";
-
-            // Act & Assert: Parser throws ContractFormatException
-            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
-                    .isInstanceOf(ContractFormatException.class)
-                    .hasMessageContaining("Provider");
         }
     }
 

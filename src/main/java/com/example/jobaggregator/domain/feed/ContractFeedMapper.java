@@ -66,8 +66,7 @@ public final class ContractFeedMapper {
         requireType(record, FeedRecordType.OFF);
         return new Offer(
                 record.field(1),  // Offer ID
-                record.field(2),  // Provider
-                record.field(3)); // Personalized label (optional)
+                record.field(2)); // Personalized label (optional)
     }
 
     public static MarketedObject toMarketedObject(FeedRecord record) {

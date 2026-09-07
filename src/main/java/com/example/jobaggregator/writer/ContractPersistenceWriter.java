@@ -60,8 +60,8 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
             """;
 
     private static final String INSERT_OFFER = """
-            INSERT INTO contract_offers (contract_id, offer_id, provider, personalized_label)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO contract_offers (contract_id, offer_id, personalized_label)
+            VALUES (?, ?, ?)
             """;
 
     private static final String INSERT_MARKETED_OBJECT = """
@@ -240,7 +240,7 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
 
     private void insertOffer(UUID contractId, Offer o) {
         jdbcTemplate.update(INSERT_OFFER,
-                contractId, o.offerId(), o.provider(), blankToNull(o.personalizedLabel()));
+                contractId, o.offerId(), blankToNull(o.personalizedLabel()));
     }
 
     private long insertMarketedObject(UUID contractId, MarketedObject om) {
