@@ -69,7 +69,7 @@ class ContractImportJobIntegrationTest {
         CTR;EUR;16;000;Contract 001;031030000;;BR-001;;MENSUELLE;;abcdef0123456789;fedcba9876543210;user001;001;003
         ACC;BILL;BNPAFRPP;FR76300040219600000167638828;300040005800004021286086
         OM;OM-001;000058680432692016
-        IKAC;IKAC-001
+        IKAC;IKAC-001;AP00111
         ART;1""";
 
     private final JobOperator jobOperator;

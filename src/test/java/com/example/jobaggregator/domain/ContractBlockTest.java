@@ -14,7 +14,7 @@ class ContractBlockTest {
     void shouldCreateArticleWithFullComponents() {
         // Given: Components for an Article
         ExternalId oid = new ExternalId("OID-1");
-        Ikac ikac = new Ikac("IKAC-1");
+        Ikac ikac = new Ikac("IKAC-1", "AP00111");
         Condition cond = new Condition("COND-1", "VAL-1");
         Account acc = new Account("BILL", "BIC1", "IBAN1", "RIB1");
         Role rol = new Role("TIT", "BRAND", "PER", "HOLDER1", "IKPI1");

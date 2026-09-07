@@ -91,7 +91,7 @@ public final class ContractFeedMapper {
 
     public static Ikac toIkac(FeedRecord record) {
         requireType(record, FeedRecordType.IKAC);
-        return new Ikac(record.field(1));
+        return new Ikac(record.field(1), record.field(2));
     }
 
     public static Condition toCondition(FeedRecord record) {

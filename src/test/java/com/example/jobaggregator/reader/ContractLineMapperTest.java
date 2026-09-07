@@ -787,5 +787,60 @@ class ContractLineMapperTest {
         }
     }
 
+    // =========================================================================
+    // IKAC — section 6
+    // =========================================================================
+
+    @Nested
+    class IkacValidation {
+
+        @Test
+        void shouldParseValidIkacLine() {
+            // Given: A valid IKAC line with valeur IKAC and provider
+            String rawLine = "IKAC;52050000000634205;AP00111";
+
+            // Act: Map the line
+            FeedRecord line = mapper.mapLine(rawLine, 1);
+
+            // Assert: Type is IKAC, fields mapped properly
+            assertThat(line.type()).isEqualTo(FeedRecordType.IKAC);
+            assertThat(line.field(1)).isEqualTo("52050000000634205");
+            assertThat(line.field(2)).isEqualTo("AP00111");
+        }
+
+        @Test
+        void shouldRejectIkacWhenFewerThanThreeFields() {
+            // Given: An IKAC line with fewer than 3 fields
+            String shortLine = "IKAC;52050000000634205";
+
+            // Act & Assert: Throws ContractFormatException requiring 3 fields
+            assertThatThrownBy(() -> mapper.mapLine(shortLine, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("3 fields");
+        }
+
+        @Test
+        void shouldRejectIkacWhenValeurIsBlank() {
+            // Given: An IKAC line with blank valeur
+            String rawLine = "IKAC; ;AP00111";
+
+            // Act & Assert: Throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("Valeur IKAC");
+        }
+
+        @Test
+        void shouldRejectIkacWhenProviderIsBlank() {
+            // Given: An IKAC line with blank provider
+            String rawLine = "IKAC;52050000000634205; ";
+
+            // Act & Assert: Throws ContractFormatException
+            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
+                    .isInstanceOf(ContractFormatException.class)
+                    .hasMessageContaining("Provider");
+        }
+    }
+
 }
 

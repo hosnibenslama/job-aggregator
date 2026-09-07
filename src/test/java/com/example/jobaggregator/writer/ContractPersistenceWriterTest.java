@@ -40,7 +40,7 @@ class ContractPersistenceWriterTest {
         FeedRecord art = new FeedRecord(4, FeedRecordType.ART, "ART", List.of(
                 "ART", "1"));
         FeedRecord ikac = new FeedRecord(5, FeedRecordType.IKAC, "IKAC", List.of(
-                "IKAC", "IKAC-VAL-1"));
+                "IKAC", "IKAC-VAL-1", "AP00111"));
         FeedRecord cond = new FeedRecord(6, FeedRecordType.COND, "COND", List.of(
                 "COND", "COND-1", "VAL-1"));
         FeedRecord tar = new FeedRecord(7, FeedRecordType.TAR, "TAR", List.of(

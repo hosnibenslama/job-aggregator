@@ -80,8 +80,8 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
             """;
 
     private static final String INSERT_IKAC = """
-            INSERT INTO contract_ikac (contract_id, article_id, ikac_value)
-            VALUES (?, ?, ?)
+            INSERT INTO contract_ikac (contract_id, article_id, ikac_value, provider)
+            VALUES (?, ?, ?, ?)
             """;
 
     private static final String INSERT_CONDITION = """
@@ -297,7 +297,7 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
 
     private void insertIkac(UUID contractId, long articleId, Ikac ikac) {
         jdbcTemplate.update(INSERT_IKAC,
-                contractId, articleId, ikac.ikacValue());
+                contractId, articleId, ikac.ikacValue(), ikac.provider());
     }
 
     private void insertCondition(UUID contractId, long articleId, Condition c) {

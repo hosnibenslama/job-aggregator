@@ -14,11 +14,12 @@ import java.util.List;
  * ---  ----------  ---------  -----------------------
  *  1   Type        Yes        fixed "IKAC"
  *  2   Valeur IKAC Yes        the IKAC value
+ *  3   Provider    Yes        e.g. AP00111
  * </pre>
  *
  * Example:
  * <pre>
- * IKAC;52050000000634205
+ * IKAC;52050000000634205;AP00111
  * </pre>
  */
 public final class IkacValidator {
@@ -28,7 +29,8 @@ public final class IkacValidator {
     private IkacValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize(fields, 2, TYPE, lineNumber);
+        requireMinSize(fields, 3, TYPE, lineNumber);
         requireNonBlank(fields, 1, "Valeur IKAC", TYPE, lineNumber);
+        requireNonBlank(fields, 2, "Provider",    TYPE, lineNumber);
     }
 }

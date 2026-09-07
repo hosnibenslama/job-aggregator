@@ -101,6 +101,7 @@ CREATE TABLE contract_ikac (
     contract_id         UUID          NOT NULL REFERENCES contracts (id) ON DELETE CASCADE,
     article_id          BIGINT        NOT NULL REFERENCES contract_articles (id) ON DELETE CASCADE,
     ikac_value          VARCHAR(100)  NOT NULL,
+    provider            VARCHAR(50)   NOT NULL,
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
