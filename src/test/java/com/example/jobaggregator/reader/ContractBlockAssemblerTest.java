@@ -44,13 +44,13 @@ class ContractBlockAssemblerTest {
 
         // Assert: OM-level children
         assertThat(contract.marketedObjects()).hasSize(1);
-        MarketedObject om = contract.marketedObjects().getFirst();
+        MarketedObject om = contract.marketedObjects().get(0);
         assertThat(om.omId()).isEqualTo("OM-001");
         assertThat(om.externalIds()).hasSize(1);
 
         // Assert: Article-level children
         assertThat(om.articles()).hasSize(1);
-        Article art = om.articles().getFirst();
+        Article art = om.articles().get(0);
         assertThat(art.sequentialIndex()).isEqualTo(1);
         assertThat(art.ikacs()).hasSize(1);
         assertThat(art.conditions()).hasSize(1);
@@ -87,7 +87,7 @@ class ContractBlockAssemblerTest {
         assertThat(contract.records()).hasSize(4);
         assertThat(contract.rawRecords()).hasSize(4);
         assertThat(contract.marketedObjects()).hasSize(1);
-        assertThat(contract.marketedObjects().getFirst().articles()).hasSize(1);
+        assertThat(contract.marketedObjects().get(0).articles()).hasSize(1);
     }
 
     @Test
@@ -144,25 +144,25 @@ class ContractBlockAssemblerTest {
 
         // Assert: Verify Contract level contains only contract-level TAR & AVT
         assertThat(contract.tarifs()).hasSize(1);
-        assertThat(contract.tarifs().getFirst().idOpraTarif()).isEqualTo("TAR-CONTRACT");
+        assertThat(contract.tarifs().get(0).idOpraTarif()).isEqualTo("TAR-CONTRACT");
         assertThat(contract.advantages()).hasSize(1);
-        assertThat(contract.advantages().getFirst().idOpraAvantage()).isEqualTo("AVT-CONTRACT");
+        assertThat(contract.advantages().get(0).idOpraAvantage()).isEqualTo("AVT-CONTRACT");
 
         // Assert: Verify OM level contains only OM-level TAR & AVT
         assertThat(contract.marketedObjects()).hasSize(1);
-        MarketedObject om = contract.marketedObjects().getFirst();
+        MarketedObject om = contract.marketedObjects().get(0);
         assertThat(om.tarifs()).hasSize(1);
-        assertThat(om.tarifs().getFirst().idOpraTarif()).isEqualTo("TAR-OM");
+        assertThat(om.tarifs().get(0).idOpraTarif()).isEqualTo("TAR-OM");
         assertThat(om.advantages()).hasSize(1);
-        assertThat(om.advantages().getFirst().idOpraAvantage()).isEqualTo("AVT-OM");
+        assertThat(om.advantages().get(0).idOpraAvantage()).isEqualTo("AVT-OM");
 
         // Assert: Verify Article level contains only Article-level TAR & AVT
         assertThat(om.articles()).hasSize(1);
-        Article art = om.articles().getFirst();
+        Article art = om.articles().get(0);
         assertThat(art.tarifs()).hasSize(1);
-        assertThat(art.tarifs().getFirst().idOpraTarif()).isEqualTo("TAR-ART");
+        assertThat(art.tarifs().get(0).idOpraTarif()).isEqualTo("TAR-ART");
         assertThat(art.advantages()).hasSize(1);
-        assertThat(art.advantages().getFirst().idOpraAvantage()).isEqualTo("AVT-ART");
+        assertThat(art.advantages().get(0).idOpraAvantage()).isEqualTo("AVT-ART");
     }
 
     @Test
@@ -187,12 +187,12 @@ class ContractBlockAssemblerTest {
         assertThat(contract.roles()).extracting("role").containsExactly("ROL-CTR");
 
         // Assert: OM-level children
-        MarketedObject om = contract.marketedObjects().getFirst();
+        MarketedObject om = contract.marketedObjects().get(0);
         assertThat(om.externalIds()).extracting("externalId").containsExactly("OID-OM");
         assertThat(om.roles()).extracting("role").containsExactly("ROL-OM");
 
         // Assert: Article-level children
-        Article art = om.articles().getFirst();
+        Article art = om.articles().get(0);
         assertThat(art.externalIds()).extracting("externalId").containsExactly("OID-ART");
         assertThat(art.accounts()).extracting("subType").containsExactly("BILL-ART");
         assertThat(art.roles()).extracting("role").containsExactly("ROL-ART");
@@ -260,7 +260,7 @@ class ContractBlockAssemblerTest {
         Article om2Art1 = om2.articles().get(0);
         assertThat(om2Art1.sequentialIndex()).isEqualTo(1);
         assertThat(om2Art1.conditions()).hasSize(1);
-        assertThat(om2Art1.conditions().getFirst().conditionId()).isEqualTo("COND-2A");
+        assertThat(om2Art1.conditions().get(0).conditionId()).isEqualTo("COND-2A");
         assertThat(om2Art1.ikacs()).isEmpty();
         assertThat(om2Art1.tarifs()).isEmpty();
         assertThat(om2Art1.advantages()).isEmpty();
@@ -280,10 +280,10 @@ class ContractBlockAssemblerTest {
         // Assert: Tarifs and advantages are empty across all levels
         assertThat(contract.tarifs()).isEmpty();
         assertThat(contract.advantages()).isEmpty();
-        assertThat(contract.marketedObjects().getFirst().tarifs()).isEmpty();
-        assertThat(contract.marketedObjects().getFirst().advantages()).isEmpty();
-        assertThat(contract.marketedObjects().getFirst().articles().getFirst().tarifs()).isEmpty();
-        assertThat(contract.marketedObjects().getFirst().articles().getFirst().advantages()).isEmpty();
+        assertThat(contract.marketedObjects().get(0).tarifs()).isEmpty();
+        assertThat(contract.marketedObjects().get(0).advantages()).isEmpty();
+        assertThat(contract.marketedObjects().get(0).articles().get(0).tarifs()).isEmpty();
+        assertThat(contract.marketedObjects().get(0).articles().get(0).advantages()).isEmpty();
     }
 
     @Test
@@ -300,9 +300,9 @@ class ContractBlockAssemblerTest {
 
         // Assert: Contract has 1 tarif, OM and Article have none
         assertThat(contract.tarifs()).hasSize(1);
-        assertThat(contract.tarifs().getFirst().idOpraTarif()).isEqualTo("TAR-CTR-ONLY");
-        assertThat(contract.marketedObjects().getFirst().tarifs()).isEmpty();
-        assertThat(contract.marketedObjects().getFirst().articles().getFirst().tarifs()).isEmpty();
+        assertThat(contract.tarifs().get(0).idOpraTarif()).isEqualTo("TAR-CTR-ONLY");
+        assertThat(contract.marketedObjects().get(0).tarifs()).isEmpty();
+        assertThat(contract.marketedObjects().get(0).articles().get(0).tarifs()).isEmpty();
     }
 
     @Test
@@ -319,9 +319,9 @@ class ContractBlockAssemblerTest {
 
         // Assert: Contract and OM have none, Article has 1 tarif
         assertThat(contract.tarifs()).isEmpty();
-        assertThat(contract.marketedObjects().getFirst().tarifs()).isEmpty();
-        assertThat(contract.marketedObjects().getFirst().articles().getFirst().tarifs()).hasSize(1);
-        assertThat(contract.marketedObjects().getFirst().articles().getFirst().tarifs().getFirst().idOpraTarif())
+        assertThat(contract.marketedObjects().get(0).tarifs()).isEmpty();
+        assertThat(contract.marketedObjects().get(0).articles().get(0).tarifs()).hasSize(1);
+        assertThat(contract.marketedObjects().get(0).articles().get(0).tarifs().get(0).idOpraTarif())
                 .isEqualTo("TAR-ART-ONLY");
     }
 

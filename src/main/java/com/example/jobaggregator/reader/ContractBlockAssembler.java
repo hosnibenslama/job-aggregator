@@ -149,14 +149,14 @@ public final class ContractBlockAssembler {
         boolean hasAccount = !contractAccounts.isEmpty()
                 || omBuilders.stream().flatMap(om -> om.articleBuilders.stream()).anyMatch(a -> !a.accounts.isEmpty());
         if (!hasAccount) {
-            throw error(records.getFirst(), "A contract must contain at least one ACC");
+            throw error(records.get(0), "A contract must contain at least one ACC");
         }
         if (omBuilders.isEmpty()) {
-            throw error(records.getFirst(), "A contract must contain at least one OM");
+            throw error(records.get(0), "A contract must contain at least one OM");
         }
         boolean hasArticle = omBuilders.stream().anyMatch(om -> !om.articleBuilders.isEmpty());
         if (!hasArticle) {
-            throw error(records.getFirst(), "A contract must contain at least one ART");
+            throw error(records.get(0), "A contract must contain at least one ART");
         }
 
         return toContractBlock();
@@ -187,7 +187,7 @@ public final class ContractBlockAssembler {
      * Leniently assemble records into a hierarchical ContractBlock.
      */
     public static ContractBlock assemble(UUID id, List<FeedRecord> records) {
-        if (records == null || records.isEmpty() || records.getFirst().type() != FeedRecordType.CTR) {
+        if (records == null || records.isEmpty() || records.get(0).type() != FeedRecordType.CTR) {
             return new ContractBlock(
                     id != null ? id : UUID.randomUUID(),
                     records != null ? List.copyOf(records) : List.of(),
@@ -196,7 +196,7 @@ public final class ContractBlockAssembler {
             );
         }
 
-        ContractBlockAssembler assembler = new ContractBlockAssembler(id, records.getFirst());
+        ContractBlockAssembler assembler = new ContractBlockAssembler(id, records.get(0));
         for (int i = 1; i < records.size(); i++) {
             FeedRecord rec = records.get(i);
             try {
