@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.feed.FeedRecordType;
 import com.example.jobaggregator.domain.feed.FeedRecord;
+import com.example.jobaggregator.reader.ContractBlockAssembler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +57,7 @@ class RejectedContractFileWriterTest {
         // Given: A ContractBlock with parsed lines and an error reason
         FeedRecord ctrLine = new FeedRecord(1, FeedRecordType.CTR, "CTR;EUR;16;ABC", List.of("CTR", "EUR", "16", "ABC"));
         FeedRecord ikacLine = new FeedRecord(2, FeedRecordType.IKAC, "IKAC;001;DATA", List.of("IKAC", "001", "DATA"));
-        ContractBlock contractBlock = new ContractBlock(List.of(ctrLine, ikacLine));
+        ContractBlock contractBlock = ContractBlockAssembler.assemble(UUID.randomUUID(), List.of(ctrLine, ikacLine));
         String reason = "Invalid contract structure";
 
         // Act: Reject the ContractBlock

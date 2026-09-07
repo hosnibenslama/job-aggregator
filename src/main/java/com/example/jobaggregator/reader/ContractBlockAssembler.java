@@ -16,6 +16,8 @@ import com.example.jobaggregator.domain.feed.ContractFeedMapper;
 import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.domain.feed.FeedRecordType;
 import com.example.jobaggregator.error.ContractFormatException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.UUID;
  * from ordered feed records according to the specification (Section 3 and Section 9).
  */
 public final class ContractBlockAssembler {
+
+    private static final Logger log = LoggerFactory.getLogger(ContractBlockAssembler.class);
 
     private final UUID contractId;
     private final List<FeedRecord> records = new ArrayList<>();
@@ -201,8 +205,9 @@ public final class ContractBlockAssembler {
             FeedRecord rec = records.get(i);
             try {
                 assembler.accept(rec);
-            } catch (Exception ignored) {
-                // In lenient assembly, collect raw record even if grammar fails
+            } catch (ContractFormatException e) {
+                log.debug("Lenient assembly: skipping {} at line {} — {}",
+                        rec.type(), rec.lineNumber(), e.getReason());
                 assembler.records.add(rec);
             }
         }

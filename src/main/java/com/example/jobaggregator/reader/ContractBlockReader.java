@@ -5,6 +5,7 @@ import com.example.jobaggregator.domain.feed.FeedRecordType;
 import com.example.jobaggregator.domain.feed.FeedRecord;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.batch.infrastructure.item.ItemReader;
 import org.springframework.batch.infrastructure.item.ItemStreamException;
@@ -61,7 +62,9 @@ public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
         List<FeedRecord> records = new ArrayList<>();
         records.add(ctrRecord);
         collectUntilNextBoundary(records);
-        return new ContractBlock(records);
+
+        UUID contractId = UUID.randomUUID();
+        return ContractBlockAssembler.assemble(contractId, records);
     }
 
     @Override

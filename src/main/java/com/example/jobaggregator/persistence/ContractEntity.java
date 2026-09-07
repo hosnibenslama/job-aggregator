@@ -143,8 +143,7 @@ public class ContractEntity implements Persistable<UUID> {
     public Set<ContractMarketedObjectEntity> getMarketedObjects() { return marketedObjects; }
     public void setMarketedObjects(Set<ContractMarketedObjectEntity> marketedObjects) { this.marketedObjects = marketedObjects; }
 
-    public Set<ContractMarketedObjectEntity> getOperations() { return marketedObjects; }
-    public void setOperations(Set<ContractMarketedObjectEntity> operations) { this.marketedObjects = operations; }
+
 
     public Set<ContractExternalIdEntity> getExternalIds() { return externalIds; }
     public void setExternalIds(Set<ContractExternalIdEntity> externalIds) { this.externalIds = externalIds; }

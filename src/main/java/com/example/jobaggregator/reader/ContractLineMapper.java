@@ -62,7 +62,7 @@ public final class ContractLineMapper implements LineMapper<FeedRecord> {
                 .map(String::strip)
                 .toList();
 
-        FeedRecordType type = FeedRecordType.determineFromFields(fields.toArray(String[]::new));
+        FeedRecordType type = FeedRecordType.determineFromFields(fields);
         if (type == FeedRecordType.UNKNOWN) {
             // Return a poison record instead of throwing — allows the contract block
             // to be assembled and rejected as a whole by the processor

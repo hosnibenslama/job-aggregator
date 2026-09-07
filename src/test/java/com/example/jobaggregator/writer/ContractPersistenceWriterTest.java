@@ -11,7 +11,9 @@ import static org.mockito.Mockito.verify;
 import com.example.jobaggregator.domain.ContractBlock;
 import com.example.jobaggregator.domain.feed.FeedRecord;
 import com.example.jobaggregator.domain.feed.FeedRecordType;
+import com.example.jobaggregator.reader.ContractBlockAssembler;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.infrastructure.item.Chunk;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -44,7 +46,7 @@ class ContractPersistenceWriterTest {
         FeedRecord tar = new FeedRecord(7, FeedRecordType.TAR, "TAR", List.of(
                 "TAR", "TAR-1", "001", "2026-01-01", "2026-01-01", "EUR"));
 
-        ContractBlock block = new ContractBlock(List.of(ctr, acc, om, art, ikac, cond, tar));
+        ContractBlock block = ContractBlockAssembler.assemble(UUID.randomUUID(), List.of(ctr, acc, om, art, ikac, cond, tar));
 
         // Act & Assert: Writing the chunk executes without error and updates database tables
         assertThatCode(() -> writer.write(Chunk.of(block))).doesNotThrowAnyException();
@@ -98,7 +100,7 @@ class ContractPersistenceWriterTest {
         FeedRecord tarArt = new FeedRecord(15, FeedRecordType.TAR, "TAR", List.of("TAR", "TAR-ART", "001", "2026-01-01", "2026-01-01", "EUR"));
         FeedRecord avtArt = new FeedRecord(16, FeedRecordType.AVT, "AVT", List.of("AVT", "AVT-ART", "2026-01-01", "2026-12-31", "C3", "30", "EUR"));
 
-        ContractBlock block = new ContractBlock(List.of(
+        ContractBlock block = ContractBlockAssembler.assemble(UUID.randomUUID(), List.of(
                 ctr, accCtr, rolCtr, tarCtr, avtCtr,
                 om, oidOm, rolOm, tarOm, avtOm,
                 art, oidArt, accArt, rolArt, tarArt, avtArt));
@@ -132,7 +134,7 @@ class ContractPersistenceWriterTest {
         FeedRecord om = new FeedRecord(3, FeedRecordType.OM, "OM", List.of("OM", "OM-1", "REL-1"));
         FeedRecord art = new FeedRecord(4, FeedRecordType.ART, "ART", List.of("ART", "1"));
 
-        ContractBlock block = new ContractBlock(List.of(ctr, acc, om, art));
+        ContractBlock block = ContractBlockAssembler.assemble(UUID.randomUUID(), List.of(ctr, acc, om, art));
 
         // Act & Assert: Writing executes cleanly
         assertThatCode(() -> writer.write(Chunk.of(block))).doesNotThrowAnyException();

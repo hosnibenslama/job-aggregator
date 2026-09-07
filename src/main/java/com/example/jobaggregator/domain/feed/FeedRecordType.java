@@ -1,5 +1,6 @@
 package com.example.jobaggregator.domain.feed;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -21,12 +22,12 @@ public enum FeedRecordType {
     TRL,
     UNKNOWN;
 
-    public static FeedRecordType determineFromFields(String[] fields) {
-        if (fields == null || fields.length == 0 || fields[0].isBlank()) {
+    public static FeedRecordType determineFromFields(List<String> fields) {
+        if (fields == null || fields.isEmpty() || fields.get(0).isBlank()) {
             return UNKNOWN;
         }
 
-        String first = fields[0].strip().toUpperCase(Locale.ROOT);
+        String first = fields.get(0).strip().toUpperCase(Locale.ROOT);
         try {
             return FeedRecordType.valueOf(first);
         } catch (IllegalArgumentException ignored) {

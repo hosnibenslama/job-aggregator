@@ -7,6 +7,8 @@ import com.example.jobaggregator.error.ContractFormatException;
 import com.example.jobaggregator.reader.ContractBlockAssembler;
 import com.example.jobaggregator.writer.ContractRejectWriter;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
@@ -21,10 +23,17 @@ import org.springframework.stereotype.Component;
  *   <li>Mandatory block content (at least one ACC, OM, ART per contract)</li>
  * </ul>
  *
+ * <p>The assembler's {@code build()} method produces a fully-validated
+ * {@link ContractBlock}, which is returned as the processor output. This avoids
+ * double-parsing: the reader produces a leniently-assembled block, and this
+ * processor produces the strictly-validated one.</p>
+ *
  * <p>Returning {@code null} causes Spring Batch to silently skip the item for writing.
  */
 @Component
 public final class ContractStructureValidator implements ItemProcessor<ContractBlock, ContractBlock> {
+
+    private static final Logger log = LoggerFactory.getLogger(ContractStructureValidator.class);
 
     private final ContractRejectWriter rejectWriter;
 
@@ -35,10 +44,10 @@ public final class ContractStructureValidator implements ItemProcessor<ContractB
     @Override
     public ContractBlock process(ContractBlock item) throws Exception {
         try {
-            checkForUnknownLines(item);
-            validateContract(item);
-            return item;
+            checkForUnknownRecords(item);
+            return validateAndAssemble(item);
         } catch (ContractFormatException e) {
+            log.warn("Contract {} rejected: {}", item.id(), e.getReason());
             rejectWriter.reject(item, e.getMessage());
             return null;
         }
@@ -53,7 +62,7 @@ public final class ContractStructureValidator implements ItemProcessor<ContractB
      * This ensures that contracts with typos like "CTTR" instead of "CTR" are
      * rejected to the file rather than silently skipped.
      */
-    private void checkForUnknownLines(ContractBlock contract) {
+    private void checkForUnknownRecords(ContractBlock contract) {
         for (FeedRecord record : contract.records()) {
             if (record.type() == FeedRecordType.UNKNOWN) {
                 throw new ContractFormatException(record.lineNumber(), null,
@@ -64,14 +73,15 @@ public final class ContractStructureValidator implements ItemProcessor<ContractB
 
     /**
      * Replays the block's records through the assembler to enforce sequencing,
-     * prerequisites, and mandatory-type rules.
+     * prerequisites, and mandatory-type rules. Returns the validated block produced
+     * by {@link ContractBlockAssembler#build()}.
      */
-    private void validateContract(ContractBlock contract) {
+    private ContractBlock validateAndAssemble(ContractBlock contract) {
         List<FeedRecord> records = contract.records();
         ContractBlockAssembler assembler = new ContractBlockAssembler(contract.id(), records.get(0));
         for (int i = 1; i < records.size(); i++) {
             assembler.accept(records.get(i));
         }
-        assembler.build(); // validates mandatory ACC, OM, ART
+        return assembler.build();
     }
 }

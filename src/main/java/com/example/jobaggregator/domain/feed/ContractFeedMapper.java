@@ -77,9 +77,7 @@ public final class ContractFeedMapper {
                 record.field(2)); // BusinessRelationship
     }
 
-    public static MarketedObject toOperation(FeedRecord record) {
-        return toMarketedObject(record);
-    }
+
 
     public static ExternalId toExternalId(FeedRecord record) {
         requireType(record, FeedRecordType.OID);
