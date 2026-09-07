@@ -110,6 +110,18 @@ class ContractImportJobIntegrationTest {
     @BeforeEach
     void setUp() {
         inputFile = tempDir.resolve("test-input.txt");
+        // Clean all tables in reverse dependency order to prevent FK violations
+        jdbcTemplate.execute("DELETE FROM contract_advantages");
+        jdbcTemplate.execute("DELETE FROM contract_tarifs");
+        jdbcTemplate.execute("DELETE FROM contract_conditions");
+        jdbcTemplate.execute("DELETE FROM contract_ikac");
+        jdbcTemplate.execute("DELETE FROM contract_external_ids");
+        jdbcTemplate.execute("DELETE FROM contract_roles");
+        jdbcTemplate.execute("DELETE FROM contract_accounts");
+        jdbcTemplate.execute("DELETE FROM contract_articles");
+        jdbcTemplate.execute("DELETE FROM contract_marketed_objects");
+        jdbcTemplate.execute("DELETE FROM contract_offers");
+        jdbcTemplate.execute("DELETE FROM contracts");
     }
 
     private void writeInput(String content) throws Exception {

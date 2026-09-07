@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  batch:
+    jdbc:
+      initialize-schema: embedded
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:test-schema.sql
+
+contract:
+  import:
+    input-file: classpath:visa-premier.txt
+    invalid-file: target/test-invalid-contracts.txt
+    charset: UTF-8
+
+cos:
+  enabled: false
+  endpoint: https://localhost
+  region: eu-de
+  bucket: test-bucket
+  access-key: dummy
+  secret-key: dummy
+  input-key: dummy
+  reject-key: dummy
+  staging-directory: target/staging
+
+logging:
+  level:
+    org.springframework.batch: WARN
+    com.example.jobaggregator: DEBUG

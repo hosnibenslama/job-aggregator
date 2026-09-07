@@ -7,14 +7,13 @@ spring:
 
   batch:
     jdbc:
-      initialize-schema: always
+      initialize-schema: never
     job:
       enabled: true
 
   sql:
     init:
-      mode: always
-      schema-locations: classpath:schema.sql
+      mode: never
 
 contract:
   import:
