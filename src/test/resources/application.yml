@@ -28,4 +28,4 @@ contract:
 logging:
   level:
     org.springframework.batch: WARN
-    com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector: DEBUG
+    com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector: DEBUG

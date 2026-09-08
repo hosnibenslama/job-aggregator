@@ -1,0 +1,35 @@
+package com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator;
+
+import static com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.domain.feed.FeedRecordType.IKAC;
+import static com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.FieldConstraints.*;
+
+import java.util.List;
+
+/**
+ * Validates IKAC line fields — specification section 6.
+ *
+ * <p>The IKAC line must be attached to the first article.
+ *
+ * <pre>
+ * Pos  Field       Mandatory  Rule
+ * ---  ----------  ---------  -----------------------
+ *  1   Type        Yes        fixed "IKAC"
+ *  2   Valeur IKAC Yes        the IKAC value
+ *  3   Provider    Yes        e.g. AP00111
+ * </pre>
+ *
+ * Example:
+ * <pre>
+ * IKAC;52050000000634205;AP00111
+ * </pre>
+ */
+public final class IkacValidator {
+
+    private IkacValidator() {}
+
+    public static void validate(List<String> fields, int lineNumber) {
+        requireMinSize(fields, 3, IKAC, lineNumber);
+        requireNonBlank(fields, 1, "Valeur IKAC", IKAC, lineNumber);
+        requireNonBlank(fields, 2, "Provider",    IKAC, lineNumber);
+    }
+}
