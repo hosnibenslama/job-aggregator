@@ -34,6 +34,10 @@ public final class FieldConstraints {
     // -----------------------------------------------------------------------
 
     public static void requireMinSize(List<String> fields, int min, FeedRecordType recordType, int lineNumber) {
+        requireMinSize(fields, min, recordType != null ? recordType.name() : "", lineNumber);
+    }
+
+    public static void requireMinSize(List<String> fields, int min, String recordType, int lineNumber) {
         if (fields.size() < min) {
             throw new ContractFormatException(lineNumber, null,
                     recordType + " requires at least " + min + " fields, got " + fields.size());
@@ -42,6 +46,11 @@ public final class FieldConstraints {
 
     public static void requireNonBlank(List<String> fields, int index,
                                         String fieldName, FeedRecordType recordType, int lineNumber) {
+        requireNonBlank(fields, index, fieldName, recordType != null ? recordType.name() : "", lineNumber);
+    }
+
+    public static void requireNonBlank(List<String> fields, int index,
+                                        String fieldName, String recordType, int lineNumber) {
         if (!isPresent(fields, index)) {
             throw new ContractFormatException(lineNumber, null,
                     fieldLabel(recordType, index, fieldName) + " is required and must not be blank");
@@ -50,6 +59,11 @@ public final class FieldConstraints {
 
     public static void requireHex16(List<String> fields, int index,
                                      String fieldName, FeedRecordType recordType, int lineNumber) {
+        requireHex16(fields, index, fieldName, recordType != null ? recordType.name() : "", lineNumber);
+    }
+
+    public static void requireHex16(List<String> fields, int index,
+                                     String fieldName, String recordType, int lineNumber) {
         String val = field(fields, index);
         if (val == null || !HEX_16.matcher(val).matches()) {
             throw new ContractFormatException(lineNumber, null,
@@ -61,6 +75,12 @@ public final class FieldConstraints {
     public static void requireOneOf(List<String> fields, int index,
                                      String fieldName, Set<String> validValues,
                                      FeedRecordType recordType, int lineNumber) {
+        requireOneOf(fields, index, fieldName, validValues, recordType != null ? recordType.name() : "", lineNumber);
+    }
+
+    public static void requireOneOf(List<String> fields, int index,
+                                     String fieldName, Set<String> validValues,
+                                     String recordType, int lineNumber) {
         String val = field(fields, index);
         if (val == null || !validValues.contains(val)) {
             throw new ContractFormatException(lineNumber, null,
@@ -71,6 +91,11 @@ public final class FieldConstraints {
 
     public static void requirePositiveInt(List<String> fields, int index,
                                            String fieldName, FeedRecordType recordType, int lineNumber) {
+        requirePositiveInt(fields, index, fieldName, recordType != null ? recordType.name() : "", lineNumber);
+    }
+
+    public static void requirePositiveInt(List<String> fields, int index,
+                                           String fieldName, String recordType, int lineNumber) {
         requireNonBlank(fields, index, fieldName, recordType, lineNumber);
         String val = field(fields, index);
         try {
@@ -91,6 +116,12 @@ public final class FieldConstraints {
     public static void requireOneOfIfPresent(List<String> fields, int index,
                                               String fieldName, Set<String> validValues,
                                               FeedRecordType recordType, int lineNumber) {
+        requireOneOfIfPresent(fields, index, fieldName, validValues, recordType != null ? recordType.name() : "", lineNumber);
+    }
+
+    public static void requireOneOfIfPresent(List<String> fields, int index,
+                                              String fieldName, Set<String> validValues,
+                                              String recordType, int lineNumber) {
         String val = field(fields, index);
         if (val != null && !val.isBlank() && !validValues.contains(val)) {
             throw new ContractFormatException(lineNumber, null,
@@ -104,7 +135,7 @@ public final class FieldConstraints {
     // -----------------------------------------------------------------------
 
     /** Builds a consistent field label: {@code "CTR field 2 (idContrat)"}. */
-    private static String fieldLabel(FeedRecordType recordType, int index, String fieldName) {
+    private static String fieldLabel(String recordType, int index, String fieldName) {
         return recordType + " field " + (index + 1) + " (" + fieldName + ")";
     }
 }
