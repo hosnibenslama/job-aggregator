@@ -38,7 +38,8 @@ import org.springframework.test.context.DynamicPropertySource;
  */
 @SpringBootTest(properties = {
     "spring.batch.job.enabled=false",
-    "contract.import.charset=UTF-8"
+    "contract.import.charset=UTF-8",
+    "spring.cloud.vault.enabled=false"
 })
 @ActiveProfiles("injector")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
