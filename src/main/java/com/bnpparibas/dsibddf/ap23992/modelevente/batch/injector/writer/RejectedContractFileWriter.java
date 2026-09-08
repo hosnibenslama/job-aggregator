@@ -44,7 +44,7 @@ public class RejectedContractFileWriter implements ContractRejectWriter {
     public void open() throws IOException {
         Files.createDirectories(rejectFile.getParent());
         this.writer = Files.newBufferedWriter(rejectFile, charset,
-                StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
     }
 
     @PreDestroy

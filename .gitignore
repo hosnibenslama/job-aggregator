@@ -20,3 +20,4 @@ Thumbs.db
 # Runtime and generated batch files
 /data/
 *.log
+invalid-contracts.txt

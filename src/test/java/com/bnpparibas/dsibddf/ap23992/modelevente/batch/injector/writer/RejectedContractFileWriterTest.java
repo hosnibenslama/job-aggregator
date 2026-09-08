@@ -69,4 +69,23 @@ class RejectedContractFileWriterTest {
         assertThat(content).contains("CTR;EUR;16;ABC");
         assertThat(content).contains("IKAC;001;DATA");
     }
+
+    @Test
+    void shouldOverwriteExistingFileWhenReopened() throws IOException {
+        // Given: An existing rejection written to file from a previous job run
+        writer.reject(List.of("CTR;EUR;16;OLD"), "Old error");
+        writer.close();
+
+        // When: A new job run starts and re-opens the writer
+        writer = new RejectedContractFileWriter(rejectFile.toString(), "UTF-8");
+        writer.open();
+        writer.reject(List.of("CTR;EUR;16;NEW"), "New error");
+
+        // Then: Only the new rejection exists in the file (previous run truncated)
+        String content = Files.readString(rejectFile);
+        assertThat(content).contains("New error");
+        assertThat(content).contains("CTR;EUR;16;NEW");
+        assertThat(content).doesNotContain("Old error");
+        assertThat(content).doesNotContain("CTR;EUR;16;OLD");
+    }
 }
