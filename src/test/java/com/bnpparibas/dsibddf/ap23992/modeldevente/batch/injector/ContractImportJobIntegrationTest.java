@@ -27,6 +27,7 @@ import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.persistence.Co
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.persistence.ContractEntityRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -39,6 +40,7 @@ import org.springframework.test.context.DynamicPropertySource;
     "spring.batch.job.enabled=false",
     "contract.import.charset=UTF-8"
 })
+@ActiveProfiles("injector")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ContractImportJobIntegrationTest {
 
