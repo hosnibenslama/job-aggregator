@@ -24,4 +24,4 @@ contract:
 logging:
   level:
     org.springframework.batch: INFO
-    com.example.jobaggregator: DEBUG
+    com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector: DEBUG

@@ -10,7 +10,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.example</groupId>
+    <groupId>com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector</groupId>
     <artifactId>job-aggregator</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>job-aggregator</name>
