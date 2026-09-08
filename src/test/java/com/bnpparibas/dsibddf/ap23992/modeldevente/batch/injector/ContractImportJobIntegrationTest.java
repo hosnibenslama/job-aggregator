@@ -147,12 +147,9 @@ class ContractImportJobIntegrationTest {
     // =========================================================================
     // Nominal Tests (Valid Contracts & File Formats)
     // =========================================================================
-    @Nested
-    @DisplayName("Nominal Tests (Valid Contracts)")
-    class NominalTests {
-
-        @Test
-        @Timeout(5)
+    @Test
+    @DisplayName("Imports valid contracts")
+    @Timeout(5)
         void importsValidContracts() throws Exception {
             // Given: A valid contract file with HDR and TRL
             writeInput("""
@@ -358,17 +355,13 @@ class ContractImportJobIntegrationTest {
             assertThat(step.getWriteCount()).isEqualTo(1);
             assertThat(step.getFilterCount()).isEqualTo(0);
         }
-    }
 
     // =========================================================================
     // Invalid Contracts & Rejection Routing Tests
     // =========================================================================
-    @Nested
-    @DisplayName("Invalid Contracts & Rejection Tests")
-    class InvalidContractTests {
-
-        @Test
-        @Timeout(5)
+    @Test
+    @DisplayName("Rejects invalid contracts to reject file")
+    @Timeout(5)
         void rejectsInvalidContractsToRejectFile() throws Exception {
             // Given: Mixed valid and invalid contracts
             writeInput("""
@@ -528,5 +521,4 @@ class ContractImportJobIntegrationTest {
             StepExecution step = getStepExecution(execution, "contractImportStep");
             assertThat(step.getReadCount()).isEqualTo(2);
         }
-    }
 }
