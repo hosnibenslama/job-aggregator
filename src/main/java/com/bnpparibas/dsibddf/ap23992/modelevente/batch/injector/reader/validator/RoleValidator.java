@@ -1,6 +1,8 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
-import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.ROL;
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.requireMinSize;
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.requireNonBlank;
 
 import java.util.List;
 
@@ -23,16 +25,14 @@ import java.util.List;
  */
 public final class RoleValidator {
 
-    private static final String TYPE = "ROL";
-
     private RoleValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize (fields, 6, TYPE, lineNumber);
-        requireNonBlank(fields, 1, "Role",      TYPE, lineNumber);
-        requireNonBlank(fields, 2, "Brand",     TYPE, lineNumber);
-        requireNonBlank(fields, 3, "Scope",     TYPE, lineNumber);
-        requireNonBlank(fields, 4, "Holder ID", TYPE, lineNumber);
-        requireNonBlank(fields, 5, "IKPI",      TYPE, lineNumber);
+        requireMinSize (fields, 6, ROL, lineNumber);
+        requireNonBlank(fields, 1, "Role",      ROL, lineNumber);
+        requireNonBlank(fields, 2, "Brand",     ROL, lineNumber);
+        requireNonBlank(fields, 3, "Scope",     ROL, lineNumber);
+        requireNonBlank(fields, 4, "Holder ID", ROL, lineNumber);
+        requireNonBlank(fields, 5, "IKPI",      ROL, lineNumber);
     }
 }

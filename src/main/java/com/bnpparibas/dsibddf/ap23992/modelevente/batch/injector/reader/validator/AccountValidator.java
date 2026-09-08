@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.ACC;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import java.util.List;
@@ -26,18 +27,16 @@ import java.util.Set;
  */
 public final class AccountValidator {
 
-    private static final String TYPE = "ACC";
-
     /** BILL = facturation, FEE = frais */
     public static final Set<String> VALID_SUBTYPES = Set.of("BILL", "FEE");
 
     private AccountValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize(fields, 4,  TYPE, lineNumber);
-        requireOneOf  (fields, 1, "Sous-type", VALID_SUBTYPES, TYPE, lineNumber);
-        requireNonBlank(fields, 2, "BIC",  TYPE, lineNumber);
-        requireNonBlank(fields, 3, "IBAN", TYPE, lineNumber);
+        requireMinSize(fields, 4,  ACC, lineNumber);
+        requireOneOf  (fields, 1, "Sous-type", VALID_SUBTYPES, ACC, lineNumber);
+        requireNonBlank(fields, 2, "BIC",  ACC, lineNumber);
+        requireNonBlank(fields, 3, "IBAN", ACC, lineNumber);
         // field[4] RIB is optional
     }
 }

@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.OFF;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import java.util.List;
@@ -20,13 +21,11 @@ import java.util.List;
  */
 public final class OfferValidator {
 
-    private static final String TYPE = "OFF";
-
     private OfferValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize (fields, 2, TYPE, lineNumber);
-        requireNonBlank(fields, 1, "Identifiant offre", TYPE, lineNumber);
+        requireMinSize (fields, 2, OFF, lineNumber);
+        requireNonBlank(fields, 1, "Identifiant offre", OFF, lineNumber);
         // field[2] Label personnalisé is optional
     }
 }

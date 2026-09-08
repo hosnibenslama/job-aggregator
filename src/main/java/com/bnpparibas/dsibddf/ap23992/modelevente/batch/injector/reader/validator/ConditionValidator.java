@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.COND;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import java.util.List;
@@ -23,13 +24,11 @@ import java.util.List;
  */
 public final class ConditionValidator {
 
-    private static final String TYPE = "COND";
-
     private ConditionValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize(fields, 3, TYPE, lineNumber);
-        requireNonBlank(fields, 1, "Identifiant condition", TYPE, lineNumber);
-        requireNonBlank(fields, 2, "Valeur", TYPE, lineNumber);
+        requireMinSize(fields, 3, COND, lineNumber);
+        requireNonBlank(fields, 1, "Identifiant condition", COND, lineNumber);
+        requireNonBlank(fields, 2, "Valeur", COND, lineNumber);
     }
 }

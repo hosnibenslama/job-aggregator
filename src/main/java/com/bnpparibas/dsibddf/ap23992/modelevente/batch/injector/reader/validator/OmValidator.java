@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.OM;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import java.util.List;
@@ -20,13 +21,11 @@ import java.util.List;
  */
 public final class OmValidator {
 
-    private static final String TYPE = "OM";
-
     private OmValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize (fields, 3, TYPE, lineNumber);
-        requireNonBlank(fields, 1, "OM identifier",        TYPE, lineNumber);
-        requireNonBlank(fields, 2, "BusinessRelationship", TYPE, lineNumber);
+        requireMinSize (fields, 3, OM, lineNumber);
+        requireNonBlank(fields, 1, "OM identifier",        OM, lineNumber);
+        requireNonBlank(fields, 2, "BusinessRelationship", OM, lineNumber);
     }
 }

@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.AVT;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.error.ContractFormatException;
@@ -31,8 +32,6 @@ import java.util.Set;
  */
 public final class AdvantageValidator {
 
-    private static final String TYPE = "AVT";
-
     private static final Set<String> VALID_CODES = Set.of("1", "2", "3", "4");
     /** Codes that require a valeurAvantage */
     private static final Set<String> CODES_REQUIRING_VALEUR = Set.of("2", "3", "4");
@@ -40,34 +39,34 @@ public final class AdvantageValidator {
     private AdvantageValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize(fields, 5, TYPE, lineNumber);
+        requireMinSize(fields, 5, AVT, lineNumber);
 
         // Field 3 — dateDebut (mandatory)
-        requireNonBlank(fields, 2, "dateDebut", TYPE, lineNumber);
+        requireNonBlank(fields, 2, "dateDebut", AVT, lineNumber);
 
         // Field 5 — codeAvantage (mandatory, must be 1/2/3/4)
-        requireOneOf(fields, 4, "codeAvantage", VALID_CODES, TYPE, lineNumber);
+        requireOneOf(fields, 4, "codeAvantage", VALID_CODES, AVT, lineNumber);
 
         String codeAvantage = field(fields, 4);
 
         // Field 2 — idOpraAvantage: required when codeAvantage = 1
         if ("1".equals(codeAvantage) && !isPresent(fields, 1)) {
             throw new ContractFormatException(lineNumber, null,
-                    TYPE + " field 2 (idOpraAvantage) is required when codeAvantage = 1");
+                    AVT + " field 2 (idOpraAvantage) is required when codeAvantage = 1");
         }
 
         // Field 6 — valeurAvantage: required when codeAvantage = 2, 3 or 4
         boolean valeurRequired = CODES_REQUIRING_VALEUR.contains(codeAvantage);
         if (valeurRequired && !isPresent(fields, 5)) {
             throw new ContractFormatException(lineNumber, null,
-                    TYPE + " field 6 (valeurAvantage) is required when codeAvantage = " + codeAvantage);
+                    AVT + " field 6 (valeurAvantage) is required when codeAvantage = " + codeAvantage);
         }
 
         // Field 7 — deviseAvantage: required when valeurAvantage is present
         boolean valeurPresent = isPresent(fields, 5);
         if (valeurPresent && !isPresent(fields, 6)) {
             throw new ContractFormatException(lineNumber, null,
-                    TYPE + " field 7 (deviseAvantage) is required when valeurAvantage is present");
+                    AVT + " field 7 (deviseAvantage) is required when valeurAvantage is present");
         }
 
         // deviseAvantage max 3 chars
@@ -75,7 +74,7 @@ public final class AdvantageValidator {
             String devise = field(fields, 6);
             if (devise.length() > 3) {
                 throw new ContractFormatException(lineNumber, null,
-                        TYPE + " field 7 (deviseAvantage) must not exceed 3 characters, got: " + devise);
+                        AVT + " field 7 (deviseAvantage) must not exceed 3 characters, got: " + devise);
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.TAR;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import java.util.List;
@@ -37,8 +38,6 @@ import java.util.Set;
  * </pre>
  */
 public final class TarifValidator {
-
-    private static final String TYPE = "TAR";
 
     /** 001=Abonnement, 002=Installation, 003=Fixes, 004=Perf, 005=Perf capé,
      *  006=Franchise, 007=Inactivité, 013=Mensuel, 014=Gratuité HB, 900=Négociation */
@@ -81,30 +80,30 @@ public final class TarifValidator {
 
     public static void validate(List<String> fields, int lineNumber) {
         // ── fields 3-10: basic enum validation when present ──────────────────
-        requireOneOfIfPresent(fields,  2, "typeFrais",              VALID_TYPE_FRAIS,      TYPE, lineNumber);
-        requireOneOfIfPresent(fields,  6, "indicTarifPaliers",      VALID_INDIC_PALIERS,   TYPE, lineNumber);
-        requireOneOfIfPresent(fields,  7, "formatTarif",            VALID_FORMAT_TARIF,    TYPE, lineNumber);
-        requireOneOfIfPresent(fields,  8, "periodiciteFacturation",  VALID_PERIODICITE,    TYPE, lineNumber);
-        requireOneOfIfPresent(fields,  9, "typeTaxation",           VALID_TYPE_TAXATION,   TYPE, lineNumber);
+        requireOneOfIfPresent(fields,  2, "typeFrais",              VALID_TYPE_FRAIS,      TAR, lineNumber);
+        requireOneOfIfPresent(fields,  6, "indicTarifPaliers",      VALID_INDIC_PALIERS,   TAR, lineNumber);
+        requireOneOfIfPresent(fields,  7, "formatTarif",            VALID_FORMAT_TARIF,    TAR, lineNumber);
+        requireOneOfIfPresent(fields,  8, "periodiciteFacturation",  VALID_PERIODICITE,    TAR, lineNumber);
+        requireOneOfIfPresent(fields,  9, "typeTaxation",           VALID_TYPE_TAXATION,   TAR, lineNumber);
 
         // ── fields 11-20: new spec continuation ──────────────────────────────
-        requireOneOfIfPresent(fields, 10, "typeTauxTarif",          VALID_TYPE_TAUX_TARIF, TYPE, lineNumber);
-        requireOneOfIfPresent(fields, 15, "typeUnite",              VALID_TYPE_UNITE,      TYPE, lineNumber);
-        requireOneOfIfPresent(fields, 16, "indicLimiteHaute",       VALID_INDIC_LIMITE,    TYPE, lineNumber);
-        requireOneOfIfPresent(fields, 18, "indicLimiteBasse",       VALID_INDIC_LIMITE,    TYPE, lineNumber);
+        requireOneOfIfPresent(fields, 10, "typeTauxTarif",          VALID_TYPE_TAUX_TARIF, TAR, lineNumber);
+        requireOneOfIfPresent(fields, 15, "typeUnite",              VALID_TYPE_UNITE,      TAR, lineNumber);
+        requireOneOfIfPresent(fields, 16, "indicLimiteHaute",       VALID_INDIC_LIMITE,    TAR, lineNumber);
+        requireOneOfIfPresent(fields, 18, "indicLimiteBasse",       VALID_INDIC_LIMITE,    TAR, lineNumber);
 
         // ── conditional cross-field rules ────────────────────────────────────
         String formatTarif = field(fields, 7);
         if ("003".equals(formatTarif)) {
-            requireNonBlank(fields, 10, "typeTauxTarif", TYPE, lineNumber);
+            requireNonBlank(fields, 10, "typeTauxTarif", TAR, lineNumber);
         }
         if ("001".equals(formatTarif)) {
-            requireNonBlank(fields, 11, "tauxTarif",   TYPE, lineNumber);
-            requireNonBlank(fields, 12, "montantBase",  TYPE, lineNumber);
+            requireNonBlank(fields, 11, "tauxTarif",   TAR, lineNumber);
+            requireNonBlank(fields, 12, "montantBase",  TAR, lineNumber);
         }
         if ("002".equals(formatTarif)) {
-            requireNonBlank(fields, 14, "montantUnite", TYPE, lineNumber);
-            requireNonBlank(fields, 15, "typeUnite",    TYPE, lineNumber);
+            requireNonBlank(fields, 14, "montantUnite", TAR, lineNumber);
+            requireNonBlank(fields, 15, "typeUnite",    TAR, lineNumber);
         }
     }
 }

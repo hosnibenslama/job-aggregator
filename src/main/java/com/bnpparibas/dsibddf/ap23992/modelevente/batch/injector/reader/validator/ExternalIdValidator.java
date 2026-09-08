@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.OID;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import java.util.List;
@@ -21,12 +22,10 @@ import java.util.List;
  */
 public final class ExternalIdValidator {
 
-    private static final String TYPE = "OID";
-
     private ExternalIdValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize(fields, 2, TYPE, lineNumber);
-        requireNonBlank(fields, 1, "Identifiant", TYPE, lineNumber);
+        requireMinSize(fields, 2, OID, lineNumber);
+        requireNonBlank(fields, 1, "Identifiant", OID, lineNumber);
     }
 }

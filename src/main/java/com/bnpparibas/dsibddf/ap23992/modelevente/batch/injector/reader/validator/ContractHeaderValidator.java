@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.CTR;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import java.util.List;
@@ -31,8 +32,6 @@ import java.util.Set;
  */
 public final class ContractHeaderValidator {
 
-    private static final String TYPE = "CTR";
-
     /** 001=Intranet, 007=Internet, 008=GAB, 012=Partenaire */
     public static final Set<String> VALID_CHANNELS = Set.of("001", "007", "008", "012");
 
@@ -42,15 +41,15 @@ public final class ContractHeaderValidator {
     private ContractHeaderValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize (fields, 16, TYPE, lineNumber);
-        requireNonBlank(fields, 1,  "Devise",               TYPE, lineNumber);
-        requireNonBlank(fields, 2,  "State",                TYPE, lineNumber);
-        requireNonBlank(fields, 5,  "OuManagement",         TYPE, lineNumber);
-        requireNonBlank(fields, 7,  "BusinessRelationship", TYPE, lineNumber);
-        requireHex16   (fields, 11, "X-B3-TraceId",         TYPE, lineNumber);
-        requireHex16   (fields, 12, "X-B3-SpanId",          TYPE, lineNumber);
-        requireNonBlank(fields, 13, "UserId",               TYPE, lineNumber);
-        requireOneOf   (fields, 14, "Channel", VALID_CHANNELS, TYPE, lineNumber);
-        requireOneOf   (fields, 15, "Media",   VALID_MEDIA,    TYPE, lineNumber);
+        requireMinSize (fields, 16, CTR, lineNumber);
+        requireNonBlank(fields, 1,  "Devise",               CTR, lineNumber);
+        requireNonBlank(fields, 2,  "State",                CTR, lineNumber);
+        requireNonBlank(fields, 5,  "OuManagement",         CTR, lineNumber);
+        requireNonBlank(fields, 7,  "BusinessRelationship", CTR, lineNumber);
+        requireHex16   (fields, 11, "X-B3-TraceId",         CTR, lineNumber);
+        requireHex16   (fields, 12, "X-B3-SpanId",          CTR, lineNumber);
+        requireNonBlank(fields, 13, "UserId",               CTR, lineNumber);
+        requireOneOf   (fields, 14, "Channel", VALID_CHANNELS, CTR, lineNumber);
+        requireOneOf   (fields, 15, "Media",   VALID_MEDIA,    CTR, lineNumber);
     }
 }

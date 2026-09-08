@@ -1,5 +1,6 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator;
 
+import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType.TRL;
 import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader.validator.FieldConstraints.*;
 
 import java.util.List;
@@ -21,12 +22,10 @@ import java.util.List;
  */
 public final class TrailerValidator {
 
-    private static final String TYPE = "TRL";
-
     private TrailerValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
-        requireMinSize(fields, 2, TYPE, lineNumber);
-        requirePositiveInt(fields, 1, "NBCTR", TYPE, lineNumber);
+        requireMinSize(fields, 2, TRL, lineNumber);
+        requirePositiveInt(fields, 1, "NBCTR", TRL, lineNumber);
     }
 }
