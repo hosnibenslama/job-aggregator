@@ -14,6 +14,11 @@ spring:
       mode: always
       schema-locations: classpath:test-schema.sql
 
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
 contract:
   import:
     input-file: classpath:visa-premier.txt

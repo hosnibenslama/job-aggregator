@@ -15,6 +15,11 @@ spring:
     init:
       mode: never
 
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
 contract:
   import:
     input-file: classpath:visa-premier.txt

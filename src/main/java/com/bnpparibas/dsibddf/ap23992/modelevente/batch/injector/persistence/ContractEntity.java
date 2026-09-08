@@ -1,21 +1,28 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.persistence;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.relational.core.mapping.MappedCollection;
-import org.springframework.data.relational.core.mapping.Table;
 
 /**
- * Spring Data JDBC aggregate root for a contract.
+ * JPA aggregate root for a contract.
  *
  * <p>Uses a code-generated {@link UUID} primary key. Implementing {@link Persistable}
- * with {@code isNew() == true} ensures Spring Data JDBC issues direct INSERT statements
+ * with {@code isNew() == true} ensures Spring Data issues direct INSERT statements
  * without checking for prior existence, which is critical for high-throughput batch ingestion.
  */
-@Table("contracts")
+@Entity
+@Table(name = "contracts")
 public class ContractEntity implements Persistable<UUID> {
 
     @Id
@@ -37,7 +44,9 @@ public class ContractEntity implements Persistable<UUID> {
     private String effectiveDate;
     private String periodeFacturation;
     private String datesFacturation;
+    @Column(name = "x_b3_trace_id")
     private String xB3TraceId;
+    @Column(name = "x_b3_span_id")
     private String xB3SpanId;
     private String userId;
     private String channel;
@@ -46,35 +55,45 @@ public class ContractEntity implements Persistable<UUID> {
     // -----------------------------------------------------------------------
     // Dedicated child entities mapped via contract_id foreign key
     // -----------------------------------------------------------------------
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractAccountEntity> accounts;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractAccountEntity> accounts = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractRoleEntity> roles;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractRoleEntity> roles = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractOfferEntity> offers;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractOfferEntity> offers = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractMarketedObjectEntity> marketedObjects;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractMarketedObjectEntity> marketedObjects = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractExternalIdEntity> externalIds;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractExternalIdEntity> externalIds = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractArticleEntity> articles;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractArticleEntity> articles = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractIkacEntity> ikacLines;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractIkacEntity> ikacLines = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractConditionEntity> conditions;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractConditionEntity> conditions = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractTarifEntity> tarifs;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractTarifEntity> tarifs = new HashSet<>();
 
-    @MappedCollection(idColumn = "contract_id")
-    private Set<ContractAdvantageEntity> advantages;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "contract_id")
+    private Set<ContractAdvantageEntity> advantages = new HashSet<>();
 
     public ContractEntity() {}
 

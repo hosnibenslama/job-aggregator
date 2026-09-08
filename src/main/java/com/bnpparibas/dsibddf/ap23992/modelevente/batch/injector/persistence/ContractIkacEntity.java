@@ -1,12 +1,17 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.persistence;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-@Table("contract_ikac")
+@Entity
+@Table(name = "contract_ikac")
 public class ContractIkacEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String ikacValue;
     private String provider;
