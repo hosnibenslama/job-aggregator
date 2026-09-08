@@ -28,6 +28,9 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.persistence.ContractEntity;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.persistence.ContractEntityRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Objects;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -123,6 +126,13 @@ class ContractImportJobIntegrationTest {
     @BeforeEach
     void setUp() {
         inputFile = tempDir.resolve("test-input.txt");
+
+        // Ensure database schema exists (creates tables if not already present)
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+            new ClassPathResource("test-schema.sql")
+        );
+        populator.execute(Objects.requireNonNull(jdbcTemplate.getDataSource()));
+
         // Clean all tables in reverse dependency order to prevent FK violations
         jdbcTemplate.execute("DELETE FROM contract_advantages");
         jdbcTemplate.execute("DELETE FROM contract_tarifs");
