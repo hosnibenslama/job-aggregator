@@ -45,7 +45,8 @@ import org.springframework.test.context.DynamicPropertySource;
     "spring.batch.job.enabled=false",
     "contract.import.charset=UTF-8",
     "spring.cloud.vault.enabled=false",
-    "spring.config.name=application-injector"
+    "spring.config.name=application-injector",
+    "spring.sql.init.data-locations="
 })
 @ActiveProfiles("injector")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -147,13 +148,17 @@ class ContractImportJobIntegrationTest {
         jdbcTemplate.execute("DELETE FROM contracts");
     }
 
+    private static final java.util.concurrent.atomic.AtomicLong RUN_ID =
+            new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis());
+
     private void writeInput(String content) throws Exception {
         Files.writeString(inputFile, content);
     }
 
     private JobExecution launchJob() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("timestamp", System.currentTimeMillis())
+                .addLong("timestamp", System.nanoTime())
+                .addLong("run.id", RUN_ID.incrementAndGet())
                 .toJobParameters();
         return jobOperator.start(contractImportJob, jobParameters);
     }

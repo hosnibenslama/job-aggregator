@@ -20,6 +20,7 @@ spring:
     init:
       mode: always
       schema-locations: classpath:test-schema.sql
+      data-locations: []
 
   jpa:
     hibernate:
