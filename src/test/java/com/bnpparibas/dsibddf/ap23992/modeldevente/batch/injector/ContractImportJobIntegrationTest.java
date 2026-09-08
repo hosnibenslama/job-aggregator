@@ -23,6 +23,8 @@ import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.step.StepExecution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.persistence.ContractEntity;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.persistence.ContractEntityRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -102,6 +104,13 @@ class ContractImportJobIntegrationTest {
             }
         }
         return null;
+    }
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
+        configurer.setIgnoreUnresolvablePlaceholders(true);
+        return configurer;
     }
 
     @DynamicPropertySource
