@@ -28,7 +28,8 @@ final class ContractSequencingRules {
     private static final Set<FeedRecordType> ALLOWED_AFTER_ROLE = Set.of(ACC, ROL, OFF, OM, OID, ART, TAR, AVT);
     private static final Set<FeedRecordType> ALLOWED_AFTER_ACCOUNT = Set.of(ACC, ROL, OFF, OM, ART, IKAC, COND, TAR, AVT, OID);
     private static final Set<FeedRecordType> ALLOWED_AFTER_MARKETED_OBJECT = Set.of(OID, ROL, TAR, AVT, ART);
-    private static final Set<FeedRecordType> ALLOWED_AFTER_OID_OR_IKAC = Set.of(OID, ROL, ART, IKAC, COND, ACC, TAR, AVT, OM);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_OID = Set.of(OID, ROL, ART, IKAC, COND, ACC, TAR, AVT, OM);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_IKAC = Set.of(COND, ACC, ROL, TAR, AVT, ART, OM, OID);
     private static final Set<FeedRecordType> ALLOWED_AFTER_CONDITION = Set.of(COND, ACC, ROL, TAR, AVT, ART, OM, OID);
     private static final Set<FeedRecordType> ALLOWED_AFTER_ARTICLE = Set.of(OID, IKAC, COND, ACC, ROL, TAR, AVT, ART, OM);
     private static final Set<FeedRecordType> ALLOWED_AFTER_TARIF = Set.of(TAR, AVT, ART, OM, ROL, ACC, OID);
@@ -40,8 +41,8 @@ final class ContractSequencingRules {
             Map.entry(ROL, ALLOWED_AFTER_ROLE),
             Map.entry(ACC, ALLOWED_AFTER_ACCOUNT),
             Map.entry(OM, ALLOWED_AFTER_MARKETED_OBJECT),
-            Map.entry(OID, ALLOWED_AFTER_OID_OR_IKAC),
-            Map.entry(IKAC, ALLOWED_AFTER_OID_OR_IKAC),
+            Map.entry(OID, ALLOWED_AFTER_OID),
+            Map.entry(IKAC, ALLOWED_AFTER_IKAC),
             Map.entry(COND, ALLOWED_AFTER_CONDITION),
             Map.entry(ART, ALLOWED_AFTER_ARTICLE),
             Map.entry(TAR, ALLOWED_AFTER_TARIF),

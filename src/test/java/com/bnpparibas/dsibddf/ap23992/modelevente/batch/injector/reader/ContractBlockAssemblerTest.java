@@ -340,6 +340,21 @@ class ContractBlockAssemblerTest {
         assertThat(contract.accounts()).isEmpty();
     }
 
+    @Test
+    void shouldThrowContractFormatExceptionWhenConsecutiveIkacLinesEncountered() {
+        // Given: Assembler at Article level with an IKAC line
+        ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
+        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.accept(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.accept(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
+        assembler.accept(createFeedRecord(5, FeedRecordType.IKAC, "IKAC", "val1", "prov1"));
+
+        // When & Then: A second consecutive IKAC line must be rejected by sequencing rules
+        assertThatThrownBy(() -> assembler.accept(createFeedRecord(6, FeedRecordType.IKAC, "IKAC", "val2", "prov2")))
+                .isInstanceOf(ContractFormatException.class)
+                .hasMessageContaining("Unexpected IKAC after IKAC");
+    }
+
     private FeedRecord createFeedRecord(long number, FeedRecordType type, String... fields) {
         return new FeedRecord(number, type, String.join(";", fields), List.of(fields));
     }
