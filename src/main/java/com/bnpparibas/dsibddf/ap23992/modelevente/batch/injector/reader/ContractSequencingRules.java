@@ -1,9 +1,7 @@
 package com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.reader;
 
 import com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.feed.FeedRecordType;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,24 +24,15 @@ import static com.bnpparibas.dsibddf.ap23992.modelevente.batch.injector.domain.f
  */
 final class ContractSequencingRules {
 
-    private static final Set<FeedRecordType> ALLOWED_AFTER_CONTRACT_OR_OFFER =
-            Collections.unmodifiableSet(EnumSet.of(ACC, ROL, OFF, TAR, AVT, OM));
-    private static final Set<FeedRecordType> ALLOWED_AFTER_ROLE =
-            Collections.unmodifiableSet(EnumSet.of(ACC, ROL, OFF, OM, OID, ART, TAR, AVT));
-    private static final Set<FeedRecordType> ALLOWED_AFTER_ACCOUNT =
-            Collections.unmodifiableSet(EnumSet.of(ACC, ROL, OFF, OM, ART, IKAC, COND, TAR, AVT, OID));
-    private static final Set<FeedRecordType> ALLOWED_AFTER_MARKETED_OBJECT =
-            Collections.unmodifiableSet(EnumSet.of(OID, ROL, TAR, AVT, ART));
-    private static final Set<FeedRecordType> ALLOWED_AFTER_OID_OR_IKAC =
-            Collections.unmodifiableSet(EnumSet.of(OID, ROL, ART, IKAC, COND, ACC, TAR, AVT, OM));
-    private static final Set<FeedRecordType> ALLOWED_AFTER_CONDITION =
-            Collections.unmodifiableSet(EnumSet.of(COND, ACC, ROL, TAR, AVT, ART, OM, OID));
-    private static final Set<FeedRecordType> ALLOWED_AFTER_ARTICLE =
-            Collections.unmodifiableSet(EnumSet.of(OID, IKAC, COND, ACC, ROL, TAR, AVT, ART, OM));
-    private static final Set<FeedRecordType> ALLOWED_AFTER_TARIF =
-            Collections.unmodifiableSet(EnumSet.of(TAR, AVT, ART, OM, ROL, ACC, OID));
-    private static final Set<FeedRecordType> ALLOWED_AFTER_ADVANTAGE =
-            Collections.unmodifiableSet(EnumSet.of(AVT, ART, OM, ROL, ACC, OID));
+    private static final Set<FeedRecordType> ALLOWED_AFTER_CONTRACT_OR_OFFER = Set.of(ACC, ROL, OFF, TAR, AVT, OM);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_ROLE = Set.of(ACC, ROL, OFF, OM, OID, ART, TAR, AVT);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_ACCOUNT = Set.of(ACC, ROL, OFF, OM, ART, IKAC, COND, TAR, AVT, OID);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_MARKETED_OBJECT = Set.of(OID, ROL, TAR, AVT, ART);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_OID_OR_IKAC = Set.of(OID, ROL, ART, IKAC, COND, ACC, TAR, AVT, OM);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_CONDITION = Set.of(COND, ACC, ROL, TAR, AVT, ART, OM, OID);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_ARTICLE = Set.of(OID, IKAC, COND, ACC, ROL, TAR, AVT, ART, OM);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_TARIF = Set.of(TAR, AVT, ART, OM, ROL, ACC, OID);
+    private static final Set<FeedRecordType> ALLOWED_AFTER_ADVANTAGE = Set.of(AVT, ART, OM, ROL, ACC, OID);
 
     private static final Map<FeedRecordType, Set<FeedRecordType>> RULES = new EnumMap<>(Map.ofEntries(
             Map.entry(CTR, ALLOWED_AFTER_CONTRACT_OR_OFFER),
