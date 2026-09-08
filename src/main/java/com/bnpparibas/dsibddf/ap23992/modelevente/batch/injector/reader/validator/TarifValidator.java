@@ -93,7 +93,7 @@ public final class TarifValidator {
         requireOneOfIfPresent(fields, 18, "indicLimiteBasse",       VALID_INDIC_LIMITE,    TAR, lineNumber);
 
         // ── conditional cross-field rules ────────────────────────────────────
-        String formatTarif = field(fields, 7);
+        String formatTarif = getField(fields, 7);
         if ("003".equals(formatTarif)) {
             requireNonBlank(fields, 10, "typeTauxTarif", TAR, lineNumber);
         }

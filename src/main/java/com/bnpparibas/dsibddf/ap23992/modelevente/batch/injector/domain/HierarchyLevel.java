@@ -13,7 +13,7 @@ public enum HierarchyLevel {
     /**
      * Returns the database column value for this level.
      */
-    public String value() {
+    public String getValue() {
         return name();
     }
 }

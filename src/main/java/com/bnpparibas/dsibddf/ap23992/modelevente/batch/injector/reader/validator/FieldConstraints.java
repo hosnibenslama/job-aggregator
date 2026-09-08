@@ -20,12 +20,12 @@ public final class FieldConstraints {
     // Presence helpers
     // -----------------------------------------------------------------------
 
-    public static String field(List<String> fields, int index) {
+    public static String getField(List<String> fields, int index) {
         return index < fields.size() ? fields.get(index) : null;
     }
 
     public static boolean isPresent(List<String> fields, int index) {
-        String val = field(fields, index);
+        String val = getField(fields, index);
         return val != null && !val.isBlank();
     }
 
@@ -44,16 +44,16 @@ public final class FieldConstraints {
                                         String fieldName, FeedRecordType recordType, int lineNumber) {
         if (!isPresent(fields, index)) {
             throw new ContractFormatException(lineNumber, null,
-                    fieldLabel(recordType, index, fieldName) + " is required and must not be blank");
+                    getFieldLabel(recordType, index, fieldName) + " is required and must not be blank");
         }
     }
 
     public static void requireHex16(List<String> fields, int index,
                                      String fieldName, FeedRecordType recordType, int lineNumber) {
-        String val = field(fields, index);
+        String val = getField(fields, index);
         if (val == null || !HEX_16.matcher(val).matches()) {
             throw new ContractFormatException(lineNumber, null,
-                    fieldLabel(recordType, index, fieldName)
+                    getFieldLabel(recordType, index, fieldName)
                             + " must be exactly 16 hexadecimal characters, got: " + val);
         }
     }
@@ -61,10 +61,10 @@ public final class FieldConstraints {
     public static void requireOneOf(List<String> fields, int index,
                                      String fieldName, Set<String> validValues,
                                      FeedRecordType recordType, int lineNumber) {
-        String val = field(fields, index);
+        String val = getField(fields, index);
         if (val == null || !validValues.contains(val)) {
             throw new ContractFormatException(lineNumber, null,
-                    fieldLabel(recordType, index, fieldName)
+                    getFieldLabel(recordType, index, fieldName)
                             + " must be one of " + validValues + ", got: " + val);
         }
     }
@@ -72,15 +72,15 @@ public final class FieldConstraints {
     public static void requirePositiveInt(List<String> fields, int index,
                                            String fieldName, FeedRecordType recordType, int lineNumber) {
         requireNonBlank(fields, index, fieldName, recordType, lineNumber);
-        String val = field(fields, index);
+        String val = getField(fields, index);
         try {
             if (Integer.parseInt(val) <= 0) {
                 throw new ContractFormatException(lineNumber, null,
-                        fieldLabel(recordType, index, fieldName) + " must be positive, got: " + val);
+                        getFieldLabel(recordType, index, fieldName) + " must be positive, got: " + val);
             }
         } catch (NumberFormatException e) {
             throw new ContractFormatException(lineNumber, null,
-                    fieldLabel(recordType, index, fieldName) + " must be an integer, got: " + val, e);
+                    getFieldLabel(recordType, index, fieldName) + " must be an integer, got: " + val, e);
         }
     }
 
@@ -91,10 +91,10 @@ public final class FieldConstraints {
     public static void requireOneOfIfPresent(List<String> fields, int index,
                                               String fieldName, Set<String> validValues,
                                               FeedRecordType recordType, int lineNumber) {
-        String val = field(fields, index);
+        String val = getField(fields, index);
         if (val != null && !val.isBlank() && !validValues.contains(val)) {
             throw new ContractFormatException(lineNumber, null,
-                    fieldLabel(recordType, index, fieldName)
+                    getFieldLabel(recordType, index, fieldName)
                             + " must be one of " + validValues + " when present, got: " + val);
         }
     }
@@ -104,7 +104,7 @@ public final class FieldConstraints {
     // -----------------------------------------------------------------------
 
     /** Builds a consistent field label: {@code "CTR field 2 (idContrat)"}. */
-    private static String fieldLabel(FeedRecordType recordType, int index, String fieldName) {
+    private static String getFieldLabel(FeedRecordType recordType, int index, String fieldName) {
         return recordType + " field " + (index + 1) + " (" + fieldName + ")";
     }
 }

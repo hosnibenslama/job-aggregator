@@ -11,7 +11,15 @@ public record FeedRecord(
         String raw,
         List<String> fields) {
 
-    public String field(int index) {
+    public String getField(int index) {
         return index < fields.size() ? fields.get(index) : null;
+    }
+
+    /**
+     * @deprecated Use {@link #getField(int)} instead.
+     */
+    @Deprecated
+    public String field(int index) {
+        return getField(index);
     }
 }

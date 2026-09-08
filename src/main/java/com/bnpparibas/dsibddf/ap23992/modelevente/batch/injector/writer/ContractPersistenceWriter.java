@@ -207,62 +207,62 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
     // Insert methods
     // -----------------------------------------------------------------------
 
-    private void insertContractRoot(UUID contractId, ContractHeader ctr) {
+    private void insertContractRoot(UUID contractId, ContractHeader contractHeader) {
         jdbcTemplate.update(INSERT_CONTRACT,
                 contractId,
-                ctr != null ? ctr.devise() : null,
-                ctr != null ? ctr.state() : null,
-                ctr != null ? blankToNull(ctr.motif()) : null,
-                ctr != null ? blankToNull(ctr.ouDistribution()) : null,
-                ctr != null ? ctr.ouManagement() : null,
-                ctr != null ? blankToNull(ctr.addressId()) : null,
-                ctr != null ? ctr.businessRelationship() : null,
-                ctr != null ? blankToNull(ctr.effectiveDate()) : null,
-                ctr != null ? blankToNull(ctr.periodeFacturation()) : null,
-                ctr != null ? blankToNull(ctr.datesFacturation()) : null,
-                ctr != null ? ctr.xB3TraceId() : null,
-                ctr != null ? ctr.xB3SpanId() : null,
-                ctr != null ? ctr.userId() : null,
-                ctr != null ? ctr.channel() : null,
-                ctr != null ? ctr.media() : null
+                contractHeader != null ? contractHeader.devise() : null,
+                contractHeader != null ? contractHeader.state() : null,
+                contractHeader != null ? blankToNull(contractHeader.motif()) : null,
+                contractHeader != null ? blankToNull(contractHeader.ouDistribution()) : null,
+                contractHeader != null ? contractHeader.ouManagement() : null,
+                contractHeader != null ? blankToNull(contractHeader.addressId()) : null,
+                contractHeader != null ? contractHeader.businessRelationship() : null,
+                contractHeader != null ? blankToNull(contractHeader.effectiveDate()) : null,
+                contractHeader != null ? blankToNull(contractHeader.periodeFacturation()) : null,
+                contractHeader != null ? blankToNull(contractHeader.datesFacturation()) : null,
+                contractHeader != null ? contractHeader.xB3TraceId() : null,
+                contractHeader != null ? contractHeader.xB3SpanId() : null,
+                contractHeader != null ? contractHeader.userId() : null,
+                contractHeader != null ? contractHeader.channel() : null,
+                contractHeader != null ? contractHeader.media() : null
         );
     }
 
-    private void insertAccount(UUID contractId, Long articleId, HierarchyLevel level, Account a) {
+    private void insertAccount(UUID contractId, Long articleId, HierarchyLevel level, Account account) {
         jdbcTemplate.update(INSERT_ACCOUNT,
-                contractId, articleId, level.value(), a.subType(), a.bic(), a.iban(), blankToNull(a.rib()));
+                contractId, articleId, level.getValue(), account.subType(), account.bic(), account.iban(), blankToNull(account.rib()));
     }
 
-    private void insertRole(UUID contractId, Long omId, Long articleId, HierarchyLevel level, Role r) {
+    private void insertRole(UUID contractId, Long omId, Long articleId, HierarchyLevel level, Role role) {
         jdbcTemplate.update(INSERT_ROLE,
-                contractId, omId, articleId, level.value(), r.role(), r.brand(), r.scope(), r.holderId(), r.ikpi());
+                contractId, omId, articleId, level.getValue(), role.role(), role.brand(), role.scope(), role.holderId(), role.ikpi());
     }
 
-    private void insertOffer(UUID contractId, Offer o) {
+    private void insertOffer(UUID contractId, Offer offer) {
         jdbcTemplate.update(INSERT_OFFER,
-                contractId, o.offerId(), blankToNull(o.personalizedLabel()));
+                contractId, offer.offerId(), blankToNull(offer.personalizedLabel()));
     }
 
-    private long insertMarketedObject(UUID contractId, MarketedObject om) {
+    private long insertMarketedObject(UUID contractId, MarketedObject marketedObject) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(INSERT_MARKETED_OBJECT, Statement.RETURN_GENERATED_KEYS);
             ps.setObject(1, contractId);
-            ps.setString(2, om.omId());
-            ps.setString(3, om.businessRelationship());
+            ps.setString(2, marketedObject.omId());
+            ps.setString(3, marketedObject.businessRelationship());
             return ps;
         }, keyHolder);
 
         return extractGeneratedId(keyHolder);
     }
 
-    private long insertArticle(UUID contractId, long omId, Article art) {
+    private long insertArticle(UUID contractId, long omId, Article article) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(INSERT_ARTICLE, Statement.RETURN_GENERATED_KEYS);
             ps.setObject(1, contractId);
             ps.setLong(2, omId);
-            ps.setInt(3, art.sequentialIndex());
+            ps.setInt(3, article.sequentialIndex());
             return ps;
         }, keyHolder);
 
@@ -290,9 +290,9 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
         }
     }
 
-    private void insertExternalId(UUID contractId, Long omId, Long articleId, HierarchyLevel level, ExternalId oid) {
+    private void insertExternalId(UUID contractId, Long omId, Long articleId, HierarchyLevel level, ExternalId externalId) {
         jdbcTemplate.update(INSERT_EXTERNAL_ID,
-                contractId, omId, articleId, level.value(), oid.externalId());
+                contractId, omId, articleId, level.getValue(), externalId.externalId());
     }
 
     private void insertIkac(UUID contractId, long articleId, Ikac ikac) {
@@ -300,45 +300,45 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
                 contractId, articleId, ikac.ikacValue(), ikac.provider());
     }
 
-    private void insertCondition(UUID contractId, long articleId, Condition c) {
+    private void insertCondition(UUID contractId, long articleId, Condition condition) {
         jdbcTemplate.update(INSERT_CONDITION,
-                contractId, articleId, c.conditionId(), c.conditionValue());
+                contractId, articleId, condition.conditionId(), condition.conditionValue());
     }
 
-    private void insertTarif(UUID contractId, Long omId, Long articleId, HierarchyLevel level, Tarif t) {
+    private void insertTarif(UUID contractId, Long omId, Long articleId, HierarchyLevel level, Tarif tarif) {
         jdbcTemplate.update(INSERT_TARIF,
-                contractId, omId, articleId, level.value(),
-                blankToNull(t.idOpraTarif()),
-                blankToNull(t.typeFrais()),
-                blankToNull(t.dateCreationTarif()),
-                blankToNull(t.dateEffetTarif()),
-                blankToNull(t.deviseTarif()),
-                blankToNull(t.indicTarifPaliers()),
-                blankToNull(t.formatTarif()),
-                blankToNull(t.periodiciteFacturation()),
-                blankToNull(t.typeTaxation()),
-                blankToNull(t.typeTauxTarif()),
-                blankToNull(t.tauxTarif()),
-                blankToNull(t.montantBase()),
-                blankToNull(t.ratioTarif()),
-                blankToNull(t.montantUnite()),
-                blankToNull(t.typeUnite()),
-                blankToNull(t.indicLimiteHaute()),
-                blankToNull(t.limiteHauteMontant()),
-                blankToNull(t.indicLimiteBasse()),
-                blankToNull(t.limiteBasseMontant())
+                contractId, omId, articleId, level.getValue(),
+                blankToNull(tarif.idOpraTarif()),
+                blankToNull(tarif.typeFrais()),
+                blankToNull(tarif.dateCreationTarif()),
+                blankToNull(tarif.dateEffetTarif()),
+                blankToNull(tarif.deviseTarif()),
+                blankToNull(tarif.indicTarifPaliers()),
+                blankToNull(tarif.formatTarif()),
+                blankToNull(tarif.periodiciteFacturation()),
+                blankToNull(tarif.typeTaxation()),
+                blankToNull(tarif.typeTauxTarif()),
+                blankToNull(tarif.tauxTarif()),
+                blankToNull(tarif.montantBase()),
+                blankToNull(tarif.ratioTarif()),
+                blankToNull(tarif.montantUnite()),
+                blankToNull(tarif.typeUnite()),
+                blankToNull(tarif.indicLimiteHaute()),
+                blankToNull(tarif.limiteHauteMontant()),
+                blankToNull(tarif.indicLimiteBasse()),
+                blankToNull(tarif.limiteBasseMontant())
         );
     }
 
-    private void insertAdvantage(UUID contractId, Long omId, Long articleId, HierarchyLevel level, Advantage a) {
+    private void insertAdvantage(UUID contractId, Long omId, Long articleId, HierarchyLevel level, Advantage advantage) {
         jdbcTemplate.update(INSERT_ADVANTAGE,
-                contractId, omId, articleId, level.value(),
-                blankToNull(a.idOpraAvantage()),
-                a.dateDebut(),
-                blankToNull(a.dateFin()),
-                a.codeAvantage(),
-                blankToNull(a.valeurAvantage()),
-                blankToNull(a.deviseAvantage())
+                contractId, omId, articleId, level.getValue(),
+                blankToNull(advantage.idOpraAvantage()),
+                advantage.dateDebut(),
+                blankToNull(advantage.dateFin()),
+                advantage.codeAvantage(),
+                blankToNull(advantage.valeurAvantage()),
+                blankToNull(advantage.deviseAvantage())
         );
     }
 

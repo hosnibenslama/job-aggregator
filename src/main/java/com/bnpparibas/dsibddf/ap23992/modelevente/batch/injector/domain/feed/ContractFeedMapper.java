@@ -25,114 +25,114 @@ public final class ContractFeedMapper {
     public static ContractHeader toHeader(FeedRecord record) {
         requireType(record, FeedRecordType.CTR);
         return new ContractHeader(
-                record.field(1),  // Devise
-                record.field(2),  // State
-                record.field(3),  // Motif (optional)
-                record.field(4),  // OuDistribution (optional)
-                record.field(5),  // OuManagement
-                record.field(6),  // AddressId (optional)
-                record.field(7),  // BusinessRelationship
-                record.field(8),  // EffectiveDate (optional)
-                record.field(9),  // PeriodeFacturation (optional)
-                record.field(10), // DatesFacturation (optional)
-                record.field(11), // X-B3-TraceId
-                record.field(12), // X-B3-SpanId
-                record.field(13), // UserId
-                record.field(14), // Channel
-                record.field(15)  // Media
+                record.getField(1),  // Devise
+                record.getField(2),  // State
+                record.getField(3),  // Motif (optional)
+                record.getField(4),  // OuDistribution (optional)
+                record.getField(5),  // OuManagement
+                record.getField(6),  // AddressId (optional)
+                record.getField(7),  // BusinessRelationship
+                record.getField(8),  // EffectiveDate (optional)
+                record.getField(9),  // PeriodeFacturation (optional)
+                record.getField(10), // DatesFacturation (optional)
+                record.getField(11), // X-B3-TraceId
+                record.getField(12), // X-B3-SpanId
+                record.getField(13), // UserId
+                record.getField(14), // Channel
+                record.getField(15)  // Media
         );
     }
 
     public static Account toAccount(FeedRecord record) {
         requireType(record, FeedRecordType.ACC);
         return new Account(
-                record.field(1),  // subType (BILL/FEE)
-                record.field(2),  // BIC
-                record.field(3),  // IBAN
-                record.field(4)); // RIB (optional)
+                record.getField(1),  // subType (BILL/FEE)
+                record.getField(2),  // BIC
+                record.getField(3),  // IBAN
+                record.getField(4)); // RIB (optional)
     }
 
     public static Role toRole(FeedRecord record) {
         requireType(record, FeedRecordType.ROL);
         return new Role(
-                record.field(1),  // Role
-                record.field(2),  // Brand
-                record.field(3),  // Scope
-                record.field(4),  // Holder ID
-                record.field(5)); // IKPI
+                record.getField(1),  // Role
+                record.getField(2),  // Brand
+                record.getField(3),  // Scope
+                record.getField(4),  // Holder ID
+                record.getField(5)); // IKPI
     }
 
     public static Offer toOffer(FeedRecord record) {
         requireType(record, FeedRecordType.OFF);
         return new Offer(
-                record.field(1),  // Offer ID
-                record.field(2)); // Personalized label (optional)
+                record.getField(1),  // Offer ID
+                record.getField(2)); // Personalized label (optional)
     }
 
     public static MarketedObject toMarketedObject(FeedRecord record) {
         requireType(record, FeedRecordType.OM);
         return new MarketedObject(
-                record.field(1),  // OM identifier
-                record.field(2)); // BusinessRelationship
+                record.getField(1),  // OM identifier
+                record.getField(2)); // BusinessRelationship
     }
 
 
 
     public static ExternalId toExternalId(FeedRecord record) {
         requireType(record, FeedRecordType.OID);
-        return new ExternalId(record.field(1));
+        return new ExternalId(record.getField(1));
     }
 
     public static Article toArticle(FeedRecord record) {
         requireType(record, FeedRecordType.ART);
-        return new Article(Integer.parseInt(record.field(1)));
+        return new Article(Integer.parseInt(record.getField(1)));
     }
 
     public static Ikac toIkac(FeedRecord record) {
         requireType(record, FeedRecordType.IKAC);
-        return new Ikac(record.field(1), record.field(2));
+        return new Ikac(record.getField(1), record.getField(2));
     }
 
     public static Condition toCondition(FeedRecord record) {
         requireType(record, FeedRecordType.COND);
         return new Condition(
-                record.field(1),
-                record.field(2));
+                record.getField(1),
+                record.getField(2));
     }
 
     public static Tarif toTarif(FeedRecord record) {
         requireType(record, FeedRecordType.TAR);
         return new Tarif(
-                record.field(1),   // idOpraTarif (optional)
-                record.field(2),   // typeFrais (optional)
-                record.field(3),   // dateCreationTarif (optional)
-                record.field(4),   // dateEffetTarif (optional)
-                record.field(5),   // deviseTarif (optional)
-                record.field(6),   // indicTarifPaliers (optional)
-                record.field(7),   // formatTarif (optional)
-                record.field(8),   // periodiciteFacturation (optional)
-                record.field(9),   // typeTaxation (optional)
-                record.field(10),  // typeTauxTarif (optional)
-                record.field(11),  // tauxTarif (optional)
-                record.field(12),  // montantBase (optional)
-                record.field(13),  // ratioTarif (optional)
-                record.field(14),  // montantUnite (optional)
-                record.field(15),  // typeUnite (optional)
-                record.field(16),  // indicLimiteHaute (optional)
-                record.field(17),  // limiteHauteMontant (optional)
-                record.field(18),  // indicLimiteBasse (optional)
-                record.field(19)); // limiteBasseMontant (optional)
+                record.getField(1),   // idOpraTarif (optional)
+                record.getField(2),   // typeFrais (optional)
+                record.getField(3),   // dateCreationTarif (optional)
+                record.getField(4),   // dateEffetTarif (optional)
+                record.getField(5),   // deviseTarif (optional)
+                record.getField(6),   // indicTarifPaliers (optional)
+                record.getField(7),   // formatTarif (optional)
+                record.getField(8),   // periodiciteFacturation (optional)
+                record.getField(9),   // typeTaxation (optional)
+                record.getField(10),  // typeTauxTarif (optional)
+                record.getField(11),  // tauxTarif (optional)
+                record.getField(12),  // montantBase (optional)
+                record.getField(13),  // ratioTarif (optional)
+                record.getField(14),  // montantUnite (optional)
+                record.getField(15),  // typeUnite (optional)
+                record.getField(16),  // indicLimiteHaute (optional)
+                record.getField(17),  // limiteHauteMontant (optional)
+                record.getField(18),  // indicLimiteBasse (optional)
+                record.getField(19)); // limiteBasseMontant (optional)
     }
 
     public static Advantage toAdvantage(FeedRecord record) {
         requireType(record, FeedRecordType.AVT);
         return new Advantage(
-                record.field(1),
-                record.field(2),
-                record.field(3),
-                record.field(4),
-                record.field(5),
-                record.field(6));
+                record.getField(1),
+                record.getField(2),
+                record.getField(3),
+                record.getField(4),
+                record.getField(5),
+                record.getField(6));
     }
 
     private static void requireType(FeedRecord record, FeedRecordType expected) {

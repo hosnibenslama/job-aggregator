@@ -47,7 +47,7 @@ public final class AdvantageValidator {
         // Field 5 — codeAvantage (mandatory, must be 1/2/3/4)
         requireOneOf(fields, 4, "codeAvantage", VALID_CODES, AVT, lineNumber);
 
-        String codeAvantage = field(fields, 4);
+        String codeAvantage = getField(fields, 4);
 
         // Field 2 — idOpraAvantage: required when codeAvantage = 1
         if ("1".equals(codeAvantage) && !isPresent(fields, 1)) {
@@ -71,7 +71,7 @@ public final class AdvantageValidator {
 
         // deviseAvantage max 3 chars
         if (isPresent(fields, 6)) {
-            String devise = field(fields, 6);
+            String devise = getField(fields, 6);
             if (devise.length() > 3) {
                 throw new ContractFormatException(lineNumber, null,
                         AVT + " field 7 (deviseAvantage) must not exceed 3 characters, got: " + devise);
