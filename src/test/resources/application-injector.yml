@@ -27,11 +27,11 @@ spring:
       ddl-auto: none
     open-in-view: false
 
-contract:
-  import:
-    input-file: classpath:visa-premier.txt
-    invalid-file: target/test-invalid-contracts.txt
-    charset: UTF-8
+batch:
+  injector:
+    input-file: classpath:contracts_input.txt
+    chunk-size: 100
+    output-file: target/test-invalid-contracts.txt
 
 logging:
   level:

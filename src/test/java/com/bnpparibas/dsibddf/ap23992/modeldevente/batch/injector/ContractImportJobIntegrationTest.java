@@ -43,7 +43,7 @@ import org.springframework.test.context.DynamicPropertySource;
  */
 @SpringBootTest(properties = {
     "spring.batch.job.enabled=false",
-    "contract.import.charset=UTF-8",
+    "batch.injector.charset=UTF-8",
     "spring.cloud.vault.enabled=false",
     "spring.config.name=application-injector",
     "spring.sql.init.data-locations="
@@ -120,8 +120,8 @@ class ContractImportJobIntegrationTest {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("contract.import.inputFile", () -> tempDir.resolve("test-input.txt").toString());
-        registry.add("contract.import.invalid-file", () -> tempDir.resolve("test-input.txt.reject").toString());
+        registry.add("batch.injector.inputFile", () -> tempDir.resolve("test-input.txt").toString());
+        registry.add("batch.injector.outputFile", () -> tempDir.resolve("test-input.txt.reject").toString());
     }
 
     @BeforeEach

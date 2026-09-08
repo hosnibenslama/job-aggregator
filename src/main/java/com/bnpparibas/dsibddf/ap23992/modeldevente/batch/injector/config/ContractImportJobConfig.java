@@ -30,12 +30,14 @@ public class ContractImportJobConfig {
 
     private final Resource inputContractResource;
     private final Charset charset;
+    private final int chunkSize;
 
     public ContractImportJobConfig(
             ContractImportProperties props,
             ResourceLoader resourceLoader) {
         this.inputContractResource = resolveResource(props.inputFile(), resourceLoader);
         this.charset = props.charset();
+        this.chunkSize = props.chunkSize() != null && props.chunkSize() > 0 ? props.chunkSize() : 100;
     }
 
     private static Resource resolveResource(String location, ResourceLoader resourceLoader) {
@@ -93,7 +95,7 @@ public class ContractImportJobConfig {
             ContractPersistenceWriter writer,
             ContractFileIntegrityListener integrityListener) {
         return new StepBuilder("contractImportStep", jobRepository)
-                .<ContractBlock, ContractBlock>chunk(100)
+                .<ContractBlock, ContractBlock>chunk(chunkSize)
                 .transactionManager(transactionManager)
                 .reader(contractItemReader)
                 .processor(processor)

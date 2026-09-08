@@ -32,9 +32,9 @@ public class RejectedContractFileWriter implements ContractRejectWriter {
     private BufferedWriter writer;
 
     public RejectedContractFileWriter(
-            @Value("${contract.import.invalid-file:src/main/resources/invalid-contracts.txt}")
+            @Value("${batch.injector.output-file:${batch.injector.outputFile:${contract.import.invalid-file:src/main/resources/invalid-contracts.txt}}}")
             String rejectFile,
-            @Value("${contract.import.charset:UTF-8}")
+            @Value("${batch.injector.charset:${contract.import.charset:UTF-8}}")
             String charsetName) {
         this.rejectFile = Path.of(rejectFile);
         this.charset = Charset.forName(charsetName);
