@@ -27,6 +27,20 @@ import org.springframework.batch.infrastructure.item.support.SingleItemPeekableI
  * <p>When a {@code TRL} record is encountered its {@code NBCTR} field is saved to
  * the {@link ExecutionContext} under {@link #KEY_EXPECTED_CONTRACT_COUNT} so that
  * the step listener can verify it against the actual read count (rule 3).</p>
+ *
+ * <h3>Cloud Object Storage (COS) Tasklets Integration</h3>
+ * <p>When integrating external download and upload tasklets with this reader:</p>
+ * <ul>
+ *   <li><b>Download Tasklet:</b> Executes <em>prior</em> to the step that uses this reader.
+ *       The download tasklet downloads the contract feed file from COS to a local staging file or path.
+ *       The underlying {@link org.springframework.batch.infrastructure.item.file.FlatFileItemReader}
+ *       configured in {@code ContractImportJobConfig#peekableLineReader()} is configured to point to
+ *       that downloaded local file resource.</li>
+ *   <li><b>Upload Tasklet:</b> Executes <em>after</em> the chunk-processing step completes (which reads
+ *       via this reader, validates, and writes valid contracts). The upload tasklet pushes any
+ *       generated invalid contracts file (reject file) or processing logs back to the COS bucket.</li>
+ * </ul>
+ * <p>See {@code ContractImportJobConfig} for the exact Job and Step wiring.</p>
  */
 public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
 

@@ -20,17 +20,6 @@ contract:
     invalid-file: target/test-invalid-contracts.txt
     charset: UTF-8
 
-cos:
-  enabled: false
-  endpoint: https://localhost
-  region: eu-de
-  bucket: test-bucket
-  access-key: dummy
-  secret-key: dummy
-  input-key: dummy
-  reject-key: dummy
-  staging-directory: target/staging
-
 logging:
   level:
     org.springframework.batch: WARN
