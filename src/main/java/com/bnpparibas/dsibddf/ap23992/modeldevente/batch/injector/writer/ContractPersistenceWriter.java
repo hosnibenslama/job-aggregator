@@ -30,8 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Persists validated hierarchical {@link ContractBlock} aggregate roots and their
  * normalized child entities directly into relational tables with hierarchical foreign keys.
+ *
+ * NOTE: Unregistered in no-db mode.
  */
-@Component
 public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
 
     private static final Logger log = LoggerFactory.getLogger(ContractPersistenceWriter.class);

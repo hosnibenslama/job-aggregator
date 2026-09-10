@@ -199,14 +199,8 @@ class ContractImportJobIntegrationTest {
             assertThat(step.getWriteCount()).isEqualTo(2);
             assertThat(step.getFilterCount()).isEqualTo(0);
 
-            // And: Contracts and normalized child entities are persisted in relational tables
-            assertThat(contractRepository.count()).isEqualTo(2);
-            for (ContractEntity entity : contractRepository.findAll()) {
-                assertThat(entity.getId()).isNotNull();
-                assertThat(entity.getAccounts()).hasSize(1);
-                assertThat(entity.getMarketedObjects()).hasSize(1);
-                assertThat(entity.getArticles()).hasSize(1);
-            }
+            // And: In no-db mode, contracts are not persisted to database
+            assertThat(contractRepository.count()).isEqualTo(0);
         }
 
         @Test
@@ -239,69 +233,8 @@ class ContractImportJobIntegrationTest {
             assertThat(step.getWriteCount()).isEqualTo(1);
             assertThat(step.getFilterCount()).isEqualTo(0);
 
-            // And: 1 contract persisted
-            assertThat(contractRepository.count()).isEqualTo(1);
-
-            // And: Obtain generated IDs of parent OM and Article
-            Long omId = jdbcTemplate.queryForObject(
-                    "SELECT id FROM contract_marketed_objects WHERE om_id = 'OM-001'", Long.class);
-            assertThat(omId).isNotNull();
-
-            Long artId = jdbcTemplate.queryForObject(
-                    "SELECT id FROM contract_articles WHERE marketed_object_id = ?", Long.class, omId);
-            assertThat(artId).isNotNull();
-
-            // And: Verify Tarifs across all 3 levels
-            List<Map<String, Object>> tarifs = jdbcTemplate.queryForList(
-                    "SELECT level, id_opra_tarif, marketed_object_id, article_id FROM contract_tarifs ORDER BY id ASC");
-            assertThat(tarifs).hasSize(3);
-
-            // 1. Contract level TAR
-            Map<String, Object> ctrTar = tarifs.get(0);
-            assertThat(getColumn(ctrTar, "level")).isEqualTo("CONTRACT");
-            assertThat(getColumn(ctrTar, "id_opra_tarif")).isEqualTo("TAR-CTR");
-            assertThat(getColumn(ctrTar, "marketed_object_id")).isNull();
-            assertThat(getColumn(ctrTar, "article_id")).isNull();
-
-            // 2. OM level TAR
-            Map<String, Object> omTar = tarifs.get(1);
-            assertThat(getColumn(omTar, "level")).isEqualTo("OM");
-            assertThat(getColumn(omTar, "id_opra_tarif")).isEqualTo("TAR-OM");
-            assertThat(((Number) getColumn(omTar, "marketed_object_id")).longValue()).isEqualTo(omId);
-            assertThat(getColumn(omTar, "article_id")).isNull();
-
-            // 3. Article level TAR
-            Map<String, Object> artTar = tarifs.get(2);
-            assertThat(getColumn(artTar, "level")).isEqualTo("ARTICLE");
-            assertThat(getColumn(artTar, "id_opra_tarif")).isEqualTo("TAR-ART");
-            assertThat(((Number) getColumn(artTar, "marketed_object_id")).longValue()).isEqualTo(omId);
-            assertThat(((Number) getColumn(artTar, "article_id")).longValue()).isEqualTo(artId);
-
-            // And: Verify Advantages across all 3 levels
-            List<Map<String, Object>> advantages = jdbcTemplate.queryForList(
-                    "SELECT level, id_opra_avantage, marketed_object_id, article_id FROM contract_advantages ORDER BY id ASC");
-            assertThat(advantages).hasSize(3);
-
-            // 1. Contract level AVT
-            Map<String, Object> ctrAvt = advantages.get(0);
-            assertThat(getColumn(ctrAvt, "level")).isEqualTo("CONTRACT");
-            assertThat(getColumn(ctrAvt, "id_opra_avantage")).isEqualTo("OPRA-AVT-CTR");
-            assertThat(getColumn(ctrAvt, "marketed_object_id")).isNull();
-            assertThat(getColumn(ctrAvt, "article_id")).isNull();
-
-            // 2. OM level AVT
-            Map<String, Object> omAvt = advantages.get(1);
-            assertThat(getColumn(omAvt, "level")).isEqualTo("OM");
-            assertThat(getColumn(omAvt, "id_opra_avantage")).isEqualTo("OPRA-AVT-OM");
-            assertThat(((Number) getColumn(omAvt, "marketed_object_id")).longValue()).isEqualTo(omId);
-            assertThat(getColumn(omAvt, "article_id")).isNull();
-
-            // 3. Article level AVT
-            Map<String, Object> artAvt = advantages.get(2);
-            assertThat(getColumn(artAvt, "level")).isEqualTo("ARTICLE");
-            assertThat(getColumn(artAvt, "id_opra_avantage")).isEqualTo("OPRA-AVT-ART");
-            assertThat(((Number) getColumn(artAvt, "marketed_object_id")).longValue()).isEqualTo(omId);
-            assertThat(((Number) getColumn(artAvt, "article_id")).longValue()).isEqualTo(artId);
+            // And: In no-db mode, contract is not persisted to relational tables
+            assertThat(contractRepository.count()).isEqualTo(0);
         }
 
         @Test

@@ -6,7 +6,7 @@ import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.listener.Contr
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.processor.ContractStructureValidator;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.ContractBlockReader;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.ContractLineMapper;
-import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.writer.ContractPersistenceWriter;
+import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.writer.ContractLoggingWriter;
 import java.nio.charset.Charset;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.Job;
@@ -75,7 +75,7 @@ public class ContractImportJobConfig {
      *
      * 2. UPLOAD TASKLET (runs after the import step):
      *    - Step definition: Create a tasklet step (e.g. `cosUploadStep`) using your existing upload tasklet
-     *      to upload the reject file (configured in `contract.import.invalid-file`) back to COS.
+     *      to upload the reject file (configured in `batch.injector.output-file`) back to COS.
      *    - Wire in the Job flow: execute as the final step after `contractImportStep`.
      * =========================================================================
      */
@@ -92,7 +92,7 @@ public class ContractImportJobConfig {
             PlatformTransactionManager transactionManager,
             ContractBlockReader contractItemReader,
             ContractStructureValidator processor,
-            ContractPersistenceWriter writer,
+            ContractLoggingWriter writer,
             ContractFileIntegrityListener integrityListener) {
         return new StepBuilder("contractImportStep", jobRepository)
                 .<ContractBlock, ContractBlock>chunk(chunkSize)
