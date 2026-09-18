@@ -41,10 +41,10 @@ public final class ContractBlockAssembler {
     private final List<Offer> contractOffers = new ArrayList<>();
     private final List<Tarif> contractTarifs = new ArrayList<>();
     private final List<Advantage> contractAdvantages = new ArrayList<>();
-    private final List<MarketedObjectBuilder> marketedObjectBuilders = new ArrayList<>();
+    private final List<ContractMarketedObjectBuilder> marketedObjectBuilders = new ArrayList<>();
 
-    private MarketedObjectBuilder currentMarketedObjectBuilder;
-    private ArticleBuilder currentArticleBuilder;
+    private ContractMarketedObjectBuilder currentMarketedObjectBuilder;
+    private ContractArticleBuilder currentArticleBuilder;
 
     public ContractBlockAssembler(FeedRecord contractRecord) {
         this(UUID.randomUUID(), contractRecord);
@@ -66,9 +66,9 @@ public final class ContractBlockAssembler {
     // Record acceptance
     // -----------------------------------------------------------------------
 
-    public void accept(FeedRecord record) {
-        if (!ContractSequencingRules.isAllowed(previousRecordType, record.type())) {
-            throw createFormatException(record, "Unexpected " + record.type()
+    public void appendRecord(FeedRecord record) {
+        if (!ContractSequencingRules.isTransitionAllowed(previousRecordType, record.type())) {
+            throw buildFormatException(record, "Unexpected " + record.type()
                     + " after " + previousRecordType + "; expected one of "
                     + ContractSequencingRules.getAllowedSuccessors(previousRecordType));
         }
@@ -102,7 +102,7 @@ public final class ContractBlockAssembler {
             }
             case OFF -> contractOffers.add(ContractFeedMapper.toOffer(record));
             case OM -> {
-                currentMarketedObjectBuilder = new MarketedObjectBuilder(record);
+                currentMarketedObjectBuilder = new ContractMarketedObjectBuilder(record);
                 currentArticleBuilder = null;
                 marketedObjectBuilders.add(currentMarketedObjectBuilder);
             }
@@ -115,7 +115,7 @@ public final class ContractBlockAssembler {
                 }
             }
             case ART -> {
-                currentArticleBuilder = new ArticleBuilder(record);
+                currentArticleBuilder = new ContractArticleBuilder(record);
                 currentMarketedObjectBuilder.articleBuilders.add(currentArticleBuilder);
             }
             case IKAC -> {
@@ -162,26 +162,27 @@ public final class ContractBlockAssembler {
                         .flatMap(marketedObjectBuilder -> marketedObjectBuilder.articleBuilders.stream())
                         .anyMatch(articleBuilder -> !articleBuilder.accounts.isEmpty());
         if (!hasAccount) {
-            throw createFormatException(records.get(0), "A contract must contain at least one ACC");
+            throw buildFormatException(records.get(0), "A contract must contain at least one ACC");
         }
         if (marketedObjectBuilders.isEmpty()) {
-            throw createFormatException(records.get(0), "A contract must contain at least one OM");
+            throw buildFormatException(records.get(0), "A contract must contain at least one OM");
         }
         boolean hasArticle = marketedObjectBuilders.stream()
                 .anyMatch(marketedObjectBuilder -> !marketedObjectBuilder.articleBuilders.isEmpty());
         if (!hasArticle) {
-            throw createFormatException(records.get(0), "A contract must contain at least one ART");
+            throw buildFormatException(records.get(0), "A contract must contain at least one ART");
         }
 
-        return toContractBlock();
+        return assembleBlock();
     }
 
     /**
-     * Builds the ContractBlock without enforcing mandatory content checks (used for lenient construction).
+     * Assembles a ContractBlock from current accumulated state without enforcing mandatory content checks.
+     * Used for lenient construction where structural rules are not yet applied.
      */
-    public ContractBlock toContractBlock() {
+    public ContractBlock assembleBlock() {
         List<MarketedObject> marketedObjects = marketedObjectBuilders.stream()
-                .map(MarketedObjectBuilder::build)
+                .map(ContractMarketedObjectBuilder::build)
                 .toList();
 
         return new ContractBlock(
@@ -214,14 +215,14 @@ public final class ContractBlockAssembler {
         for (int i = 1; i < records.size(); i++) {
             FeedRecord record = records.get(i);
             try {
-                assembler.accept(record);
+                assembler.appendRecord(record);
             } catch (ContractFormatException formatException) {
                 log.debug("Lenient assembly: skipping {} at line {} — {}",
                         record.type(), record.lineNumber(), formatException.getReason());
                 assembler.records.add(record);
             }
         }
-        return assembler.toContractBlock();
+        return assembler.assembleBlock();
     }
 
     // -----------------------------------------------------------------------
@@ -230,14 +231,14 @@ public final class ContractBlockAssembler {
 
     private void validatePrerequisites(FeedRecord record) {
         if (record.type() == FeedRecordType.OID && currentMarketedObjectBuilder == null && currentArticleBuilder == null) {
-            throw createFormatException(record, "OID requires a preceding OM or ART");
+            throw buildFormatException(record, "OID requires a preceding OM or ART");
         }
         if ((record.type() == FeedRecordType.IKAC || record.type() == FeedRecordType.COND) && currentArticleBuilder == null) {
-            throw createFormatException(record, record.type() + " requires a preceding ART");
+            throw buildFormatException(record, record.type() + " requires a preceding ART");
         }
     }
 
-    private ContractFormatException createFormatException(FeedRecord record, String reason) {
+    private ContractFormatException buildFormatException(FeedRecord record, String reason) {
         long lineNumber = record != null ? record.lineNumber() : 0;
         return new ContractFormatException(lineNumber, null, reason);
     }

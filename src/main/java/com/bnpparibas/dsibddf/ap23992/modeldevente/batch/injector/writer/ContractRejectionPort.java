@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Interface defining contract rejection operations (Dependency Inversion Principle).
+ * Port defining contract rejection operations (Dependency Inversion Principle).
+ * Implementations write rejected contracts to a file, log them, or forward them to a dead-letter queue.
  */
-public interface ContractRejectWriter {
+public interface ContractRejectionPort {
 
     /**
      * Rejects a list of raw text lines (partial or complete block) with the given reason.

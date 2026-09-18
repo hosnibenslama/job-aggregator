@@ -115,7 +115,7 @@ public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
         FeedRecord record = delegate.read();
         while (record != null && record.type() != FeedRecordType.CTR) {
             if (record.type() == FeedRecordType.TRL) {
-                captureTrlCount(record);
+                extractExpectedCountFromTrailer(record);
                 return null;
             }
             record = delegate.read();
@@ -124,12 +124,12 @@ public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
     }
 
     /**
-     * Reads the NBCTR value from a TRL record's fields (index 1).
+     * Extracts the NBCTR value from a TRL record's fields (index 1).
      * Silently ignored if the field is absent or non-numeric — field-level
      * validation in {@link com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.TrailerValidator}
      * already enforces the format before this point.
      */
-    private void captureTrlCount(FeedRecord trl) {
+    private void extractExpectedCountFromTrailer(FeedRecord trl) {
         List<String> fields = trl.fields();
         if (fields.size() >= 2) {
             try {
@@ -146,13 +146,13 @@ public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
      */
     private void collectUntilNextBoundary(List<FeedRecord> target) throws Exception {
         FeedRecord next = delegate.peek();
-        while (next != null && !isBoundary(next)) {
+        while (next != null && !isBlockBoundary(next)) {
             target.add(delegate.read());
             next = delegate.peek();
         }
     }
 
-    private static boolean isBoundary(FeedRecord record) {
+    private static boolean isBlockBoundary(FeedRecord record) {
         return record.type() == FeedRecordType.CTR || record.type() == FeedRecordType.TRL;
     }
 }

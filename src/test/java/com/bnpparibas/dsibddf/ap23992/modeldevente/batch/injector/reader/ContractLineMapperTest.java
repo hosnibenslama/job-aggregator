@@ -67,12 +67,12 @@ class ContractLineMapperTest {
 
             // Assert: Type is CTR and all mapped fields match expected values
             assertThat(line.type()).isEqualTo(FeedRecordType.CTR);
-            assertThat(line.field(1)).isEqualTo("EUR");
-            assertThat(line.field(5)).isEqualTo("031030000");
-            assertThat(line.field(7)).isEqualTo("BR-00001090");
-            assertThat(line.field(11)).isEqualTo("abcdef0123456789");
-            assertThat(line.field(14)).isEqualTo("001");
-            assertThat(line.field(15)).isEqualTo("003");
+            assertThat(line.getField(1)).isEqualTo("EUR");
+            assertThat(line.getField(5)).isEqualTo("031030000");
+            assertThat(line.getField(7)).isEqualTo("BR-00001090");
+            assertThat(line.getField(11)).isEqualTo("abcdef0123456789");
+            assertThat(line.getField(14)).isEqualTo("001");
+            assertThat(line.getField(15)).isEqualTo("003");
         }
 
         @Test
@@ -159,7 +159,7 @@ class ContractLineMapperTest {
                 FeedRecord line = mapper.mapLine(buildCtr(14, ch), 1);
 
                 // Assert: Channel is successfully parsed
-                assertThat(line.field(14)).isEqualTo(ch);
+                assertThat(line.getField(14)).isEqualTo(ch);
             }
         }
 
@@ -184,7 +184,7 @@ class ContractLineMapperTest {
                 FeedRecord line = mapper.mapLine(buildCtr(15, media), 1);
 
                 // Assert: Media is successfully parsed
-                assertThat(line.field(15)).isEqualTo(media);
+                assertThat(line.getField(15)).isEqualTo(media);
             }
         }
 
@@ -237,8 +237,8 @@ class ContractLineMapperTest {
 
             // Assert: Parsed line has ACC type and correct subtype and BIC
             assertThat(line.type()).isEqualTo(FeedRecordType.ACC);
-            assertThat(line.field(1)).isEqualTo("BILL");
-            assertThat(line.field(2)).isEqualTo("BNPAFRPP");
+            assertThat(line.getField(1)).isEqualTo("BILL");
+            assertThat(line.getField(2)).isEqualTo("BNPAFRPP");
         }
 
         @Test
@@ -250,7 +250,7 @@ class ContractLineMapperTest {
             FeedRecord line = mapper.mapLine(rawLine, 1);
 
             // Assert: Subtype is FEE
-            assertThat(line.field(1)).isEqualTo("FEE");
+            assertThat(line.getField(1)).isEqualTo("FEE");
         }
 
         @Test
@@ -315,8 +315,8 @@ class ContractLineMapperTest {
 
             // Assert: OM type is identified with correct fields
             assertThat(line.type()).isEqualTo(FeedRecordType.OM);
-            assertThat(line.field(1)).isEqualTo("00058680432692016");
-            assertThat(line.field(2)).isEqualTo("000058680432692016");
+            assertThat(line.getField(1)).isEqualTo("00058680432692016");
+            assertThat(line.getField(2)).isEqualTo("000058680432692016");
         }
 
         @Test
@@ -359,8 +359,8 @@ class ContractLineMapperTest {
 
             // Assert: OFF type is identified with all fields
             assertThat(line.type()).isEqualTo(FeedRecordType.OFF);
-            assertThat(line.field(1)).isEqualTo("OFF-0000000001090");
-            assertThat(line.field(2)).isEqualTo("Carte VISA PREMIER DI");
+            assertThat(line.getField(1)).isEqualTo("OFF-0000000001090");
+            assertThat(line.getField(2)).isEqualTo("Carte VISA PREMIER DI");
         }
 
         @Test
@@ -373,7 +373,7 @@ class ContractLineMapperTest {
 
             // Assert: OFF type is identified successfully
             assertThat(line.type()).isEqualTo(FeedRecordType.OFF);
-            assertThat(line.field(1)).isEqualTo("OFF-0000000001090");
+            assertThat(line.getField(1)).isEqualTo("OFF-0000000001090");
         }
 
         @Test
@@ -416,7 +416,7 @@ class ContractLineMapperTest {
 
             // Assert: ART type is identified with index 5
             assertThat(line.type()).isEqualTo(FeedRecordType.ART);
-            assertThat(line.field(1)).isEqualTo("5");
+            assertThat(line.getField(1)).isEqualTo("5");
         }
 
         @Test
@@ -472,9 +472,9 @@ class ContractLineMapperTest {
 
             // Assert: ROL line type and fields are mapped correctly
             assertThat(line.type()).isEqualTo(FeedRecordType.ROL);
-            assertThat(line.field(3)).isEqualTo("PRI");
-            assertThat(line.field(4)).isEqualTo("01970013368500000");
-            assertThat(line.field(5)).isEqualTo("01970013368500002");
+            assertThat(line.getField(3)).isEqualTo("PRI");
+            assertThat(line.getField(4)).isEqualTo("01970013368500000");
+            assertThat(line.getField(5)).isEqualTo("01970013368500002");
         }
 
         @Test
@@ -677,8 +677,8 @@ class ContractLineMapperTest {
 
             // Assert: Type is AVT with idOpra and code 1 preserved
             assertThat(line.type()).isEqualTo(FeedRecordType.AVT);
-            assertThat(line.field(1)).isEqualTo("OPRA-000000000001");
-            assertThat(line.field(4)).isEqualTo("1");
+            assertThat(line.getField(1)).isEqualTo("OPRA-000000000001");
+            assertThat(line.getField(4)).isEqualTo("1");
         }
 
         @Test
@@ -691,9 +691,9 @@ class ContractLineMapperTest {
 
             // Assert: Type is AVT with code 2, valeur, and devise mapped correctly
             assertThat(line.type()).isEqualTo(FeedRecordType.AVT);
-            assertThat(line.field(4)).isEqualTo("2");
-            assertThat(line.field(5)).isEqualTo("50.00");
-            assertThat(line.field(6)).isEqualTo("EUR");
+            assertThat(line.getField(4)).isEqualTo("2");
+            assertThat(line.getField(5)).isEqualTo("50.00");
+            assertThat(line.getField(6)).isEqualTo("EUR");
         }
 
         @Test
@@ -783,7 +783,7 @@ class ContractLineMapperTest {
                 FeedRecord line = mapper.mapLine(rawLine, 1);
 
                 // Assert: Advantage code is parsed properly
-                assertThat(line.field(4)).isEqualTo(code);
+                assertThat(line.getField(4)).isEqualTo(code);
             }
         }
     }
@@ -805,8 +805,8 @@ class ContractLineMapperTest {
 
             // Assert: Type is IKAC, fields mapped properly
             assertThat(line.type()).isEqualTo(FeedRecordType.IKAC);
-            assertThat(line.field(1)).isEqualTo("52050000000634205");
-            assertThat(line.field(2)).isEqualTo("AP00111");
+            assertThat(line.getField(1)).isEqualTo("52050000000634205");
+            assertThat(line.getField(2)).isEqualTo("AP00111");
         }
 
         @Test

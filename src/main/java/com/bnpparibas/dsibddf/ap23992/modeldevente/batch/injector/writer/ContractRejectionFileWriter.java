@@ -25,13 +25,13 @@ import org.springframework.stereotype.Component;
  * <p>Thread-safety: the underlying {@link BufferedWriter} is synchronized on this instance.
  */
 @Component
-public class RejectedContractFileWriter implements ContractRejectWriter {
+public class ContractRejectionFileWriter implements ContractRejectionPort {
 
     private final Path rejectFile;
     private final Charset charset;
     private BufferedWriter writer;
 
-    public RejectedContractFileWriter(
+    public ContractRejectionFileWriter(
             @Value("${batch.injector.output-file:${batch.injector.outputFile:${contract.import.invalid-file:src/main/resources/invalid-contracts.txt}}}")
             String rejectFile,
             @Value("${batch.injector.charset:${contract.import.charset:UTF-8}}")
@@ -55,7 +55,7 @@ public class RejectedContractFileWriter implements ContractRejectWriter {
     }
 
     // -----------------------------------------------------------------------
-    // ContractRejectWriter implementation
+    // ContractRejectionPort implementation
     // -----------------------------------------------------------------------
 
     @Override

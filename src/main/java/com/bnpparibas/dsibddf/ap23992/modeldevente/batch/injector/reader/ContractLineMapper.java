@@ -12,7 +12,7 @@ import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validat
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.IkacValidator;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.LineFieldValidator;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.OfferValidator;
-import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.OmValidator;
+import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.MarketedObjectValidator;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.RoleValidator;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.TarifValidator;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.validator.TrailerValidator;
@@ -40,7 +40,7 @@ public final class ContractLineMapper implements LineMapper<FeedRecord> {
     private static final Map<FeedRecordType, LineFieldValidator> VALIDATORS = Map.ofEntries(
             Map.entry(FeedRecordType.CTR,  ContractHeaderValidator::validate),
             Map.entry(FeedRecordType.ACC,  AccountValidator::validate),
-            Map.entry(FeedRecordType.OM,   OmValidator::validate),
+            Map.entry(FeedRecordType.OM,   MarketedObjectValidator::validate),
             Map.entry(FeedRecordType.OFF,  OfferValidator::validate),
             Map.entry(FeedRecordType.ART,  ArticleValidator::validate),
             Map.entry(FeedRecordType.ROL,  RoleValidator::validate),

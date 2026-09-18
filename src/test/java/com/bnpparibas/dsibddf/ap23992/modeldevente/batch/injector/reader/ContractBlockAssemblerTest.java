@@ -18,17 +18,17 @@ class ContractBlockAssemblerTest {
     void shouldBuildValidContractWhenAllMandatoryAndOptionalLinesAreProvided() {
         // Given: An assembler initialized with a CTR line and fed with all required and optional lines
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.ROL, "ROL"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.OFF, "OFF"));
-        assembler.accept(createFeedRecord(5, FeedRecordType.OM, "OM", "OM-001"));
-        assembler.accept(createFeedRecord(6, FeedRecordType.OID, "OID"));
-        assembler.accept(createFeedRecord(7, FeedRecordType.ART, "ART", "1"));
-        assembler.accept(createFeedRecord(8, FeedRecordType.IKAC, "IKAC"));
-        assembler.accept(createFeedRecord(9, FeedRecordType.COND, "COND"));
-        assembler.accept(createFeedRecord(10, FeedRecordType.ACC, "ACC", "BILL-2"));
-        assembler.accept(createFeedRecord(11, FeedRecordType.TAR, "TAR"));
-        assembler.accept(createFeedRecord(12, FeedRecordType.AVT, "AVT"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.ROL, "ROL"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.OFF, "OFF"));
+        assembler.appendRecord(createFeedRecord(5, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(6, FeedRecordType.OID, "OID"));
+        assembler.appendRecord(createFeedRecord(7, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(8, FeedRecordType.IKAC, "IKAC"));
+        assembler.appendRecord(createFeedRecord(9, FeedRecordType.COND, "COND"));
+        assembler.appendRecord(createFeedRecord(10, FeedRecordType.ACC, "ACC", "BILL-2"));
+        assembler.appendRecord(createFeedRecord(11, FeedRecordType.TAR, "TAR"));
+        assembler.appendRecord(createFeedRecord(12, FeedRecordType.AVT, "AVT"));
 
         // Act: Build the assembled contract
         ContractBlock contract = assembler.build();
@@ -63,11 +63,11 @@ class ContractBlockAssemblerTest {
     void shouldThrowContractFormatExceptionWhenArticleChildEncounteredBeforeArticle() {
         // Given: An assembler containing CTR, ACC, and OM, but no preceding ART line
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
 
         // Act & Assert: Accepting an IKAC line before any ART line throws ContractFormatException
-        assertThatThrownBy(() -> assembler.accept(createFeedRecord(4, FeedRecordType.IKAC, "IKAC")))
+        assertThatThrownBy(() -> assembler.appendRecord(createFeedRecord(4, FeedRecordType.IKAC, "IKAC")))
                 .isInstanceOf(ContractFormatException.class)
                 .hasMessageContaining("ART");
     }
@@ -76,9 +76,9 @@ class ContractBlockAssemblerTest {
     void shouldBuildValidContractWhenOnlyMandatoryLinesAreProvided() {
         // Given: An assembler initialized with only the minimum mandatory lines (CTR, ACC, OM, ART)
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
 
         // Act: Build the assembled contract
         ContractBlock contract = assembler.build();
@@ -94,10 +94,10 @@ class ContractBlockAssemblerTest {
     void shouldThrowContractFormatExceptionWhenOidEncounteredBeforeOm() {
         // Given: An assembler containing CTR and ACC lines without any preceding OM line
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
 
         // Act & Assert: Accepting an OID line before an OM line throws ContractFormatException
-        assertThatThrownBy(() -> assembler.accept(createFeedRecord(3, FeedRecordType.OID, "OID")))
+        assertThatThrownBy(() -> assembler.appendRecord(createFeedRecord(3, FeedRecordType.OID, "OID")))
                 .isInstanceOf(ContractFormatException.class)
                 .hasMessageContaining("OID");
     }
@@ -117,7 +117,7 @@ class ContractBlockAssemblerTest {
     void shouldThrowContractFormatExceptionWhenBuildingContractWithoutOm() {
         // Given: An assembler with CTR and ACC lines but missing the mandatory OM line
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
 
         // Act & Assert: Building the contract without OM throws ContractFormatException
         assertThatThrownBy(assembler::build)
@@ -129,15 +129,15 @@ class ContractBlockAssemblerTest {
     void shouldRouteCoexistingMultiLevelTarifAndAdvantageAcrossAllLevels() {
         // Given: A contract dossier with TAR and AVT present at Contract, OM, and Article levels simultaneously
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.TAR, "TAR", "TAR-CONTRACT"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.AVT, "AVT", "AVT-CONTRACT"));
-        assembler.accept(createFeedRecord(5, FeedRecordType.OM, "OM", "OM-001"));
-        assembler.accept(createFeedRecord(6, FeedRecordType.TAR, "TAR", "TAR-OM"));
-        assembler.accept(createFeedRecord(7, FeedRecordType.AVT, "AVT", "AVT-OM"));
-        assembler.accept(createFeedRecord(8, FeedRecordType.ART, "ART", "1"));
-        assembler.accept(createFeedRecord(9, FeedRecordType.TAR, "TAR", "TAR-ART"));
-        assembler.accept(createFeedRecord(10, FeedRecordType.AVT, "AVT", "AVT-ART"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.TAR, "TAR", "TAR-CONTRACT"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.AVT, "AVT", "AVT-CONTRACT"));
+        assembler.appendRecord(createFeedRecord(5, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(6, FeedRecordType.TAR, "TAR", "TAR-OM"));
+        assembler.appendRecord(createFeedRecord(7, FeedRecordType.AVT, "AVT", "AVT-OM"));
+        assembler.appendRecord(createFeedRecord(8, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(9, FeedRecordType.TAR, "TAR", "TAR-ART"));
+        assembler.appendRecord(createFeedRecord(10, FeedRecordType.AVT, "AVT", "AVT-ART"));
 
         // Act: Build the contract block
         ContractBlock contract = assembler.build();
@@ -169,15 +169,15 @@ class ContractBlockAssemblerTest {
     void shouldRouteMultiLevelRolesExternalIdsAndAccountsToTheirRespectiveScopes() {
         // Given: ROL at Contract, OM, and Article levels, OID at OM and Article levels, ACC at Contract and Article levels
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL-CTR"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.ROL, "ROL", "ROL-CTR"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.OM, "OM", "OM-001"));
-        assembler.accept(createFeedRecord(5, FeedRecordType.OID, "OID", "OID-OM"));
-        assembler.accept(createFeedRecord(6, FeedRecordType.ROL, "ROL", "ROL-OM"));
-        assembler.accept(createFeedRecord(7, FeedRecordType.ART, "ART", "1"));
-        assembler.accept(createFeedRecord(8, FeedRecordType.OID, "OID", "OID-ART"));
-        assembler.accept(createFeedRecord(9, FeedRecordType.ACC, "ACC", "BILL-ART"));
-        assembler.accept(createFeedRecord(10, FeedRecordType.ROL, "ROL", "ROL-ART"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL-CTR"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.ROL, "ROL", "ROL-CTR"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(5, FeedRecordType.OID, "OID", "OID-OM"));
+        assembler.appendRecord(createFeedRecord(6, FeedRecordType.ROL, "ROL", "ROL-OM"));
+        assembler.appendRecord(createFeedRecord(7, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(8, FeedRecordType.OID, "OID", "OID-ART"));
+        assembler.appendRecord(createFeedRecord(9, FeedRecordType.ACC, "ACC", "BILL-ART"));
+        assembler.appendRecord(createFeedRecord(10, FeedRecordType.ROL, "ROL", "ROL-ART"));
 
         // Act: Build the contract block
         ContractBlock contract = assembler.build();
@@ -202,26 +202,26 @@ class ContractBlockAssemblerTest {
     void shouldAssembleMultipleMarketedObjectsAndMultipleArticlesWithoutDataLeakage() {
         // Given: 2 OMs where OM1 has 2 articles and OM2 has 1 article, with distinct children
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
 
         // OM 1
-        assembler.accept(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001", "REL-001"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.OID, "OID", "OM1-OID"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001", "REL-001"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.OID, "OID", "OM1-OID"));
         // OM 1 - Article 1
-        assembler.accept(createFeedRecord(5, FeedRecordType.ART, "ART", "1"));
-        assembler.accept(createFeedRecord(6, FeedRecordType.COND, "COND", "COND-1A", "VAL-1A"));
-        assembler.accept(createFeedRecord(7, FeedRecordType.TAR, "TAR", "TAR-ART1"));
+        assembler.appendRecord(createFeedRecord(5, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(6, FeedRecordType.COND, "COND", "COND-1A", "VAL-1A"));
+        assembler.appendRecord(createFeedRecord(7, FeedRecordType.TAR, "TAR", "TAR-ART1"));
         // OM 1 - Article 2
-        assembler.accept(createFeedRecord(8, FeedRecordType.ART, "ART", "2"));
-        assembler.accept(createFeedRecord(9, FeedRecordType.IKAC, "IKAC", "IKAC-ART2"));
-        assembler.accept(createFeedRecord(10, FeedRecordType.AVT, "AVT", "AVT-ART2"));
+        assembler.appendRecord(createFeedRecord(8, FeedRecordType.ART, "ART", "2"));
+        assembler.appendRecord(createFeedRecord(9, FeedRecordType.IKAC, "IKAC", "IKAC-ART2"));
+        assembler.appendRecord(createFeedRecord(10, FeedRecordType.AVT, "AVT", "AVT-ART2"));
 
         // OM 2
-        assembler.accept(createFeedRecord(11, FeedRecordType.OM, "OM", "OM-002", "REL-002"));
-        assembler.accept(createFeedRecord(12, FeedRecordType.ROL, "ROL", "ROL-OM2"));
+        assembler.appendRecord(createFeedRecord(11, FeedRecordType.OM, "OM", "OM-002", "REL-002"));
+        assembler.appendRecord(createFeedRecord(12, FeedRecordType.ROL, "ROL", "ROL-OM2"));
         // OM 2 - Article 1
-        assembler.accept(createFeedRecord(13, FeedRecordType.ART, "ART", "1"));
-        assembler.accept(createFeedRecord(14, FeedRecordType.COND, "COND", "COND-2A", "VAL-2A"));
+        assembler.appendRecord(createFeedRecord(13, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(14, FeedRecordType.COND, "COND", "COND-2A", "VAL-2A"));
 
         // Act: Build contract
         ContractBlock contract = assembler.build();
@@ -270,9 +270,9 @@ class ContractBlockAssemblerTest {
     void shouldAssembleContractWithNoTarifOrAdvantageAtAnyLevel() {
         // Given: Only mandatory records (CTR, ACC, OM, ART)
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
 
         // Act: Build contract
         ContractBlock contract = assembler.build();
@@ -290,10 +290,10 @@ class ContractBlockAssemblerTest {
     void shouldAssembleContractWithTarifAtContractLevelOnly() {
         // Given: TAR at Contract level only
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.TAR, "TAR", "TAR-CTR-ONLY"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.OM, "OM", "OM-001"));
-        assembler.accept(createFeedRecord(5, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.TAR, "TAR", "TAR-CTR-ONLY"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(5, FeedRecordType.ART, "ART", "1"));
 
         // Act: Build contract
         ContractBlock contract = assembler.build();
@@ -309,10 +309,10 @@ class ContractBlockAssemblerTest {
     void shouldAssembleContractWithTarifAtArticleLevelOnly() {
         // Given: TAR at Article level only
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
-        assembler.accept(createFeedRecord(5, FeedRecordType.TAR, "TAR", "TAR-ART-ONLY"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(5, FeedRecordType.TAR, "TAR", "TAR-ART-ONLY"));
 
         // Act: Build contract
         ContractBlock contract = assembler.build();
@@ -331,7 +331,7 @@ class ContractBlockAssemblerTest {
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
 
         // Act: Lenient build via toContractBlock()
-        ContractBlock contract = assembler.toContractBlock();
+        ContractBlock contract = assembler.assembleBlock();
 
         // Assert: Block created successfully with empty children
         assertThat(contract).isNotNull();
@@ -344,13 +344,13 @@ class ContractBlockAssemblerTest {
     void shouldThrowContractFormatExceptionWhenConsecutiveIkacLinesEncountered() {
         // Given: Assembler at Article level with an IKAC line
         ContractBlockAssembler assembler = new ContractBlockAssembler(createFeedRecord(1, FeedRecordType.CTR, "CTR"));
-        assembler.accept(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
-        assembler.accept(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
-        assembler.accept(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
-        assembler.accept(createFeedRecord(5, FeedRecordType.IKAC, "IKAC", "val1", "prov1"));
+        assembler.appendRecord(createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"));
+        assembler.appendRecord(createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"));
+        assembler.appendRecord(createFeedRecord(4, FeedRecordType.ART, "ART", "1"));
+        assembler.appendRecord(createFeedRecord(5, FeedRecordType.IKAC, "IKAC", "val1", "prov1"));
 
         // When & Then: A second consecutive IKAC line must be rejected by sequencing rules
-        assertThatThrownBy(() -> assembler.accept(createFeedRecord(6, FeedRecordType.IKAC, "IKAC", "val2", "prov2")))
+        assertThatThrownBy(() -> assembler.appendRecord(createFeedRecord(6, FeedRecordType.IKAC, "IKAC", "val2", "prov2")))
                 .isInstanceOf(ContractFormatException.class)
                 .hasMessageContaining("Unexpected IKAC after IKAC");
     }

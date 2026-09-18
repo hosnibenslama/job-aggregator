@@ -5,7 +5,7 @@ import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.domain.feed.Fe
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.domain.feed.FeedRecord;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.error.ContractFormatException;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.ContractBlockAssembler;
-import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.writer.ContractRejectWriter;
+import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.writer.ContractRejectionPort;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Validates a {@link ContractBlock} against sequencing grammar and structural
- * business rules, and routes invalid contracts to the reject writer.
+ * business rules, and routes invalid contracts to the rejection port.
  *
  * <p>Validation is delegated to {@link ContractBlockAssembler}, which enforces:
  * <ul>
@@ -31,14 +31,14 @@ import org.springframework.stereotype.Component;
  * <p>Returning {@code null} causes Spring Batch to silently skip the item for writing.
  */
 @Component
-public final class ContractStructureValidator implements ItemProcessor<ContractBlock, ContractBlock> {
+public final class ContractBlockValidator implements ItemProcessor<ContractBlock, ContractBlock> {
 
-    private static final Logger log = LoggerFactory.getLogger(ContractStructureValidator.class);
+    private static final Logger log = LoggerFactory.getLogger(ContractBlockValidator.class);
 
-    private final ContractRejectWriter rejectWriter;
+    private final ContractRejectionPort rejectionPort;
 
-    public ContractStructureValidator(ContractRejectWriter rejectWriter) {
-        this.rejectWriter = rejectWriter;
+    public ContractBlockValidator(ContractRejectionPort rejectionPort) {
+        this.rejectionPort = rejectionPort;
     }
 
     @Override
@@ -48,7 +48,7 @@ public final class ContractStructureValidator implements ItemProcessor<ContractB
             return validateAndAssemble(item);
         } catch (ContractFormatException e) {
             log.warn("Contract {} rejected: {}", item.id(), e.getReason());
-            rejectWriter.reject(item, e.getMessage());
+            rejectionPort.reject(item, e.getMessage());
             return null;
         }
     }
@@ -80,7 +80,7 @@ public final class ContractStructureValidator implements ItemProcessor<ContractB
         List<FeedRecord> records = contract.records();
         ContractBlockAssembler assembler = new ContractBlockAssembler(contract.id(), records.get(0));
         for (int i = 1; i < records.size(); i++) {
-            assembler.accept(records.get(i));
+            assembler.appendRecord(records.get(i));
         }
         return assembler.build();
     }

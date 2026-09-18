@@ -16,18 +16,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class RejectedContractFileWriterTest {
+class ContractRejectionFileWriterTest {
 
     @TempDir
     Path tempDir;
 
     private Path rejectFile;
-    private RejectedContractFileWriter writer;
+    private ContractRejectionFileWriter writer;
 
     @BeforeEach
     void setUp() throws IOException {
         rejectFile = tempDir.resolve("invalid-contracts.txt");
-        writer = new RejectedContractFileWriter(rejectFile.toString(), "UTF-8");
+        writer = new ContractRejectionFileWriter(rejectFile.toString(), "UTF-8");
         writer.open();
     }
 
@@ -77,7 +77,7 @@ class RejectedContractFileWriterTest {
         writer.close();
 
         // When: A new job run starts and re-opens the writer
-        writer = new RejectedContractFileWriter(rejectFile.toString(), "UTF-8");
+        writer = new ContractRejectionFileWriter(rejectFile.toString(), "UTF-8");
         writer.open();
         writer.reject(List.of("CTR;EUR;16;NEW"), "New error");
 

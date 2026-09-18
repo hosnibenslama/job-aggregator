@@ -52,7 +52,7 @@ final class ContractSequencingRules {
     private ContractSequencingRules() {
     }
 
-    static boolean isAllowed(FeedRecordType previousRecordType, FeedRecordType nextRecordType) {
+    static boolean isTransitionAllowed(FeedRecordType previousRecordType, FeedRecordType nextRecordType) {
         Set<FeedRecordType> allowed = RULES.get(previousRecordType);
         return allowed != null && allowed.contains(nextRecordType);
     }

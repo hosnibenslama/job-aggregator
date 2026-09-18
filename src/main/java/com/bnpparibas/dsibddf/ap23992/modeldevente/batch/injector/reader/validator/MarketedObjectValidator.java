@@ -6,7 +6,7 @@ import static com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.
 import java.util.List;
 
 /**
- * Validates OM (objet marketé) line fields — specification section 4.4.
+ * Validates OM (objet marketé / marketed object) line fields — specification section 4.4.
  * Represents the 'products' level of the JSON source, attached to the current contract.
  *
  * <pre>
@@ -19,9 +19,9 @@ import java.util.List;
  *
  * Example: {@code OM;00058680432692016;000058680432692016}
  */
-public final class OmValidator {
+public final class MarketedObjectValidator {
 
-    private OmValidator() {}
+    private MarketedObjectValidator() {}
 
     public static void validate(List<String> fields, int lineNumber) {
         requireMinSize (fields, 3, OM, lineNumber);

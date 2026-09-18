@@ -3,7 +3,7 @@ package com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.config;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.domain.ContractBlock;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.domain.feed.FeedRecord;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.listener.ContractFileIntegrityListener;
-import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.processor.ContractStructureValidator;
+import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.processor.ContractBlockValidator;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.ContractBlockReader;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.reader.ContractLineMapper;
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.writer.ContractLoggingWriter;
@@ -90,15 +90,15 @@ public class ContractImportJobConfig {
     public Step contractImportStep(
             JobRepository jobRepository,
             PlatformTransactionManager transactionManager,
-            ContractBlockReader contractItemReader,
-            ContractStructureValidator processor,
+            ContractBlockReader contractBlockReader,
+            ContractBlockValidator blockValidator,
             ContractLoggingWriter writer,
             ContractFileIntegrityListener integrityListener) {
         return new StepBuilder("contractImportStep", jobRepository)
                 .<ContractBlock, ContractBlock>chunk(chunkSize)
                 .transactionManager(transactionManager)
-                .reader(contractItemReader)
-                .processor(processor)
+                .reader(contractBlockReader)
+                .processor(blockValidator)
                 .writer(writer)
                 .listener(integrityListener)
                 .build();
@@ -121,7 +121,7 @@ public class ContractImportJobConfig {
      */
     @Bean
     @StepScope
-    public SingleItemPeekableItemReader<FeedRecord> peekableLineReader() {
+    public SingleItemPeekableItemReader<FeedRecord> contractFeedLineReader() {
         FlatFileItemReader<FeedRecord> flatFileReader = new FlatFileItemReader<>(new ContractLineMapper());
         flatFileReader.setResource(inputContractResource);
         flatFileReader.setEncoding(charset.name());
@@ -139,8 +139,8 @@ public class ContractImportJobConfig {
      */
     @Bean
     @StepScope
-    public ContractBlockReader contractItemReader(
-            SingleItemPeekableItemReader<FeedRecord> peekableLineReader) {
-        return new ContractBlockReader(peekableLineReader);
+    public ContractBlockReader contractBlockReader(
+            SingleItemPeekableItemReader<FeedRecord> contractFeedLineReader) {
+        return new ContractBlockReader(contractFeedLineReader);
     }
 }
