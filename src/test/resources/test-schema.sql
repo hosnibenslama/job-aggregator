@@ -13,9 +13,10 @@ CREATE TABLE IF NOT EXISTS contracts (
     effective_date          VARCHAR(35),
     periode_facturation     VARCHAR(20),
     dates_facturation       VARCHAR(100),
-    x_b3_trace_id           VARCHAR(16)   NOT NULL,
-    x_b3_span_id            VARCHAR(16)   NOT NULL,
-    user_id                 VARCHAR(16)   NOT NULL,
+    client_type             VARCHAR(1),
+    op_sdo                  VARCHAR(50),
+    closing_date            VARCHAR(35),
+    context                 VARCHAR(255),
     channel                 VARCHAR(3)    NOT NULL,
     media                   VARCHAR(3)    NOT NULL,
     created_at              TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP

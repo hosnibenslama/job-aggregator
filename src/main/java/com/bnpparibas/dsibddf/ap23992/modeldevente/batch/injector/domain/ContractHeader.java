@@ -14,8 +14,9 @@ public record ContractHeader(
         String effectiveDate,
         String periodeFacturation,
         String datesFacturation,
-        String xB3TraceId,
-        String xB3SpanId,
-        String userId,
+        String clientType,
+        String opSdo,
+        String closingDate,
+        String context,
         String channel,
         String media) {}

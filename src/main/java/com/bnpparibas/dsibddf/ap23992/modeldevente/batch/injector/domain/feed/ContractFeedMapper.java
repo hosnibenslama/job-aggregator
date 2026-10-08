@@ -35,11 +35,12 @@ public final class ContractFeedMapper {
                 record.getField(8),  // EffectiveDate (optional)
                 record.getField(9),  // PeriodeFacturation (optional)
                 record.getField(10), // DatesFacturation (optional)
-                record.getField(11), // X-B3-TraceId
-                record.getField(12), // X-B3-SpanId
-                record.getField(13), // UserId
-                record.getField(14), // Channel
-                record.getField(15)  // Media
+                record.getField(11), // clientType (optional)
+                record.getField(12), // opSdo (optional)
+                record.getField(13), // closingDate (optional)
+                record.getField(14), // context (optional)
+                record.getField(15), // Channel
+                record.getField(16)  // Media
         );
     }
 

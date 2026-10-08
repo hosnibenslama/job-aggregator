@@ -27,9 +27,10 @@ CREATE TABLE contracts (
     effective_date          VARCHAR(35),                     -- YYYY-MM-DDTHH:MM:SS.ssssssZ (optional)
     periode_facturation     VARCHAR(20),                     -- QUOTIDIENNE / HEBDOMADAIRE / MENSUELLE / ANNUELLE (optional)
     dates_facturation       VARCHAR(100),                    -- Billing dates (optional)
-    x_b3_trace_id           VARCHAR(16)   NOT NULL,          -- 16 hex chars correlation trace id
-    x_b3_span_id            VARCHAR(16)   NOT NULL,          -- 16 hex chars correlation span id
-    user_id                 VARCHAR(16)   NOT NULL,          -- 16 hex chars user identifier
+    client_type             VARCHAR(1),                      -- 1=Retail, 2=Corporate (optional)
+    op_sdo                  VARCHAR(50),                     -- SDO operation number (optional)
+    closing_date            VARCHAR(35),                     -- YYYY-MM-DDTHH:MM:SS.ssssssZ (optional)
+    context                 VARCHAR(255),                    -- Context (optional)
     channel                 VARCHAR(3)    NOT NULL,          -- 001/007/008/012
     media                   VARCHAR(3)    NOT NULL,          -- Interaction media
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()

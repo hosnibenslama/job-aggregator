@@ -55,7 +55,7 @@ class ContractLineMapperTest {
 
         private static final String VALID_CTR =
                 "CTR;EUR;16;000;Carte VISA PREMIER;031030000;;BR-00001090;;MENSUELLE;;" +
-                "abcdef0123456789;fedcba9876543210;1234567890abcdef;001;003";
+                "1;OP12345678901234;2026-09-30T00:00:00.000000Z;;007;003";
 
         @Test
         void shouldParseValidCtrLineWhenAllFieldsMeetRequirements() {
@@ -70,9 +70,9 @@ class ContractLineMapperTest {
             assertThat(line.getField(1)).isEqualTo("EUR");
             assertThat(line.getField(5)).isEqualTo("031030000");
             assertThat(line.getField(7)).isEqualTo("BR-00001090");
-            assertThat(line.getField(11)).isEqualTo("abcdef0123456789");
-            assertThat(line.getField(14)).isEqualTo("001");
-            assertThat(line.getField(15)).isEqualTo("003");
+            assertThat(line.getField(11)).isEqualTo("1");
+            assertThat(line.getField(15)).isEqualTo("007");
+            assertThat(line.getField(16)).isEqualTo("003");
         }
 
         @Test
@@ -111,37 +111,21 @@ class ContractLineMapperTest {
         }
 
         @Test
-        void shouldRejectCtrWhenTraceIdIsNotValidHex() {
-            // Given: CTR line with non-hexadecimal trace ID
-            String line = buildCtr(11, "not-hex!");
+        void shouldAcceptCtrWhenOptionalFieldsAreBlank() {
+            // Given: CTR line with all optional fields (clientType, opSdo, closingDate, context) left blank
+            String line = buildCtr(11, "");
 
-            // Act & Assert: Parser throws ContractFormatException for invalid X-B3-TraceId
-            assertThatThrownBy(() -> mapper.mapLine(line, 7))
-                    .isInstanceOf(ContractFormatException.class)
-                    .hasMessageContaining("X-B3-TraceId");
-        }
+            // Act: Parse succeeds since these fields are all optional
+            FeedRecord record = mapper.mapLine(line, 1);
 
-        @Test
-        void shouldRejectCtrWhenTraceIdIsTooShort() {
-            // Given: CTR line with trace ID shorter than required 16 hex characters
-            String line = buildCtr(11, "abcdef01");
-
-            // Act & Assert: Parser throws ContractFormatException for short X-B3-TraceId
-            assertThatThrownBy(() -> mapper.mapLine(line, 8))
-                    .isInstanceOf(ContractFormatException.class)
-                    .hasMessageContaining("X-B3-TraceId");
-        }
-
-        @Test
-        void shouldRejectCtrWhenUserIdIsBlank() {
-            // Given & Act & Assert: CTR line with blank UserId throws ContractFormatException
-            assertCtrFieldRequired(13, "UserId");
+            // Assert: Optional field is blank
+            assertThat(record.getField(11)).isEqualTo("");
         }
 
         @Test
         void shouldRejectCtrWhenChannelIsInvalid() {
             // Given: CTR line with invalid channel code
-            String line = buildCtr(14, "999");
+            String line = buildCtr(15, "999");
 
             // Act & Assert: Parser throws ContractFormatException for unknown Channel
             assertThatThrownBy(() -> mapper.mapLine(line, 9))
@@ -156,17 +140,17 @@ class ContractLineMapperTest {
 
             for (String ch : validChannels) {
                 // Act: Parse CTR line with each channel
-                FeedRecord line = mapper.mapLine(buildCtr(14, ch), 1);
+                FeedRecord line = mapper.mapLine(buildCtr(15, ch), 1);
 
                 // Assert: Channel is successfully parsed
-                assertThat(line.getField(14)).isEqualTo(ch);
+                assertThat(line.getField(15)).isEqualTo(ch);
             }
         }
 
         @Test
         void shouldRejectCtrWhenMediaIsInvalid() {
             // Given: CTR line with invalid media code
-            String line = buildCtr(15, "WEB");
+            String line = buildCtr(16, "WEB");
 
             // Act & Assert: Parser throws ContractFormatException for unknown Media
             assertThatThrownBy(() -> mapper.mapLine(line, 10))
@@ -177,14 +161,14 @@ class ContractLineMapperTest {
         @Test
         void shouldAcceptCtrWhenMediaIsAnyAllowedCode() {
             // Given: All valid media codes defined in specification
-            List<String> validMediaCodes = List.of("001", "003", "055", "073");
+            List<String> validMediaCodes = List.of("001", "003", "055", "075");
 
             for (String media : validMediaCodes) {
                 // Act: Parse CTR line with each media code
-                FeedRecord line = mapper.mapLine(buildCtr(15, media), 1);
+                FeedRecord line = mapper.mapLine(buildCtr(16, media), 1);
 
                 // Assert: Media is successfully parsed
-                assertThat(line.getField(15)).isEqualTo(media);
+                assertThat(line.getField(16)).isEqualTo(media);
             }
         }
 
@@ -196,22 +180,23 @@ class ContractLineMapperTest {
 
         private static String buildCtr(int fieldIndex, String newValue) {
             String[] fields = {
-                "CTR",                // 0  Type
-                "EUR",                // 1  Devise
-                "16",                 // 2  State
-                "000",                // 3  Motif (optional)
-                "VISA PREMIER",       // 4  OuDistribution (optional)
-                "031030000",          // 5  OuManagement
-                "",                   // 6  AddressId (optional)
-                "BR-00001090",        // 7  BusinessRelationship
-                "",                   // 8  EffectiveDate (optional)
-                "MENSUELLE",          // 9  PeriodeFacturation (optional)
-                "",                   // 10 DatesFacturation (optional)
-                "abcdef0123456789",   // 11 X-B3-TraceId
-                "fedcba9876543210",   // 12 X-B3-SpanId
-                "1234567890abcdef",   // 13 UserId
-                "001",                // 14 Channel
-                "003"                 // 15 Media
+                "CTR",                          // 0  Type
+                "EUR",                          // 1  Devise
+                "16",                           // 2  State
+                "000",                          // 3  Motif (optional)
+                "VISA PREMIER",                 // 4  OuDistribution (optional)
+                "031030000",                    // 5  OuManagement
+                "",                             // 6  AddressId (optional)
+                "BR-00001090",                  // 7  BusinessRelationship
+                "",                             // 8  EffectiveDate (optional)
+                "MENSUELLE",                    // 9  PeriodeFacturation (optional)
+                "",                             // 10 DatesFacturation (optional)
+                "1",                            // 11 clientType (optional)
+                "OP12345678901234",              // 12 opSdo (optional)
+                "2026-09-30T00:00:00.000000Z",  // 13 closingDate (optional)
+                "",                             // 14 context (optional)
+                "007",                          // 15 Channel
+                "003"                           // 16 Media
             };
             fields[fieldIndex] = newValue;
             return String.join(";", fields);
@@ -251,6 +236,18 @@ class ContractLineMapperTest {
 
             // Assert: Subtype is FEE
             assertThat(line.getField(1)).isEqualTo("FEE");
+        }
+
+        @Test
+        void shouldAcceptAccWhenSubtypeIsFac() {
+            // Given: An ACC line with FAC subtype (new in updated spec)
+            String rawLine = "ACC;FAC;BNPAFRPP;FR76300040219600001;";
+
+            // Act: Map the line
+            FeedRecord line = mapper.mapLine(rawLine, 1);
+
+            // Assert: Subtype is FAC
+            assertThat(line.getField(1)).isEqualTo("FAC");
         }
 
         @Test

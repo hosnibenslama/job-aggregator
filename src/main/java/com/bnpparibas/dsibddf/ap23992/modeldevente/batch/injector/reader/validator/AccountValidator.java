@@ -13,7 +13,7 @@ import java.util.Set;
  * Pos  Field      Mandatory  Rule
  * ---  ---------  ---------  -----------------------
  *  1   Type       Yes        fixed "ACC"
- *  2   Sous-type  Yes        BILL (facturation) or FEE (frais)
+ *  2   Sous-type  Yes        BILL (facturation), FEE (frais), or FAC (facturation)
  *  3   BIC        Yes        bank BIC
  *  4   IBAN       Yes        account IBAN
  *  5   RIB        No
@@ -27,8 +27,8 @@ import java.util.Set;
  */
 public final class AccountValidator {
 
-    /** BILL = facturation, FEE = frais */
-    public static final Set<String> VALID_SUBTYPES = Set.of("BILL", "FEE");
+    /** BILL = facturation, FEE = frais, FAC = facturation alternative */
+    public static final Set<String> VALID_SUBTYPES = Set.of("BILL", "FEE", "FAC");
 
     private AccountValidator() {}
 

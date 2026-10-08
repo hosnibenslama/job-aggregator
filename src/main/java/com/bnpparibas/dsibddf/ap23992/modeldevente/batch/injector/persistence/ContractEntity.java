@@ -44,11 +44,13 @@ public class ContractEntity implements Persistable<UUID> {
     private String effectiveDate;
     private String periodeFacturation;
     private String datesFacturation;
-    @Column(name = "x_b3_trace_id")
-    private String xB3TraceId;
-    @Column(name = "x_b3_span_id")
-    private String xB3SpanId;
-    private String userId;
+    @Column(name = "client_type")
+    private String clientType;
+    @Column(name = "op_sdo")
+    private String opSdo;
+    @Column(name = "closing_date")
+    private String closingDate;
+    private String context;
     private String channel;
     private String media;
 
@@ -135,14 +137,17 @@ public class ContractEntity implements Persistable<UUID> {
     public void setDatesFacturation(String datesFacturation) { this.datesFacturation = datesFacturation; }
     public String getDatesFacturation() { return datesFacturation; }
 
-    public void setXB3TraceId(String xB3TraceId) { this.xB3TraceId = xB3TraceId; }
-    public String getXB3TraceId() { return xB3TraceId; }
+    public void setClientType(String clientType) { this.clientType = clientType; }
+    public String getClientType() { return clientType; }
 
-    public void setXB3SpanId(String xB3SpanId) { this.xB3SpanId = xB3SpanId; }
-    public String getXB3SpanId() { return xB3SpanId; }
+    public void setOpSdo(String opSdo) { this.opSdo = opSdo; }
+    public String getOpSdo() { return opSdo; }
 
-    public void setUserId(String userId) { this.userId = userId; }
-    public String getUserId() { return userId; }
+    public void setClosingDate(String closingDate) { this.closingDate = closingDate; }
+    public String getClosingDate() { return closingDate; }
+
+    public void setContext(String context) { this.context = context; }
+    public String getContext() { return context; }
 
     public void setChannel(String channel) { this.channel = channel; }
     public String getChannel() { return channel; }

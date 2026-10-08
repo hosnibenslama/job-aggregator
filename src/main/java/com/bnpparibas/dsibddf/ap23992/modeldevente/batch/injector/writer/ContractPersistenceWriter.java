@@ -45,9 +45,9 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
             INSERT INTO contracts (
                 id, devise, state, motif, ou_distribution, ou_management,
                 address_id, business_relationship, effective_date,
-                periode_facturation, dates_facturation, x_b3_trace_id,
-                x_b3_span_id, user_id, channel, media
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                periode_facturation, dates_facturation, client_type,
+                op_sdo, closing_date, context, channel, media
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String INSERT_ACCOUNT = """
@@ -221,9 +221,10 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
                 contractHeader != null ? blankToNull(contractHeader.effectiveDate()) : null,
                 contractHeader != null ? blankToNull(contractHeader.periodeFacturation()) : null,
                 contractHeader != null ? blankToNull(contractHeader.datesFacturation()) : null,
-                contractHeader != null ? contractHeader.xB3TraceId() : null,
-                contractHeader != null ? contractHeader.xB3SpanId() : null,
-                contractHeader != null ? contractHeader.userId() : null,
+                contractHeader != null ? blankToNull(contractHeader.clientType()) : null,
+                contractHeader != null ? blankToNull(contractHeader.opSdo()) : null,
+                contractHeader != null ? blankToNull(contractHeader.closingDate()) : null,
+                contractHeader != null ? blankToNull(contractHeader.context()) : null,
                 contractHeader != null ? contractHeader.channel() : null,
                 contractHeader != null ? contractHeader.media() : null
         );

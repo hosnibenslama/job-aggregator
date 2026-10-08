@@ -23,11 +23,12 @@ import java.util.Set;
  *  9   EffectiveDate          No
  * 10   PeriodeFacturation     No
  * 11   DatesFacturation       No
- * 12   X-B3-TraceId           Yes        16 hex chars
- * 13   X-B3-SpanId            Yes        16 hex chars
- * 14   UserId                 Yes        non-blank
- * 15   Channel                Yes        001/007/008/012
- * 16   Media                  Yes        001/003/055/073
+ * 12   clientType             No         1=Retail, 2=Corporate
+ * 13   opSdo                  No         SDO operation number
+ * 14   closingDate            No         YYYY-MM-DDTHH:MM:SS.ssssssZ
+ * 15   context                No
+ * 16   Channel                Yes        001/007/008/012
+ * 17   Media                  Yes        001/003/055/075
  * </pre>
  */
 public final class ContractHeaderValidator {
@@ -35,8 +36,8 @@ public final class ContractHeaderValidator {
     /** 001=Intranet, 007=Internet, 008=GAB, 012=Partenaire */
     public static final Set<String> VALID_CHANNELS = Set.of("001", "007", "008", "012");
 
-    /** 001=Face à face, 003=Téléphone, 055=SMS, 073=Chat */
-    public static final Set<String> VALID_MEDIA = Set.of("001", "003", "055", "073");
+    /** 001=Face à face, 003=Téléphone, 055=SMS, 075=Chat */
+    public static final Set<String> VALID_MEDIA = Set.of("001", "003", "055", "075");
 
     private ContractHeaderValidator() {}
 
@@ -46,10 +47,8 @@ public final class ContractHeaderValidator {
         requireNonBlank(fields, 2,  "State",                CTR, lineNumber);
         requireNonBlank(fields, 5,  "OuManagement",         CTR, lineNumber);
         requireNonBlank(fields, 7,  "BusinessRelationship", CTR, lineNumber);
-        requireHex16   (fields, 11, "X-B3-TraceId",         CTR, lineNumber);
-        requireHex16   (fields, 12, "X-B3-SpanId",          CTR, lineNumber);
-        requireNonBlank(fields, 13, "UserId",               CTR, lineNumber);
-        requireOneOf   (fields, 14, "Channel", VALID_CHANNELS, CTR, lineNumber);
-        requireOneOf   (fields, 15, "Media",   VALID_MEDIA,    CTR, lineNumber);
+        // fields 11-14 (clientType, opSdo, closingDate, context) are all optional
+        requireOneOf   (fields, 15, "Channel", VALID_CHANNELS, CTR, lineNumber);
+        requireOneOf   (fields, 16, "Media",   VALID_MEDIA,    CTR, lineNumber);
     }
 }
