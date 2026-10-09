@@ -112,7 +112,7 @@ class ContractBlockTest {
         // Assert: Root aggregate properties
         assertThat(block.id()).isEqualTo(contractId);
         assertThat(block.records()).containsExactly(r1, r2);
-        assertThat(block.rawRecords()).containsExactly("CTR;EUR;16", "ACC;BILL;BNPA");
+        assertThat(block.getRawRecords()).containsExactly("CTR;EUR;16", "ACC;BILL;BNPA");
         assertThat(block.accounts()).hasSize(1);
         assertThat(block.marketedObjects()).hasSize(1);
     }
@@ -123,6 +123,6 @@ class ContractBlockTest {
         ContractBlock block = new ContractBlock(UUID.randomUUID(), null, null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
 
         // Act & Assert: rawRecords returns empty list without NPE
-        assertThat(block.rawRecords()).isEmpty();
+        assertThat(block.getRawRecords()).isEmpty();
     }
 }

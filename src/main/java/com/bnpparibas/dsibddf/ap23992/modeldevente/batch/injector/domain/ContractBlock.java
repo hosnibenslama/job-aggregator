@@ -25,7 +25,7 @@ public record ContractBlock(
     /**
      * Returns the raw text strings of all feed records in this contract block.
      */
-    public List<String> rawRecords() {
+    public List<String> getRawRecords() {
         return records != null ? records.stream().map(FeedRecord::raw).toList() : List.of();
     }
 }

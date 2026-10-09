@@ -35,7 +35,7 @@ class ContractBlockAssemblerTest {
 
         // Assert: Assembled contract contains all 12 accepted lines
         assertThat(contract.records()).hasSize(12);
-        assertThat(contract.rawRecords()).hasSize(12);
+        assertThat(contract.getRawRecords()).hasSize(12);
 
         // Assert: Contract-level children
         assertThat(contract.accounts()).hasSize(1);
@@ -85,7 +85,7 @@ class ContractBlockAssemblerTest {
 
         // Assert: Assembled contract contains exactly the 4 mandatory lines
         assertThat(contract.records()).hasSize(4);
-        assertThat(contract.rawRecords()).hasSize(4);
+        assertThat(contract.getRawRecords()).hasSize(4);
         assertThat(contract.marketedObjects()).hasSize(1);
         assertThat(contract.marketedObjects().get(0).articles()).hasSize(1);
     }

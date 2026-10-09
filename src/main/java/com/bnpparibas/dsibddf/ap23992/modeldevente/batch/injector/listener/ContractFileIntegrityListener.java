@@ -31,7 +31,7 @@ public class ContractFileIntegrityListener implements StepExecutionListener {
 
         // Rule 4: at least one CTR
         if (actualCount == 0) {
-            log.error("Rule 4 violation: no CTR contract found in the file");
+            log.error("No CTR contract found in the file");
             return ExitStatus.FAILED;
         }
 
@@ -40,13 +40,13 @@ public class ContractFileIntegrityListener implements StepExecutionListener {
         if (ctx.containsKey(ContractBlockReader.KEY_EXPECTED_CONTRACT_COUNT)) {
             long expected = ctx.getInt(ContractBlockReader.KEY_EXPECTED_CONTRACT_COUNT);
             if (expected != actualCount) {
-                log.error("Rule 3 violation: TRL declares {} contracts but {} were read",
+                log.error("TRL declared {} contracts, but {} contracts were actually read",
                         expected, actualCount);
                 return ExitStatus.FAILED;
             }
-            log.info("Rule 3 OK: TRL NBCTR={} matches actual contract count", expected);
+            log.info("TRL NBCTR={} matches actual contract count", expected);
         } else {
-            log.warn("Rule 3 skipped: TRL line was not encountered (file may be missing trailer)");
+            log.warn("TRL line was not encountered (file may be missing trailer)");
         }
 
         return ExitStatus.COMPLETED;

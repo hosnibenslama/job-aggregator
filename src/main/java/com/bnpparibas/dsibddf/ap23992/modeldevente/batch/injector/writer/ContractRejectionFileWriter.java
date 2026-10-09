@@ -60,7 +60,7 @@ public class ContractRejectionFileWriter implements ContractRejectionPort {
 
     @Override
     public synchronized void reject(ContractBlock contract, String reason) throws IOException {
-        reject(contract.rawRecords(), reason);
+        reject(contract.getRawRecords(), reason);
     }
 
     @Override

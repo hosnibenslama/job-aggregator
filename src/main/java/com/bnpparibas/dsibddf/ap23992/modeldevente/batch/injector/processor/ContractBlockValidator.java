@@ -28,7 +28,10 @@ import org.springframework.stereotype.Component;
  * double-parsing: the reader produces a leniently-assembled block, and this
  * processor produces the strictly-validated one.</p>
  *
- * <p>Returning {@code null} causes Spring Batch to silently skip the item for writing.
+ * <p>Returning {@code null} from {@link #process(ContractBlock)} is the standard
+ * Spring Batch {@link ItemProcessor} contract for filtering: it signals the framework
+ * to skip writing this item. Rejected contracts are routed to the rejection port
+ * before {@code null} is returned, so they are never silently lost.
  */
 @Component
 public final class ContractBlockValidator implements ItemProcessor<ContractBlock, ContractBlock> {
@@ -78,10 +81,10 @@ public final class ContractBlockValidator implements ItemProcessor<ContractBlock
      */
     private ContractBlock validateAndAssemble(ContractBlock contract) {
         List<FeedRecord> records = contract.records();
-        ContractBlockAssembler assembler = new ContractBlockAssembler(contract.id(), records.get(0));
+        ContractBlockAssembler contractBlockAssembler = new ContractBlockAssembler(contract.id(), records.get(0));
         for (int i = 1; i < records.size(); i++) {
-            assembler.appendRecord(records.get(i));
+            contractBlockAssembler.appendRecord(records.get(i));
         }
-        return assembler.build();
+        return contractBlockAssembler.build();
     }
 }

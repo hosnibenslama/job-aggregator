@@ -211,18 +211,18 @@ public final class ContractBlockAssembler {
             );
         }
 
-        ContractBlockAssembler assembler = new ContractBlockAssembler(contractId, records.get(0));
+        ContractBlockAssembler contractBlockAssembler = new ContractBlockAssembler(contractId, records.get(0));
         for (int i = 1; i < records.size(); i++) {
             FeedRecord record = records.get(i);
             try {
-                assembler.appendRecord(record);
+                contractBlockAssembler.appendRecord(record);
             } catch (ContractFormatException formatException) {
                 log.debug("Lenient assembly: skipping {} at line {} — {}",
                         record.type(), record.lineNumber(), formatException.getReason());
-                assembler.records.add(record);
+                contractBlockAssembler.records.add(record);
             }
         }
-        return assembler.assembleBlock();
+        return contractBlockAssembler.assembleBlock();
     }
 
     // -----------------------------------------------------------------------
