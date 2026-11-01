@@ -33,6 +33,9 @@ class ContractBlockAssemblerTest {
         // Act: Build the assembled contract
         ContractBlock contract = assembler.build();
 
+        // Assert: Assembled contract is valid and has a generated UUID
+        assertThat(contract.id()).isNotNull();
+
         // Assert: Assembled contract contains all 12 accepted lines
         assertThat(contract.records()).hasSize(12);
         assertThat(contract.getRawRecords()).hasSize(12);
@@ -333,8 +336,9 @@ class ContractBlockAssemblerTest {
         // Act: Lenient build via toContractBlock()
         ContractBlock contract = assembler.assembleBlock();
 
-        // Assert: Block created successfully with empty children
+        // Assert: Block created successfully with empty children and no UUID
         assertThat(contract).isNotNull();
+        assertThat(contract.id()).isNull();
         assertThat(contract.records()).hasSize(1);
         assertThat(contract.marketedObjects()).isEmpty();
         assertThat(contract.accounts()).isEmpty();

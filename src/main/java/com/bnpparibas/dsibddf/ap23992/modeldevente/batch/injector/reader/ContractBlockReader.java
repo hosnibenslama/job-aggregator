@@ -5,7 +5,6 @@ import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.domain.feed.Fe
 import com.bnpparibas.dsibddf.ap23992.modeldevente.batch.injector.domain.feed.FeedRecord;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.batch.infrastructure.item.ItemReader;
 import org.springframework.batch.infrastructure.item.ItemStreamException;
@@ -77,8 +76,7 @@ public class ContractBlockReader implements ItemStreamReader<ContractBlock> {
         records.add(ctrRecord);
         collectUntilNextBoundary(records);
 
-        UUID contractId = UUID.randomUUID();
-        return ContractBlockAssembler.assemble(contractId, records);
+        return ContractBlockAssembler.assemble(null, records);
     }
 
     @Override

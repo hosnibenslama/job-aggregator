@@ -47,11 +47,11 @@ public final class ContractBlockAssembler {
     private ContractArticleBuilder currentArticleBuilder;
 
     public ContractBlockAssembler(FeedRecord contractRecord) {
-        this(UUID.randomUUID(), contractRecord);
+        this(null, contractRecord);
     }
 
     public ContractBlockAssembler(UUID contractId, FeedRecord contractRecord) {
-        this.contractId = contractId != null ? contractId : UUID.randomUUID();
+        this.contractId = contractId;
         if (contractRecord == null || contractRecord.type() != FeedRecordType.CTR) {
             long lineNumber = contractRecord != null ? contractRecord.lineNumber() : 0;
             throw new ContractFormatException(lineNumber, null, "A contract must begin with CTR");
@@ -173,7 +173,8 @@ public final class ContractBlockAssembler {
             throw buildFormatException(records.get(0), "A contract must contain at least one ART");
         }
 
-        return assembleBlock();
+        UUID finalId = this.contractId != null ? this.contractId : UUID.randomUUID();
+        return assembleBlock(finalId);
     }
 
     /**
@@ -181,12 +182,16 @@ public final class ContractBlockAssembler {
      * Used for lenient construction where structural rules are not yet applied.
      */
     public ContractBlock assembleBlock() {
+        return assembleBlock(this.contractId);
+    }
+
+    private ContractBlock assembleBlock(UUID id) {
         List<MarketedObject> marketedObjects = marketedObjectBuilders.stream()
                 .map(ContractMarketedObjectBuilder::build)
                 .toList();
 
         return new ContractBlock(
-                contractId,
+                id,
                 List.copyOf(records),
                 header,
                 List.copyOf(contractAccounts),
@@ -199,12 +204,19 @@ public final class ContractBlockAssembler {
     }
 
     /**
+     * Leniently assemble records into a hierarchical ContractBlock with no assigned UUID.
+     */
+    public static ContractBlock assemble(List<FeedRecord> records) {
+        return assemble(null, records);
+    }
+
+    /**
      * Leniently assemble records into a hierarchical ContractBlock.
      */
     public static ContractBlock assemble(UUID contractId, List<FeedRecord> records) {
         if (records == null || records.isEmpty() || records.get(0).type() != FeedRecordType.CTR) {
             return new ContractBlock(
-                    contractId != null ? contractId : UUID.randomUUID(),
+                    contractId,
                     records != null ? List.copyOf(records) : List.of(),
                     null,
                     List.of(), List.of(), List.of(), List.of(), List.of(), List.of()

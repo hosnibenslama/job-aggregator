@@ -42,8 +42,9 @@ class ContractBlockReaderTest {
         ContractBlock contract = reader.read();
         ContractBlock next = reader.read();
 
-        // Assert: Assembled contract contains only the 4 contract lines, and next read signals EOF (null)
+        // Assert: Assembled contract contains only the 4 contract lines, has no UUID generated yet, and next read signals EOF (null)
         assertThat(contract).isNotNull();
+        assertThat(contract.id()).isNull();
         assertThat(contract.records()).hasSize(4); // CTR + ACC + OM + ART
         assertThat(next).isNull();               // TRL -> EOF
     }

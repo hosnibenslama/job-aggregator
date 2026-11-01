@@ -51,6 +51,44 @@ class ContractBlockValidatorTest {
     }
 
     @Test
+    void shouldGenerateUuidOnlyWhenContractIsValidAndInputHadNoUuid() throws Exception {
+        // Given: A valid contract assembled leniently by reader with null UUID
+        ContractBlock contract = ContractBlockAssembler.assemble(null, List.of(
+                createFeedRecord(1, FeedRecordType.CTR, "CTR"),
+                createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL"),
+                createFeedRecord(3, FeedRecordType.OM, "OM", "OM-001"),
+                createFeedRecord(4, FeedRecordType.ART, "ART", "1")
+        ));
+        assertThat(contract.id()).isNull();
+
+        // Act: Process through validator
+        ContractBlock result = validator.process(contract);
+
+        // Assert: Validated contract now has a generated UUID
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isNotNull();
+        verifyNoInteractions(rejectionPort);
+    }
+
+    @Test
+    void shouldNotGenerateUuidWhenContractIsInvalidAndInputHadNoUuid() throws Exception {
+        // Given: An invalid contract assembled leniently by reader with null UUID
+        ContractBlock contract = ContractBlockAssembler.assemble(null, List.of(
+                createFeedRecord(1, FeedRecordType.CTR, "CTR"),
+                createFeedRecord(2, FeedRecordType.ACC, "ACC", "BILL")
+        ));
+        assertThat(contract.id()).isNull();
+
+        // Act: Process through validator
+        ContractBlock result = validator.process(contract);
+
+        // Assert: Result is null, contract passed to rejection port has null UUID
+        assertThat(result).isNull();
+        verify(rejectionPort).reject(eq(contract), any(String.class));
+        assertThat(contract.id()).isNull();
+    }
+
+    @Test
     void shouldFilterContractAndCallRejectionPortWhenStructureIsInvalid() throws Exception {
         // Given: An invalid contract missing mandatory OM and ART lines
         ContractBlock contract = assembleBlock(

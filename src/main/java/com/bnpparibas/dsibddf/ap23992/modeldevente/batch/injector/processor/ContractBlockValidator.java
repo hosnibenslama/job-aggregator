@@ -50,7 +50,8 @@ public final class ContractBlockValidator implements ItemProcessor<ContractBlock
             checkForUnknownRecords(item);
             return validateAndAssemble(item);
         } catch (ContractFormatException e) {
-            log.warn("Contract {} rejected: {}", item.id(), e.getReason());
+            String contractIdDisplay = item.id() != null ? item.id().toString() : "<unknown>";
+            log.warn("Contract {} rejected: {}", contractIdDisplay, e.getReason());
             rejectionPort.reject(item, e.getMessage());
             return null;
         }
