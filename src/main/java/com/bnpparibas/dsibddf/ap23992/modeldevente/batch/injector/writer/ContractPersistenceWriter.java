@@ -51,8 +51,8 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
             """;
 
     private static final String INSERT_ACCOUNT = """
-            INSERT INTO contract_accounts (contract_id, article_id, level, sub_type, bic, iban, rib)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO contract_accounts (contract_id, article_id, level, bic, iban, rib)
+            VALUES (?, ?, ?, ?, ?, ?)
             """;
 
     private static final String INSERT_ROLE = """
@@ -232,7 +232,7 @@ public class ContractPersistenceWriter implements ItemWriter<ContractBlock> {
 
     private void insertAccount(UUID contractId, Long articleId, HierarchyLevel level, Account account) {
         jdbcTemplate.update(INSERT_ACCOUNT,
-                contractId, articleId, level.getValue(), account.subType(), account.bic(), account.iban(), blankToNull(account.rib()));
+                contractId, articleId, level.getValue(), account.bic(), account.iban(), blankToNull(account.rib()));
     }
 
     private void insertRole(UUID contractId, Long omId, Long articleId, HierarchyLevel level, Role role) {

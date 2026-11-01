@@ -31,7 +31,7 @@ class ContractBlockReaderTest {
         List<FeedRecord> lines = List.of(
                 new FeedRecord(1, FeedRecordType.HDR, "HDR;20260415", List.of("HDR", "20260415")),
                 new FeedRecord(2, FeedRecordType.CTR, "CTR", List.of("CTR")),
-                new FeedRecord(3, FeedRecordType.ACC, "ACC;BILL", List.of("ACC", "BILL")),
+                new FeedRecord(3, FeedRecordType.ACC, "ACC;BNPAFRPP", List.of("ACC", "BNPAFRPP")),
                 new FeedRecord(4, FeedRecordType.OM,  "OM;001",  List.of("OM",  "001")),
                 new FeedRecord(5, FeedRecordType.ART, "ART;1",   List.of("ART", "1")),
                 new FeedRecord(6, FeedRecordType.TRL, "TRL;1;5", List.of("TRL", "1", "5"))
@@ -114,7 +114,7 @@ class ContractBlockReaderTest {
         List<FeedRecord> lines = List.of(
                 new FeedRecord(1, FeedRecordType.HDR, "HDR", List.of("HDR")),
                 new FeedRecord(2, FeedRecordType.CTR, "CTR", List.of("CTR")),
-                new FeedRecord(3, FeedRecordType.ACC, "ACC;BILL", List.of("ACC", "BILL")),
+                new FeedRecord(3, FeedRecordType.ACC, "ACC;BNPAFRPP", List.of("ACC", "BNPAFRPP")),
                 new FeedRecord(4, FeedRecordType.OM,  "OM;001",   List.of("OM",  "001")),
                 new FeedRecord(5, FeedRecordType.ART, "ART;1",    List.of("ART", "1"))
         );

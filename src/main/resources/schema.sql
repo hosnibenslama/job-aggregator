@@ -65,7 +65,6 @@ CREATE TABLE contract_accounts (
     contract_id         UUID          NOT NULL REFERENCES contracts (id) ON DELETE CASCADE,
     article_id          BIGINT        REFERENCES contract_articles (id) ON DELETE CASCADE,
     level               VARCHAR(10)   NOT NULL, -- 'CONTRACT' or 'ARTICLE'
-    sub_type            VARCHAR(10)   NOT NULL,
     bic                 VARCHAR(11)   NOT NULL,
     iban                VARCHAR(34)   NOT NULL,
     rib                 VARCHAR(50),

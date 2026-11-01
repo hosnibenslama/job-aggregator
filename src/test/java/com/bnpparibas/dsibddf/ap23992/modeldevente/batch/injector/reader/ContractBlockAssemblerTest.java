@@ -183,7 +183,7 @@ class ContractBlockAssemblerTest {
         ContractBlock contract = assembler.build();
 
         // Assert: Contract-level children
-        assertThat(contract.accounts()).extracting("subType").containsExactly("BILL-CTR");
+        assertThat(contract.accounts()).extracting("bic").containsExactly("BILL-CTR");
         assertThat(contract.roles()).extracting("role").containsExactly("ROL-CTR");
 
         // Assert: OM-level children
@@ -194,7 +194,7 @@ class ContractBlockAssemblerTest {
         // Assert: Article-level children
         Article art = om.articles().get(0);
         assertThat(art.externalIds()).extracting("externalId").containsExactly("OID-ART");
-        assertThat(art.accounts()).extracting("subType").containsExactly("BILL-ART");
+        assertThat(art.accounts()).extracting("bic").containsExactly("BILL-ART");
         assertThat(art.roles()).extracting("role").containsExactly("ROL-ART");
     }
 

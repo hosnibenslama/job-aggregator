@@ -16,7 +16,7 @@ class ContractBlockTest {
         ExternalId oid = new ExternalId("OID-1");
         Ikac ikac = new Ikac("IKAC-1", "AP00111");
         Condition cond = new Condition("COND-1", "VAL-1");
-        Account acc = new Account("BILL", "BIC1", "IBAN1", "RIB1");
+        Account acc = new Account("BIC1", "IBAN1", "RIB1");
         Role rol = new Role("TIT", "BRAND", "PER", "HOLDER1", "IKPI1");
         Tarif tar = new Tarif("TAR1", "001", "2026-01-01", "2026-01-01", "EUR", "N", "F", "M", "T", "T", "10", "100", "1", "1", "U", "N", null, "N", null);
         Advantage avt = new Advantage("AVT1", "2026-01-01", "2026-12-31", "COD1", "10", "EUR");
@@ -93,7 +93,7 @@ class ContractBlockTest {
     void shouldCreateContractBlockAndReturnRawRecords() {
         // Given: Raw feed records
         FeedRecord r1 = new FeedRecord(1, FeedRecordType.CTR, "CTR;EUR;16", List.of("CTR", "EUR", "16"));
-        FeedRecord r2 = new FeedRecord(2, FeedRecordType.ACC, "ACC;BILL;BNPA", List.of("ACC", "BILL", "BNPA"));
+        FeedRecord r2 = new FeedRecord(2, FeedRecordType.ACC, "ACC;BNPA", List.of("ACC", "BNPA"));
         UUID contractId = UUID.randomUUID();
 
         // Act: Construct ContractBlock
@@ -101,7 +101,7 @@ class ContractBlockTest {
                 contractId,
                 List.of(r1, r2),
                 null,
-                List.of(new Account("BILL", "BIC", "IBAN", "RIB")),
+                List.of(new Account("BIC", "IBAN", "RIB")),
                 List.of(),
                 List.of(),
                 List.of(),
@@ -112,7 +112,7 @@ class ContractBlockTest {
         // Assert: Root aggregate properties
         assertThat(block.id()).isEqualTo(contractId);
         assertThat(block.records()).containsExactly(r1, r2);
-        assertThat(block.getRawRecords()).containsExactly("CTR;EUR;16", "ACC;BILL;BNPA");
+        assertThat(block.getRawRecords()).containsExactly("CTR;EUR;16", "ACC;BNPA");
         assertThat(block.accounts()).hasSize(1);
         assertThat(block.marketedObjects()).hasSize(1);
     }

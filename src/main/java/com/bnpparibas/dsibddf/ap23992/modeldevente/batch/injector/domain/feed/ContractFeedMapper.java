@@ -47,10 +47,9 @@ public final class ContractFeedMapper {
     public static Account toAccount(FeedRecord record) {
         requireType(record, FeedRecordType.ACC);
         return new Account(
-                record.getField(1),  // subType (BILL/FEE)
-                record.getField(2),  // BIC
-                record.getField(3),  // IBAN
-                record.getField(4)); // RIB (optional)
+                record.getField(1),  // BIC
+                record.getField(2),  // IBAN
+                record.getField(3)); // RIB (optional)
     }
 
     public static Role toRole(FeedRecord record) {

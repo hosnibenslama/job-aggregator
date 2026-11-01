@@ -13,23 +13,19 @@ public class ContractAccountEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String subType;
     private String bic;
     private String iban;
     private String rib;
 
     public ContractAccountEntity() {}
 
-    public ContractAccountEntity(String subType, String bic, String iban, String rib) {
-        this.subType = subType;
+    public ContractAccountEntity(String bic, String iban, String rib) {
         this.bic = bic;
         this.iban = iban;
         this.rib = rib;
     }
 
     public Long getId() { return id; }
-    public String getSubType() { return subType; }
-    public void setSubType(String subType) { this.subType = subType; }
     public String getBic() { return bic; }
     public void setBic(String bic) { this.bic = bic; }
     public String getIban() { return iban; }

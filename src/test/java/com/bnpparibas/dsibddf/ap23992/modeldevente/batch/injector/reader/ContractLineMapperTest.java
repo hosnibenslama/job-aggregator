@@ -210,61 +210,25 @@ class ContractLineMapperTest {
     @Nested
     class AccValidation {
 
-        private static final String VALID_ACC = "ACC;BILL;BNPAFRPP;FR76300040219600001;300040219600001";
+        private static final String VALID_ACC = "ACC;BNPAFRPP;FR76300040219600001;300040219600001";
 
         @Test
         void shouldParseValidAccLineWhenAllFieldsAreProvided() {
-            // Given: A valid ACC line with BILL subtype, BIC, and IBAN
+            // Given: A valid ACC line with BIC, and IBAN
             String rawLine = VALID_ACC;
 
             // Act: Map the line
             FeedRecord line = mapper.mapLine(rawLine, 1);
 
-            // Assert: Parsed line has ACC type and correct subtype and BIC
+            // Assert: Parsed line has ACC type and correct BIC
             assertThat(line.type()).isEqualTo(FeedRecordType.ACC);
-            assertThat(line.getField(1)).isEqualTo("BILL");
-            assertThat(line.getField(2)).isEqualTo("BNPAFRPP");
-        }
-
-        @Test
-        void shouldAcceptAccWhenSubtypeIsFee() {
-            // Given: An ACC line with FEE subtype
-            String rawLine = "ACC;FEE;BNPAFRPP;FR76300040219600001;";
-
-            // Act: Map the line
-            FeedRecord line = mapper.mapLine(rawLine, 1);
-
-            // Assert: Subtype is FEE
-            assertThat(line.getField(1)).isEqualTo("FEE");
-        }
-
-        @Test
-        void shouldAcceptAccWhenSubtypeIsFac() {
-            // Given: An ACC line with FAC subtype (new in updated spec)
-            String rawLine = "ACC;FAC;BNPAFRPP;FR76300040219600001;";
-
-            // Act: Map the line
-            FeedRecord line = mapper.mapLine(rawLine, 1);
-
-            // Assert: Subtype is FAC
-            assertThat(line.getField(1)).isEqualTo("FAC");
-        }
-
-        @Test
-        void shouldRejectAccWhenSubtypeIsInvalid() {
-            // Given: An ACC line with invalid subtype UNKNOWN
-            String rawLine = "ACC;UNKNOWN;BIC;IBAN;";
-
-            // Act & Assert: Parser throws ContractFormatException for unknown subtype
-            assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
-                    .isInstanceOf(ContractFormatException.class)
-                    .hasMessageContaining("Sous-type");
+            assertThat(line.getField(1)).isEqualTo("BNPAFRPP");
         }
 
         @Test
         void shouldRejectAccWhenBicIsBlank() {
             // Given: An ACC line with blank BIC field
-            String rawLine = "ACC;BILL;;FR76300040219600001;";
+            String rawLine = "ACC;;FR76300040219600001;";
 
             // Act & Assert: Parser throws ContractFormatException for blank BIC
             assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
@@ -275,7 +239,7 @@ class ContractLineMapperTest {
         @Test
         void shouldRejectAccWhenIbanIsBlank() {
             // Given: An ACC line with blank IBAN field
-            String rawLine = "ACC;BILL;BNPAFRPP;;";
+            String rawLine = "ACC;BNPAFRPP;;";
 
             // Act & Assert: Parser throws ContractFormatException for blank IBAN
             assertThatThrownBy(() -> mapper.mapLine(rawLine, 1))
@@ -284,14 +248,14 @@ class ContractLineMapperTest {
         }
 
         @Test
-        void shouldRejectAccWhenFieldCountIsLessThanFour() {
-            // Given: An ACC line with only 3 fields
-            String shortLine = "ACC;BILL;BIC";
+        void shouldRejectAccWhenFieldCountIsLessThanThree() {
+            // Given: An ACC line with only 2 fields
+            String shortLine = "ACC;BIC";
 
-            // Act & Assert: Parser throws ContractFormatException requiring at least 4 fields
+            // Act & Assert: Parser throws ContractFormatException requiring at least 3 fields
             assertThatThrownBy(() -> mapper.mapLine(shortLine, 1))
                     .isInstanceOf(ContractFormatException.class)
-                    .hasMessageContaining("4 fields");
+                    .hasMessageContaining("3 fields");
         }
     }
 
